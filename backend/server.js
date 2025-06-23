@@ -7,7 +7,10 @@ const dashboardRoutes = require('./routes/dashboardRoutes');
 const authRoutes = require('./routes/authRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
 const gradeSheetRoutes = require('./routes/gradeSheetRoutes');
-const UserInfoRoutes = require('./routes/userInfoRoutes');
+const UserInfoRoutes = require('./routes/alluserRoutes');
+const UserRoutes = require('./routes/userRoutes');
+const userPhotoRoutes = require('./routes/imageRoutes');
+
 
 const jwt = require('jsonwebtoken');
 const app = express();
@@ -20,6 +23,8 @@ app.use('/api/dashboard',dashboardRoutes);
 app.use('/api/notify',notificationRoutes);
 app.use('/api/gradesheet',gradeSheetRoutes);
 app.use('/api/allUser',UserInfoRoutes);
+app.use('/api/user',UserRoutes);
+app.use('/api/user', userPhotoRoutes);
 
 
 const os = require('os');

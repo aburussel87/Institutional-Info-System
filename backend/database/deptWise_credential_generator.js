@@ -88,7 +88,7 @@ function saveToCsv(data, filename = 'credentials.csv') {
 
 const year = 2025;
 const passwordLength = 8;
-const n = 20; // number of users per department
+const n = 20; 
 let filename;
 for (let deptCode = 2; deptCode <= 12; deptCode++) {
   const classCode = String(deptCode).padStart(2, '0');

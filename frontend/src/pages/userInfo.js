@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom'; 
+import { useNavigate } from 'react-router-dom';
 import Header from './header';
 import API_BASE_URL from '../config/config';
-import 'bootstrap/dist/css/bootstrap.min.css'; // Import Bootstrap
-import '../styles/dashboard.css'; // Optional for custom styling
+import 'bootstrap/dist/css/bootstrap.min.css';
+import '../styles/dashboard.css';
 
-const UserInfo =()=> {
+const UserInfo = () => {
   const [users, setUsers] = useState([]);
   const [msg, setMsg] = useState('');
+  const [filterRole, setFilterRole] = useState('All');
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -43,24 +44,47 @@ const UserInfo =()=> {
     })();
   }, [navigate]);
 
+  const handleRowClick = (userId) => {
+    navigate(`/user/${userId}`);
+  };
+
+  const handleFilterChange = (e) => {
+    setFilterRole(e.target.value);
+  };
+
+  const filteredUsers = filterRole === 'All'
+    ? users
+    : users.filter(user => user.role === filterRole);
+
   return (
     <>
       <Header />
       <div className="main-content container mt-5">
-        <h2 className="mb-4">All Users</h2>
+        <div className="d-flex justify-content-between align-items-center mb-3">
+          <h2>All Users</h2>
+          <select className="form-select w-auto" value={filterRole} onChange={handleFilterChange}>
+            <option value="All">All Roles</option>
+            <option value="Student">Student</option>
+            <option value="Teacher">Teacher</option>
+            <option value="Admin">Admin</option>
+            <option value="Provost">Provost</option>
+          </select>
+        </div>
+
         {msg && <div className="alert alert-danger">{msg}</div>}
+
         <table className="table table-striped table-bordered shadow-sm">
-          <thead className="thead-dark">
+          <thead className="table-dark">
             <tr>
-              <th scope="col">User ID</th>
-              <th scope="col">Username</th>
-              <th scope="col">Role</th>
+              <th>User ID</th>
+              <th>Username</th>
+              <th>Role</th>
             </tr>
           </thead>
           <tbody>
-            {users.length > 0 ? (
-              users.map((user) => (
-                <tr key={user.user_id}>
+            {filteredUsers.length > 0 ? (
+              filteredUsers.map((user) => (
+                <tr key={user.user_id} style={{ cursor: 'pointer' }} onClick={() => handleRowClick(user.user_id)}>
                   <td>{user.user_id}</td>
                   <td>{user.username || 'N/A'}</td>
                   <td>{user.role}</td>
@@ -76,6 +100,6 @@ const UserInfo =()=> {
       </div>
     </>
   );
-}
+};
 
 export default UserInfo;

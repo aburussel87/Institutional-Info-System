@@ -6,7 +6,7 @@ const path = require('path');
 const fs = require('fs');
 const { get } = require('axios');
 
-const imagePath = path.join(__dirname, 'logo.png'); // __dirname = folder of current file
+const imagePath = path.join(__dirname, '../database/images/logo.png'); 
 
 
 const client = new Pool({
@@ -37,7 +37,7 @@ async function updateUserPhoto(userId, filePath) {
 }
 
 async function main() {
-  updateUserPhoto(1, imagePath)
+  updateUserPhoto(2505157, imagePath)
     .then(() => console.log('Photo update completed'))
     .catch(err => console.error('Error in photo update:', err));
 }

@@ -45,12 +45,12 @@ function generateRoutine(res) {
   //database sql works properly
   //some dummy data for now
   routine = {
-    Monday: ["Math - 09:00", "Physics - 11:00"],
-    Tuesday: ["Chemistry - 10:00"],
+    Monday: ["Math - 09:00", "Physics - 11:00","Chemistry - 10:00","Chemistry - 10:00","Chemistry - 10:00"],
+    Tuesday: ["Math - 09:00", "Physics - 11:00","Chemistry - 10:00","Chemistry - 10:00","Chemistry - 10:00"],
     Wednesday: ["Free Day"],
-    Thursday: ["ICT - 12:00"],
-    Friday: ["Math - 09:00", "Physics - 11:00"],
-    Saturday: ["Mock Test - 11:00"],
+    Thursday: ["Math - 09:00", "Physics - 11:00","Chemistry - 10:00","Chemistry - 10:00","Chemistry - 10:00"],
+    Friday: ["Math - 09:00", "Physics - 11:00","Chemistry - 10:00","Chemistry - 10:00","Chemistry - 10:00"],
+    Saturday: ["Math - 09:00", "Physics - 11:00","Chemistry - 10:00","Chemistry - 10:00","Chemistry - 10:00"],
     Sunday: ["Holiday"]
   }
   return routine;

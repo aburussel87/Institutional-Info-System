@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom'; // ADD THIS
-import Header  from '../pages/header';
+import Header from '../pages/header';
 import API_BASE_URL from '../config/config';
 import { Bar } from 'react-chartjs-2';
 import '../styles/dashboard.css'
+import Calendar from 'react-calendar';
+import 'react-calendar/dist/Calendar.css';
 
 import {
   Chart as ChartJS,
@@ -31,44 +33,44 @@ const Dashboard = () => {
 
   // Fetch dashboard data on mount
   useEffect(() => {
-  const token = localStorage.getItem('token');
-  if (!token) {
-    alert('You are not logged in!');
-    setTimeout(() => navigate('/login'), 1000);
-    return;
-  }
-
-  (async () => {
-    try {
-      const response = await fetch(`${API_BASE_URL}/dashboard`, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        alert('Failed to load dashboard: ' + (error.error || 'Unknown error'));
-        setTimeout(() => navigate('/login'), 1000);
-        return;
-      }
-
-      const data = await response.json();
-      setUser(data.user);
-
-      const today = new Date();
-      const weekday = today.toLocaleDateString('en-US', { weekday: 'long' });
-      const formattedDate = today.toLocaleDateString('en-GB'); // dd/mm/yyyy
-      setCurrentDate(`${weekday}, ${formattedDate}`);
-
-      setRoutine(data.routine?.[weekday] || ["No classes scheduled."]);
-    } catch (err) {
-      setMsg(err.message || 'Unknown error');
+    const token = localStorage.getItem('token');
+    if (!token) {
+      alert('You are not logged in!');
       setTimeout(() => navigate('/login'), 1000);
+      return;
     }
-  })();
-}, [navigate]);
+
+    (async () => {
+      try {
+        const response = await fetch(`${API_BASE_URL}/dashboard`, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (!response.ok) {
+          const error = await response.json();
+          alert('Failed to load dashboard: ' + (error.error || 'Unknown error'));
+          setTimeout(() => navigate('/login'), 1000);
+          return;
+        }
+
+        const data = await response.json();
+        setUser(data.user);
+
+        const today = new Date();
+        const weekday = today.toLocaleDateString('en-US', { weekday: 'long' });
+        const formattedDate = today.toLocaleDateString('en-GB'); // dd/mm/yyyy
+        setCurrentDate(`${weekday}, ${formattedDate}`);
+
+        setRoutine(data.routine?.[weekday] || ["No classes scheduled."]);
+      } catch (err) {
+        setMsg(err.message || 'Unknown error');
+        setTimeout(() => navigate('/login'), 1000);
+      }
+    })();
+  }, [navigate]);
 
 
   // Chart data and options
@@ -106,37 +108,45 @@ const Dashboard = () => {
 
   return (
     <div className="main-content container mt-4">
-      <Header/>
+      <Header />
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h1 className="h4">Welcome to the Dashboard{user ? `, ${user.user_id || ''}` : ''}</h1>
       </div>
       {msg && (
-    <div className="alert alert-warning text-center">
-      {msg}
-    </div>
-  )}
+        <div className="alert alert-warning text-center">
+          {msg}
+        </div>
+      )}
 
       <div className="row">
-        <div id="routine" className="col-md-6 col-lg-4 mb-4">
-          <div className="card shadow-sm">
-            <div className="card-body">
-              <h5 className="card-title">Today's Routine</h5>
-              <p className="card-text">{currentDate}</p>
-              <ul className="list-group" id="routineList">
-                {routine.map((item, idx) => (
-                  <li key={idx} className="list-group-item">{item}</li>
-                ))}
-              </ul>
-            </div>
-          </div>
-        </div>
+        <div className="row equal-height">
+  <div id="routine" className="col-md-6 col-lg-6 mb-4">
+    <div className="card shadow-sm">
+      <div className="card-body">
+        <h5 className="card-title">Today's Routine</h5>
+        <p className="card-text">{currentDate}</p>
+        <ul className="list-group" id="routineList">
+          {routine.map((item, idx) => (
+            <li key={idx} className="list-group-item">{item}</li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  </div>
 
-        <div id="achievement" className="col-md-6 col-lg-4 mb-4">
-          <h4>Achievements</h4>
-          <div id="achievement-list" className="card shadow-sm p-3">
-            <p className="card-text">This is another card with some content.</p>
-          </div>
+  <div id="calendar" className="col-md-6 col-lg-6 mb-4">
+    <div className="card shadow-sm equal-height">
+      <div className="card-body d-flex flex-column">
+        <h5 className="card-title">Calendar</h5>
+        <div className="flex-grow-1">
+          <Calendar />
         </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
       </div>
 
       <div className="card shadow-sm mb-4">

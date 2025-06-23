@@ -4,7 +4,7 @@ import Login from './pages/login';
 import Dashboard from './pages/dashboard';
 import Gradesheet  from './pages/gradesheet';
 import UserInfo from './pages/userInfo';
-
+import UserDetails from './pages/user';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 // Simple auth check based on token existence
@@ -31,6 +31,7 @@ export default function App() {
         <Route path="/gradesheet" element={<Gradesheet />} />
         <Route path="/userInfo" element={<UserInfo/>}/>
         <Route path="*" element={<Navigate to="/login" />} />
+        <Route path="/user/:userId" element={<UserDetails />} />
       </Routes>
     </Router>
   );

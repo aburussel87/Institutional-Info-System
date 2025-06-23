@@ -10,8 +10,54 @@ const {generateRoutine, formatGradeSheet} = require('../utils');
 // getUserNotifications(userId, role) – Retrieves relevant notifications for a user based on their role.
 // getGradeSheet(uid) – Returns a student's formatted gradesheet including GPA and course info.
 // updateLogin(uid) – Increments login attempt count and updates last login timestamp for a user.
+// getUser(uid) – Fetches detailed user information including role-specific data.
+// getImage(uid) – Retrieves the profile image of a user based on their ID.
 
 
+async function getUser(uid) {
+  try {
+    let user = {
+      user_table: [],
+      role_table: []
+    }
+    let query = 'SELECT * FROM "User" where user_id = $1';
+    let result = await client.query(query,[uid]);
+    if (result.rows.length === 0) {
+      return null;
+    }
+    user.user_table = result.rows[0];
+    if(result.rows[0].role === 'Student'){
+      query = 'SELECT * FROM student where student_id = $1';
+      result = await client.query(query,[uid]);
+    }else if(result.rows[0].role === 'Teacher'){
+      query = 'SELECT * FROM teacher where teacher_id = $1';
+      result = await client.query(query,[uid]);
+    }else if(result.rows[0].role === 'Admin'){
+      query = 'SELECT * FROM admin where admin_id = $1';
+      result = await client.query(query,[uid]);
+    }
+    user.role_table = result.rows[0];
+    return user;
+  } catch (err) {
+    console.error('Error fetching user info:', err);
+    throw err;
+  }
+}
+
+async function getImage(uid) {
+  try {
+    const query = 'SELECT photo FROM "User" WHERE user_id = $1';
+    const result = await client.query(query, [uid]);
+
+    if (result.rows.length === 0) {
+      return null;
+    }
+    return result.rows[0];
+  } catch (err) {
+    console.error('Error fetching user info:', err);
+    throw err;
+  }
+}
 async function getUserInfo(uid) {
   try {
     const query = 'SELECT * FROM "User" WHERE user_id = $1';
@@ -186,7 +232,7 @@ module.exports = {
   getUserNotifications,
   getGradeSheet,
   getAllUser,
-  updateLogin
+  updateLogin,
+  getUser,
+  getImage
 };
-
-

@@ -1,88 +1,78 @@
-
-
-body {
-    margin: 0;
-    font-family: Arial, sans-serif;
-  }
-
-.main-content{
-    padding-top: 60px;
+.main-content {
+  padding-top: 50px;
 }
 
-  main {
-    margin-top: 60px;
-    padding: 20px;
-    top: 10vh;
-  }
-
-  /* Make hamburger icon white */
-  .hamburger-btn {
-    color: white;
-  }
-
-  #achievement {
-    background-color: #32c6e0;
-    padding: 20px;
-    border-radius: 5px;
-    margin: 20px;
-    width: 60%;
-}
-#achievement-list{
-    background-color: #bacf31;
-    padding: 20px;
-    border-radius: 5px;
-    height: 80%;
-}
-#routine{
-    width: 30%;
+.card-title {
+  font-weight: 600;
+  font-size: 1.2rem;
 }
 
-@media (max-width: 500px) {
-  header {
-    flex-direction: row;
-    height: auto;
-    padding: 10px;
-    text-align: center;
+.card {
+  border-radius: 12px;
+  border: none;
+  transition: box-shadow 0.3s ease;
+}
+
+.card:hover {
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+}
+
+.card-body {
+  padding: 20px;
+}
+
+h1.h4 {
+  font-weight: bold;
+  color: #333;
+}
+
+#routineList {
+  max-height: 100%;
+  overflow-y: auto;
+}
+
+.react-calendar {
+  width: 100% !important;
+  border: none;
+  font-family: inherit;
+  line-height: 1.125em;
+}
+
+.react-calendar__tile--active {
+  background: #007bff;
+  color: white;
+}
+.equal-height {
+  display: flex;
+  flex-direction: row;
+  height: 100%;
+}
+
+.equal-height .card {
+  flex: 1;
+  display: flex;
+  flex-direction: row;
+}
+
+.equal-height .card-body {
+  flex-grow: 1;
+}
+
+
+
+
+@media (max-width: 768px) {
+  .card-body {
+    padding: 15px;
+  }
+.equal-height {
+    display: block;
+  }
+  .row > div {
+    margin-bottom: 1.5rem;
   }
 
-  .header-logo img {
-    max-height: 6vh;
-  }
-
-  .header-info {
-    margin-left: 0;
-    margin-top: 5px;
-    text-align: center;
-  }
-
-  .header-search,
-  .header-notification {
-    margin-left: 10px;
-    margin-right: 5px;
-    margin-top: 10px;
-  }
-
-  .institution-name {
-    font-size: 1em;
-    display: none;
-  }
-
-  .institution-location {
-    font-size: 0.8em;
-    display: none;
-  }
-
-  #achievement,
-  #routine {
-    width: 100%;
-    margin: 10px 0;
-  }
-
-  #achievement-list {
-    height: auto;
-  }
-
-  main {
-    padding: 10px;
+  .react-calendar {
+    font-size: 0.9rem;
   }
 }
