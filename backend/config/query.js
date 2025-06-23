@@ -17,7 +17,7 @@ async function getUserInfo(uid) {
 
 async function getAllUser() {
   try {
-    const query = 'SELECT * FROM "User" s where mod(user_id,2)=0';
+    const query = 'SELECT * FROM "User"';
     const result = await client.query(query);
 
     if (result.rows.length === 0) {
