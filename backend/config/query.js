@@ -1,5 +1,17 @@
 const client = require('./db');
 const {generateRoutine, formatGradeSheet} = require('../utils');
+
+
+// getUserInfo(uid) – Fetches all user information for a given user ID.
+// getAllUser() – Retrieves all users from the database.
+// getRoleInfo(uid) – (Empty) Intended to fetch role-specific info for a user.
+// getStudentRoutine(studentId) – Gets the class schedule (routine) for a student based on current semester.
+// getTeacherRoutine(teacherId) – Gets the class schedule (routine) for a teacher based on subject allocations.
+// getUserNotifications(userId, role) – Retrieves relevant notifications for a user based on their role.
+// getGradeSheet(uid) – Returns a student's formatted gradesheet including GPA and course info.
+// updateLogin(uid) – Increments login attempt count and updates last login timestamp for a user.
+
+
 async function getUserInfo(uid) {
   try {
     const query = 'SELECT * FROM "User" WHERE user_id = $1';
