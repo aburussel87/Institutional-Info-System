@@ -155,6 +155,17 @@ const result = await client.query(query,[uid]);
   return formatGradeSheet(result.rows);
 }
 
+
+async function updateLogin(uid) {
+  try {
+    const query = 'UPDATE "User" SET "login_attempts" = "login_attempts" + 1, last_login = CURRENT_TIMESTAMP WHERE "user_id" = $1';
+    const result = await client.query(query, [uid]);
+  } catch (err) {
+    console.error('Error fetching user info:', err);
+    throw err;
+  }
+}
+
 module.exports = {
   getUserInfo,
   getRoleInfo,
@@ -162,5 +173,8 @@ module.exports = {
   getTeacherRoutine,
   getUserNotifications,
   getGradeSheet,
-  getAllUser
+  getAllUser,
+  updateLogin
 };
+
+

@@ -2,7 +2,9 @@ const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const pool = require('../config/db'); 
+const pool = require('../config/db');
+const { updateLogin } = require('../config/query');
+const { use } = require('react');
 require('dotenv').config();
 
 async function authenticateUser(username, password) {
@@ -16,7 +18,7 @@ async function authenticateUser(username, password) {
   if (!isMatch) {
     throw new Error('Invalid credentials');
   }
-
+  updateLogin(user.user_id);
   const token = jwt.sign(
     { userId: user.user_id, role: user.role },
     process.env.JWT_SECRET,
