@@ -1,0 +1,63 @@
+/* Gradesheet custom styles */
+
+body {
+  background-color: #f3e9e2;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  margin: 0;
+  padding: 0;
+}
+main {
+  padding: 60px;
+}
+
+h3 {
+  font-weight: bold;
+  margin-bottom: 1rem;
+}
+
+#gradesheet {
+  margin-top: 3rem;
+}
+
+label {
+  font-weight: 600;
+}
+
+select#levelTermSelect {
+  max-width: 300px;
+}
+
+table th,
+table td {
+  text-align: center;
+  vertical-align: middle;
+}
+
+#termGPA,
+#totalCredits,
+#totalCGPA {
+  font-weight: bold;
+  color: #0d6efd;
+}
+
+hr {
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+}
+
+@media (max-width: 576px) {
+  #gradesheet {
+    padding: 20px;
+  }
+  main {
+    padding: 60px;
+  }
+  table th,
+  table td {
+    font-size: 0.9rem;
+  }
+
+  #gradesheet {
+    overflow-x: auto;
+  }
+}

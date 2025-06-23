@@ -1,0 +1,56 @@
+/* Background gradient and full screen */
+.login-page {
+  background: linear-gradient(90deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+  min-height: 100vh;
+  padding: 1rem;
+  box-sizing: border-box;
+}
+
+/* Glass card style */
+.login-card {
+  background: rgba(255 255 255 / 0.1);
+  backdrop-filter: blur(15px);
+  border: 1px solid rgba(255 255 255 / 0.2);
+  max-width: 400px;
+  width: 100%;
+  color: #e0e7ff;
+}
+
+/* Logo styling */
+.logo {
+  max-width: 100px;
+  filter: drop-shadow(0 0 8px #00f7ff);
+}
+
+/* Signup link */
+.signup-text a:hover {
+  text-decoration: underline;
+}
+
+/* Customize the password toggle button */
+.btn-outline-secondary {
+  background: rgba(255 255 255 / 0.2);
+  border: none;
+  color: #00f7ff;
+  font-size: 1.2rem;
+  transition: background-color 0.3s ease;
+}
+
+.btn-outline-secondary:hover,
+.btn-outline-secondary:focus {
+  background: rgba(0 247 255 / 0.4);
+  color: #000;
+  outline: none;
+  box-shadow: none;
+}
+
+/* Responsive tweaks */
+@media (max-width: 480px) {
+  .login-card {
+    padding: 1.5rem;
+  }
+
+  .btn-lg {
+    font-size: 1.1rem;
+  }
+}

@@ -1,0 +1,88 @@
+
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+  }
+
+.main-content{
+    padding-top: 60px;
+}
+
+  main {
+    margin-top: 60px;
+    padding: 20px;
+    top: 10vh;
+  }
+
+  /* Make hamburger icon white */
+  .hamburger-btn {
+    color: white;
+  }
+
+  #achievement {
+    background-color: #32c6e0;
+    padding: 20px;
+    border-radius: 5px;
+    margin: 20px;
+    width: 60%;
+}
+#achievement-list{
+    background-color: #bacf31;
+    padding: 20px;
+    border-radius: 5px;
+    height: 80%;
+}
+#routine{
+    width: 30%;
+}
+
+@media (max-width: 500px) {
+  header {
+    flex-direction: row;
+    height: auto;
+    padding: 10px;
+    text-align: center;
+  }
+
+  .header-logo img {
+    max-height: 6vh;
+  }
+
+  .header-info {
+    margin-left: 0;
+    margin-top: 5px;
+    text-align: center;
+  }
+
+  .header-search,
+  .header-notification {
+    margin-left: 10px;
+    margin-right: 5px;
+    margin-top: 10px;
+  }
+
+  .institution-name {
+    font-size: 1em;
+    display: none;
+  }
+
+  .institution-location {
+    font-size: 0.8em;
+    display: none;
+  }
+
+  #achievement,
+  #routine {
+    width: 100%;
+    margin: 10px 0;
+  }
+
+  #achievement-list {
+    height: auto;
+  }
+
+  main {
+    padding: 10px;
+  }
+}

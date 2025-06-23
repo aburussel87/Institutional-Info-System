@@ -1,0 +1,14 @@
+.container {
+  max-width: 900px;
+}
+.main-content{
+    padding-top: 50px;
+}
+h2 {
+  font-weight: 600;
+  color: #343a40;
+}
+
+.table th, .table td {
+  vertical-align: middle;
+}
