@@ -17,29 +17,59 @@ const client = new Pool({
   port: '5432'
 });
 
-async function updateUserPhoto(userId, filePath) {
+async function getUser(uid) {
   try {
-    await client.connect();
+    let user = {
+      user_table: [],
+      role_table: [],
+      emergency_contact: []
+    };
 
-    
-    const imageBuffer = fs.readFileSync(filePath);
+    // Get user general info
+    let query = 'SELECT * FROM "User" WHERE user_id = $1';
+    let result = await client.query(query, [uid]);
 
-    const query = `UPDATE "User" SET photo = $1 WHERE user_id = $2`;
-    const values = [imageBuffer, userId];
+    if (result.rows.length === 0) {
+      return null;
+    }
 
-    await client.query(query, values);
-    console.log(`Photo updated for user ID: ${userId}`);
+    user.user_table = result.rows[0];
+
+    // Get role-specific data
+    const role = result.rows[0].role;
+    if (role === 'Student') {
+      query = 'SELECT * FROM student WHERE student_id = $1';
+    } else if (role === 'Teacher') {
+      query = 'SELECT * FROM teacher WHERE teacher_id = $1';
+    } else if (role === 'Admin') {
+      query = 'SELECT * FROM admin WHERE admin_id = $1';
+    }
+
+    result = await client.query(query, [uid]);
+    user.role_table = result.rows[0];
+
+    // Get emergency contact info
+    const contactQuery = 'SELECT * FROM emergencycontact WHERE user_id = $1';
+    const contactResult = await client.query(contactQuery, [uid]);
+    if (contactResult.rows.length > 0) {
+      user.emergency_contact = contactResult.rows;
+    }
+
+    return user;
+
   } catch (err) {
-    console.error('Error updating user photo:', err);
-  } finally {
-    await client.end();
+    console.error('Error fetching user info:', err);
+    throw err;
   }
 }
 
+
 async function main() {
-  updateUserPhoto(1, imagePath)
-    .then(() => console.log('Photo update completed'))
-    .catch(err => console.error('Error in photo update:', err));
+  getUser(2509003)
+    .then(user => {
+      console.log('User details fetched successfully:', user);
+    })
+    .catch(err => console.error('Error fetching user details:', err));
 }
 
 main();

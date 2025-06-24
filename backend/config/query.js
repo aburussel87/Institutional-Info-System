@@ -1,5 +1,5 @@
 const client = require('./db');
-const {generateRoutine, formatGradeSheet} = require('../utils');
+const { generateRoutine, formatGradeSheet } = require('../utils');
 
 
 // getUserInfo(uid) – Fetches all user information for a given user ID.
@@ -18,26 +18,40 @@ async function getUser(uid) {
   try {
     let user = {
       user_table: [],
-      role_table: []
-    }
-    let query = 'SELECT * FROM "User" where user_id = $1';
-    let result = await client.query(query,[uid]);
+      role_table: [],
+      emergency_contact: []
+    };
+
+    // Get user general info
+    let query = 'SELECT * FROM "User" WHERE user_id = $1';
+    let result = await client.query(query, [uid]);
+
     if (result.rows.length === 0) {
       return null;
     }
+
     user.user_table = result.rows[0];
-    if(result.rows[0].role === 'Student'){
-      query = 'SELECT * FROM student where student_id = $1';
-      result = await client.query(query,[uid]);
-    }else if(result.rows[0].role === 'Teacher'){
-      query = 'SELECT * FROM teacher where teacher_id = $1';
-      result = await client.query(query,[uid]);
-    }else if(result.rows[0].role === 'Admin'){
-      query = 'SELECT * FROM admin where admin_id = $1';
-      result = await client.query(query,[uid]);
+
+    const role = result.rows[0].role;
+    if (role === 'Student') {
+      query = 'SELECT * FROM student WHERE student_id = $1';
+    } else if (role === 'Teacher') {
+      query = 'SELECT * FROM teacher WHERE teacher_id = $1';
+    } else if (role === 'Admin') {
+      query = 'SELECT * FROM admin WHERE admin_id = $1';
     }
+
+    result = await client.query(query, [uid]);
     user.role_table = result.rows[0];
+
+    const contactQuery = 'SELECT * FROM emergencycontact WHERE user_id = $1';
+    const contactResult = await client.query(contactQuery, [uid]);
+    if (contactResult.rows.length > 0) {
+      user.emergency_contact = contactResult.rows;
+    }
+
     return user;
+
   } catch (err) {
     console.error('Error fetching user info:', err);
     throw err;
@@ -194,7 +208,7 @@ async function getUserNotifications(userId, role) {
   }
 }
 
-async function getGradeSheet(uid){
+async function getGradeSheet(uid) {
   const query = `
   SELECT 
   s.student_id,
@@ -209,7 +223,7 @@ JOIN student s ON cr.student_id = s.student_id
 WHERE s.student_id = $1
 ORDER BY cr.semester;
   `;
-const result = await client.query(query,[uid]);
+  const result = await client.query(query, [uid]);
   return formatGradeSheet(result.rows);
 }
 
