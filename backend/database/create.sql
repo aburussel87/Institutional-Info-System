@@ -7,7 +7,7 @@ CREATE TYPE FeeStatus AS ENUM ('Paid', 'Unpaid', 'Partial');
 CREATE TYPE Semester AS ENUM ('L1T1', 'L1T2', 'L2T1', 'L2T2', 'L3T1', 'L3T2', 'L4T1', 'L4T2');
 CREATE TYPE AssignmentType AS ENUM ('Permanent', 'Temporary');
 CREATE TYPE UserRole AS ENUM ('Student', 'Teacher', 'Admin');
-CREATE TYPE SectionType As  ENUM ('A1','A2','B1','B2','C1','C2');
+
 
 
 CREATE TABLE "User" (
@@ -25,6 +25,7 @@ CREATE TABLE "User" (
   login_attempts INT DEFAULT 0,
   two_fa_enabled BOOLEAN DEFAULT FALSE
 );
+ALTER TABLE "User" ADD COLUMN photo BYTEA;
 
 CREATE TABLE Admin (
   admin_id INT PRIMARY KEY,
@@ -127,7 +128,7 @@ CREATE TABLE Enrollment (
   semester Semester,
   enrolled_on DATE,
   approved_by VARCHAR(10),
-  section_type SectionType,
+  section_type VARCHAR(5),
   PRIMARY KEY (student_id, course_id, semester),
   FOREIGN KEY (student_id) REFERENCES Student(student_id) ON DELETE CASCADE,
   FOREIGN KEY (course_id) REFERENCES Course(course_id) ON DELETE CASCADE
@@ -181,7 +182,7 @@ CREATE TABLE Attendance (
 CREATE TABLE ClassSchedule (
   schedule_id VARCHAR(10) PRIMARY KEY,
   course_id VARCHAR(10) NOT NULL,
-  section_type SectionType,
+  section_type VARCHAR(5),
   room_id VARCHAR(10),
   day_of_week VARCHAR(10),
   start_time TIME,
@@ -195,7 +196,7 @@ CREATE TABLE ClassSchedule (
 CREATE TABLE SubjectAllocation (
   teacher_id INT NOT NULL,
   course_id VARCHAR(10) NOT NULL,
-  section_type SectionType,
+  section_type VARCHAR(5),
   academic_session VARCHAR(8),
   PRIMARY KEY (teacher_id, course_id, section_type),
   FOREIGN KEY (teacher_id) REFERENCES Teacher(teacher_id),
@@ -241,18 +242,9 @@ CREATE TABLE StudentFee (
   FOREIGN KEY (fee_type_id) REFERENCES FeeType(fee_type_id)
 );
 
-CREATE TABLE Notice (
-  notice_id VARCHAR(10) PRIMARY KEY,
-  title VARCHAR(100),
-  message TEXT,
-  created_for VARCHAR(10) NOT NULL,
-  created_by VARCHAR(10) NOT NULL,
-  created_at TIMESTAMP,
-  role UserRole
-);
 
 CREATE TABLE Notification (
-  notification_id VARCHAR(10) PRIMARY KEY,
+  notification_id SERIAL PRIMARY KEY,
   title VARCHAR(100),
   message TEXT,
   created_by VARCHAR(10) NOT NULL,
@@ -290,7 +282,7 @@ CREATE TABLE Feedback (
 );
 
 CREATE TABLE EmergencyContact (
-  emergency_id VARCHAR(10) PRIMARY KEY,
+  emergency_id SERIAL PRIMARY KEY,
   user_id INT UNIQUE NOT NULL,
   name VARCHAR(50),
   mobile VARCHAR(15),
@@ -348,3 +340,4 @@ CREATE TABLE AuditLog (
   timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (user_id) REFERENCES "User"(user_id)
 );
+
