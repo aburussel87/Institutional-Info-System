@@ -3,7 +3,14 @@ departments = {
     'EEE': 2,
     'Math': 5,
     'Physics': 6,
-    'Civil': 10
+    'Civil': 10,
+    'BME': 3,
+    'NCE': 4,
+    'Chemical': 7,
+    'Chemistry': 8,
+    'MME': 9,
+    'Mechanical': 11,
+    'Architecture': 12
 }
 
 prefixes = {
@@ -11,7 +18,14 @@ prefixes = {
     'EEE': 'EEE',
     'Math': 'MATH',
     'Physics': 'PHY',
-    'Civil': 'CE'
+    'Civil': 'CE',
+    'BME': 'BME',
+    'NCE': 'NCE',
+    'Chemical': 'CHE',
+    'Chemistry': 'CHM',
+    'MME': 'MME',
+    'Mechanical': 'ME',
+    'Architecture': 'ARC'
 }
 
 semesters = ['L1T1', 'L1T2', 'L2T1', 'L2T2', 'L3T1', 'L3T2', 'L4T1', 'L4T2']
@@ -66,7 +80,50 @@ course_titles = {
         ('Soil Lab', 1.5),
         ('Hydraulics', 3),
         ('Hydraulics Lab', 1.5)
+    ],
+    'BME': [
+        ('Human Physiology', 3), ('Physiology Lab', 1.5),
+        ('Biomechanics', 3), ('Biomechanics Lab', 1.5),
+        ('Biomaterials', 3), ('Biomaterials Lab', 1.5),
+        ('Biomedical Signals', 3), ('Signals Lab', 1.5)
+    ],
+    'NCE': [
+        ('Environmental Chemistry', 3), ('Chemistry Lab', 1.5),
+        ('Water Treatment', 3), ('Treatment Lab', 1.5),
+        ('Air Pollution Control', 3), ('Air Lab', 1.5),
+        ('Waste Management', 3), ('Waste Lab', 1.5)
+    ],
+    'Chemical': [
+        ('Chemical Process', 3), ('Process Lab', 1.5),
+        ('Transport Phenomena', 3), ('Transport Lab', 1.5),
+        ('Thermodynamics', 3), ('Thermo Lab', 1.5),
+        ('Reactor Design', 3), ('Reactor Lab', 1.5)
+    ],
+    'Chemistry': [
+        ('Inorganic Chemistry', 3), ('Inorganic Lab', 1.5),
+        ('Organic Chemistry', 3), ('Organic Lab', 1.5),
+        ('Physical Chemistry', 3), ('Physical Lab', 1.5),
+        ('Analytical Chemistry', 3), ('Analytical Lab', 1.5)
+    ],
+    'MME': [
+        ('Materials Science', 3), ('Materials Lab', 1.5),
+        ('Physical Metallurgy', 3), ('Metallurgy Lab', 1.5),
+        ('Mechanical Behavior', 3), ('Behavior Lab', 1.5),
+        ('Welding Technology', 3), ('Welding Lab', 1.5)
+    ],
+    'Mechanical': [
+        ('Thermodynamics', 3), ('Thermo Lab', 1.5),
+        ('Fluid Mechanics', 3), ('Fluids Lab', 1.5),
+        ('Heat Transfer', 3), ('Heat Lab', 1.5),
+        ('Machine Design', 3), ('Design Lab', 1.5)
+    ],
+    'Architecture': [
+        ('Architectural Design', 3), ('Design Studio', 1.5),
+        ('History of Architecture', 3), ('History Lab', 1.5),
+        ('Building Materials', 3), ('Materials Lab', 1.5),
+        ('Urban Planning', 3), ('Planning Lab', 1.5)
     ]
+
 }
 
 course_counter = {}
@@ -94,7 +151,7 @@ with open('courses.txt', 'w') as f:
                     if last_digit % 2 == 0:
                         last_digit = (last_digit + 1) % 10
 
-                course_id = f"{prefix}{level}{course_num // 10}{last_digit}"
+                course_id = f"{prefix}{course_num // 10}{last_digit}"
 
                 prerequisite = 'NULL'
                 if level > 1 and 'Lab' not in title:
