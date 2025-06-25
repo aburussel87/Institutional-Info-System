@@ -6,7 +6,7 @@ const path = require('path');
 const fs = require('fs');
 const { get } = require('axios');
 
-const imagePath = path.join(__dirname, '../database/images/logo.png'); 
+const imagePath = path.join(__dirname, '../database/images/logo.png');
 
 
 const client = new Pool({
@@ -21,13 +21,13 @@ async function updateUserPhoto(userId, filePath) {
   try {
     await client.connect();
 
-    
+
     const imageBuffer = fs.readFileSync(filePath);
-
-    const query = `UPDATE "User" SET photo = $1 WHERE user_id = $2`;
-    const values = [imageBuffer, userId];
-
-    await client.query(query, values);
+    await client.query(`UPDATE "User" SET photo = $1 WHERE user_id = $2`, [imageBuffer, 2505002]);
+    // const result = await client.query('SELECT user_id FROM "User"');
+    // for (const user of result.rows) {
+    //   await client.query(`UPDATE "User" SET photo = $1 WHERE user_id = $2`, [imageBuffer, user.user_id]);
+    // }
     console.log(`Photo updated for user ID: ${userId}`);
   } catch (err) {
     console.error('Error updating user photo:', err);

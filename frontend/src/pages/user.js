@@ -70,7 +70,7 @@ const UserDetails = () => {
             <div className="main-content container mt-5">
                 <div className="glass-card p-4 rounded-4 shadow-lg">
                     <div className="row align-items-center">
-                        {/* Image */}
+                     
                         <div className="col-md-4 text-center mb-4 mb-md-0">
                             <h5 className="mb-3 fw-bold border-bottom pb-2">User Information</h5>
                             <img
@@ -84,7 +84,6 @@ const UserDetails = () => {
                         </div>
 
 
-                        {/* Info */}
                         
                         <div className="col-md-8">
                             <div className="row mb-2">

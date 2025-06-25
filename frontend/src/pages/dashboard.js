@@ -6,6 +6,8 @@ import { Bar } from 'react-chartjs-2';
 import '../styles/dashboard.css'
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
+import CourseCards from './courseCard';
+
 
 import {
   Chart as ChartJS,
@@ -88,7 +90,7 @@ const Dashboard = () => {
 
         const today = new Date();
         const weekday = today.toLocaleDateString('en-US', { weekday: 'long' });
-        const formattedDate = today.toLocaleDateString('en-GB'); 
+        const formattedDate = today.toLocaleDateString('en-GB');
         setCurrentDate(`${weekday}, ${formattedDate}`);
 
         setRoutine(data.routine?.[weekday] || ["No classes scheduled."]);
@@ -144,44 +146,23 @@ const Dashboard = () => {
         </div>
       )}
       <div className="mb-4">
-  <button className="btn btn-primary" onClick={toggleCourses}>
-    {showCourses ? 'Hide Enrolled Courses' : 'Show Enrolled Courses'}
-  </button>
-</div>
-
-{showCourses && (
-  <div className="card shadow-sm mb-4">
-    <div className="card-body">
-      <h5 className="card-title">Enrolled Courses</h5>
-      {courses.length === 0 ? (
-        <p>No enrolled courses found.</p>
-      ) : (
-        <div className="table-responsive">
-      <table className="table table-bordered">
-        <thead className="thead-light">
-          <tr>
-            <th>Course ID</th>
-            <th>Title</th>
-            <th>Offered By</th>
-            <th>Teacher</th>
-          </tr>
-        </thead>
-        <tbody>
-          {courses.map((course, idx) => (
-            <tr key={idx}>
-              <td>{course.course_id}</td>
-              <td>{course.course_title}</td>
-              <td>{course.offered_by}</td>
-              <td>{course.teacher_name}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+        <button className="btn btn-primary" onClick={toggleCourses}>
+          {showCourses ? 'Hide Enrolled Courses' : 'Show Enrolled Courses'}
+        </button>
+      </div>
+      {showCourses && (
+        <div className="card shadow-sm mb-4">
+          <div className="card-body">
+            <h5 className="card-title">Enrolled Courses</h5>
+            {courses.length === 0 ? (
+              <p>No enrolled courses found.</p>
+            ) : (
+              <CourseCards courses={courses} />
+            )}
+          </div>
+        </div>
       )}
-    </div>
-  </div>
-)}
+
 
 
       <div className="row">
@@ -212,7 +193,12 @@ const Dashboard = () => {
           </div>
         </div>
 
-
+        {/* <img
+          src={`${API_BASE_URL}/user/photo/${user.user_id}`}
+          alt="User"
+          className="rounded-circle shadow-sm"
+          style={{ width: '180px', height: '180px', objectFit: 'cover', border: '4px solid white' }}
+        /> */}
       </div>
 
       <div className="card shadow-sm mb-4">

@@ -10,6 +10,7 @@ const UserInfo = () => {
   const [msg, setMsg] = useState('');
   const [filterRole, setFilterRole] = useState('All');
   const navigate = useNavigate();
+  
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -36,6 +37,7 @@ const UserInfo = () => {
         }
 
         const data = await response.json();
+        console.log('Fetched users:', data.users);
         setUsers(data.users || []);
       } catch (err) {
         setMsg(err.message || 'Unknown error');
@@ -55,7 +57,6 @@ const UserInfo = () => {
   const filteredUsers = filterRole === 'All'
     ? users
     : users.filter(user => user.role === filterRole);
-
   return (
     <>
       <Header />
@@ -73,33 +74,38 @@ const UserInfo = () => {
 
         {msg && <div className="alert alert-danger">{msg}</div>}
 
-        <table className="table table-striped table-bordered shadow-sm">
-          <thead className="table-dark">
-            <tr>
-              <th>User ID</th>
-              <th>Username</th>
-              <th>Role</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredUsers.length > 0 ? (
-              filteredUsers.map((user) => (
-                <tr key={user.user_id} style={{ cursor: 'pointer' }} onClick={() => handleRowClick(user.user_id)}>
-                  <td>{user.user_id}</td>
-                  <td>{user.username || 'N/A'}</td>
-                  <td>{user.role}</td>
-                </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan="3" className="text-center">No users found.</td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+        <div className="row">
+          {filteredUsers.length > 0 ? (
+            filteredUsers.map((user) => (
+              <div
+                key={user.user_id}
+                className="col-12 col-sm-6 col-md-4 col-lg-3 mb-4"
+                onClick={() => handleRowClick(user.user_id)}
+                style={{ cursor: 'pointer' }}
+              >
+                <div className="glass-card p-3 h-100 d-flex flex-column justify-content-between">
+                  <img
+                    src={`${API_BASE_URL}/user/photo/${user.user_id}`}
+                    alt="User"
+                    className="rounded-circle shadow-sm"
+                    style={{ width: '180px', height: '180px', objectFit: 'cover', border: '4px solid white' }}
+                  />
+                  <h5>User ID: {user.user_id}</h5>
+                  <p><strong>Username:</strong> {user.username || 'N/A'}</p>
+                  <p><strong>Role:</strong> {user.role}</p>
+                </div>
+              </div>
+            ))
+          ) : (
+            <div className="col-12">
+              <div className="alert alert-info">No users found.</div>
+            </div>
+          )}
+        </div>
       </div>
     </>
   );
+
 };
 
 export default UserInfo;
