@@ -30,32 +30,28 @@ function generateRoutine(res) {
   };
 
   for (const row of res.rows) {
-    const time = row.start_time.slice(0, 5);
+    const time = row.start_time.slice(0, 5); // Example: '09:00'
     const entry = `${row.course_title} - ${time}`;
-    if (!routine[row.day_of_week]) routine[row.day_of_week] = [];
+    if (!routine[row.day_of_week]) {
+      routine[row.day_of_week] = [];
+    }
     routine[row.day_of_week].push(entry);
   }
 
+  // Fill Free Day or Holiday
   for (const day in routine) {
     if (routine[day].length === 0) {
-      routine[day] = day === 'Sunday' ? ['Holiday'] : ['Free Day'];
+      if (day === 'Sunday') {
+        routine[day] = ['Holiday'];
+      } else {
+        routine[day] = ['Free Day'];
+      }
     }
   }
 
-  //database sql works properly
-  //some dummy data for now
-  routine = {
-    Monday: ["Math - 09:00", "Physics - 11:00","Chemistry - 10:00","Chemistry - 10:00","Chemistry - 10:00"],
-    Tuesday: ["Math - 09:00", "Physics - 11:00","Chemistry - 10:00","Chemistry - 10:00","Chemistry - 10:00"],
-    Wednesday: ["Free Day"],
-    Thursday: ["Math - 09:00", "Physics - 11:00","Chemistry - 10:00","Chemistry - 10:00","Chemistry - 10:00"],
-    Friday: ["Math - 09:00", "Physics - 11:00","Chemistry - 10:00","Chemistry - 10:00","Chemistry - 10:00"],
-    Saturday: ["Math - 09:00", "Physics - 11:00","Chemistry - 10:00","Chemistry - 10:00","Chemistry - 10:00"],
-    Sunday: ["Holiday"]
-  }
   return routine;
-
 }
+
 
 function formatGradeSheet(rows) {
   let result = {

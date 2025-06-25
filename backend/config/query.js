@@ -14,6 +14,32 @@ const { generateRoutine, formatGradeSheet } = require('../utils');
 // getImage(uid) – Retrieves the profile image of a user based on their ID.
 
 
+
+
+async function getEnrolledCourse(studentId) {
+    const query = `
+    SELECT 
+    e.course_id,
+    c.title AS course_title,
+    d.name AS offered_by,
+    COALESCE(u.username, 'Not Assigned') AS teacher_name
+FROM enrollment e
+JOIN course c ON e.course_id = c.course_id
+JOIN department d ON d.department_id = c.offered_by
+LEFT JOIN subjectallocation sa ON e.course_id = sa.course_id AND e.section_type = sa.section_type
+LEFT JOIN teacher t ON sa.teacher_id = t.teacher_id
+LEFT JOIN "User" u ON t.teacher_id = u.user_id
+WHERE e.student_id = $1;
+`
+  try {
+    const result = await client.query(query, [studentId]);
+    return result.rows;
+  } catch (err) {
+    console.error('Error fetching enrolled courses:', err);
+    throw err;
+  }
+}
+
 async function getUser(uid) {
   try {
     let user = {
@@ -110,20 +136,30 @@ async function getStudentRoutine(studentId) {
 
   const query = `
   SELECT 
-    cs.day_of_week,
-    c.title AS course_title,
-    cs.start_time
-  FROM "enrollment" e
-  JOIN "classschedule" cs 
-    ON e.course_id = cs.course_id 
-    AND e.section_type = cs.section_type 
-    AND e.semester = cs.semester
-  JOIN "course" c ON e.course_id = c.course_id
-  JOIN "student" s on e.semester = s.current_semester
-  WHERE e.student_id = $1 
-  ORDER BY cs.day_of_week, cs.start_time;
+                en.student_id, 
+                en.course_id, 
+                c.title AS course_title,
+                cs.day_of_week, 
+                cs.start_time, 
+                cs.end_time
+            FROM enrollment en
+            JOIN classschedule cs 
+                ON en.course_id = cs.course_id 
+                AND en.section_type = cs.section_type
+            JOIN course c ON en.course_id = c.course_id
+            WHERE en.student_id = $1
+            ORDER BY 
+                CASE 
+                    WHEN cs.day_of_week = 'Saturday' THEN 1
+                    WHEN cs.day_of_week = 'Sunday' THEN 2
+                    WHEN cs.day_of_week = 'Monday' THEN 3
+                    WHEN cs.day_of_week = 'Tuesday' THEN 4
+                    WHEN cs.day_of_week = 'Wednesday' THEN 5
+                    WHEN cs.day_of_week = 'Thursday' THEN 6
+                    WHEN cs.day_of_week = 'Friday' THEN 7
+                END,
+                cs.start_time;
 `;
-
 
   const res = await client.query(query, [studentId]);
   return generateRoutine(res);
@@ -248,5 +284,6 @@ module.exports = {
   getAllUser,
   updateLogin,
   getUser,
-  getImage
+  getImage,
+  getEnrolledCourse
 };
