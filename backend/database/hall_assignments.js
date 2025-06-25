@@ -3,18 +3,30 @@ const fs = require('fs');
 const path = require('path');
 
 const pool = new Pool({
-  user: 'system',
-  host: 'localhost',
-  database: 'postgres',
-  password: 'Russel87',
-  port: 5432,
+  user: process.env.PGUSER,
+  host: process.env.PGHOST,
+  database: process.env.PGDATABASE,
+  password: process.env.PGPASSWORD,
+  port: process.env.PGPORT,
 });
+
+
+function isResident() {
+  return Math.random() < 0.9; // 90% chance to be Resident
+}
 
 async function assignHallsToStudentsRoundRobin() {
   try {
     const client = await pool.connect();
 
-    const res = await client.query(`SELECT student_id FROM Student ORDER BY student_id`);
+    const res = await client.query(`
+      SELECT s.student_id, u.gender
+      FROM student s
+      JOIN "User" u ON s.student_id = u.user_id
+      WHERE s.student_id NOT IN (SELECT student_id FROM hallassignment)
+      ORDER BY RANDOM()
+    `);
+
     const students = res.rows;
 
     const halls = [
@@ -22,18 +34,20 @@ async function assignHallsToStudentsRoundRobin() {
       { hall_id: 2, name: 'Sher-e-Bangla Hall' },
       { hall_id: 3, name: 'Dr. MA Rashid Hall' },
       { hall_id: 4, name: 'Ahsanullah Hall' },
-      { hall_id: 5, name: 'Shadhinata Hall' },
       { hall_id: 6, name: 'Titumir Hall' },
     ];
+
+    const femaleStudents = students.filter(s => s.gender === 'Female');
+    const maleStudents = students.filter(s => s.gender === 'Male');
 
     const maxPerRoom = 5;
     const roomsPerHall = 100;
     const permanentStudents = [];
     const temporaryStudents = [];
 
-    for (let i = 0; i < students.length; i++) {
-      if (i % 50 >= 40) temporaryStudents.push(students[i]);
-      else permanentStudents.push(students[i]);
+    for (let i = 0; i < maleStudents.length; i++) {
+      if (i % 50 >= 40) temporaryStudents.push(maleStudents[i]);
+      else permanentStudents.push(maleStudents[i]);
     }
 
     const assigned = [];
@@ -48,18 +62,20 @@ async function assignHallsToStudentsRoundRobin() {
           const studentId = permanentStudents[studentIndex++].student_id;
           const assignedOn = new Date().toISOString();
 
-        
+          const residentStatus = isResident();
+          const roomNumberStr = residentStatus ? roomNumber.toString() : null;
+
           await client.query(
-            `INSERT INTO HallAssignment (student_id, hall_id, room_number, assignment_type, assigned_on)
+            `INSERT INTO HallAssignment (student_id, hall_id, room_number, resident, assigned_on)
              VALUES ($1, $2, $3, $4, $5)`,
-            [studentId, hall.hall_id, roomNumber.toString(), 'Permanent', assignedOn]
+            [studentId, hall.hall_id, roomNumberStr, residentStatus, assignedOn]
           );
 
           assigned.push({
             student_id: studentId,
             hall_id: hall.hall_id,
-            room_number: roomNumber.toString(),
-            assignment_type: 'Permanent',
+            room_number: roomNumberStr || '',
+            resident: residentStatus,
             assigned_on: assignedOn
           });
         }
@@ -71,27 +87,53 @@ async function assignHallsToStudentsRoundRobin() {
       const hall = halls[i % halls.length];
       const assignedOn = new Date().toISOString();
 
+      const residentStatus = isResident();
+      const roomNumberStr = residentStatus ? null : null; // No room for temporary students in your current logic
+
       await client.query(
-        `INSERT INTO HallAssignment (student_id, hall_id, room_number, assignment_type, assigned_on)
-         VALUES ($1, $2, NULL, $3, $4)`,
-        [studentId, hall.hall_id, 'Temporary', assignedOn]
+        `INSERT INTO HallAssignment (student_id, hall_id, room_number, resident, assigned_on)
+         VALUES ($1, $2, $3, $4, $5)`,
+        [studentId, hall.hall_id, roomNumberStr, residentStatus, assignedOn]
       );
 
       assigned.push({
         student_id: studentId,
         hall_id: hall.hall_id,
-        room_number: '',
-        assignment_type: 'Temporary',
+        room_number: roomNumberStr || '',
+        resident: residentStatus,
         assigned_on: assignedOn
       });
     }
-    const csvLines = ['student_id,hall_id,room_number,assignment_type,assigned_on'];
+
+    for (let i = 0; i < femaleStudents.length; i++) {
+      const studentId = femaleStudents[i].student_id;
+      const assignedOn = new Date().toISOString();
+
+      const residentStatus = isResident();
+      const roomNumberStr = residentStatus ? null : null; // No room logic defined for female students yet
+
+      await client.query(
+        `INSERT INTO HallAssignment (student_id, hall_id, room_number, resident, assigned_on)
+         VALUES ($1, $2, $3, $4, $5)`,
+        [studentId, 5, roomNumberStr, residentStatus, assignedOn]
+      );
+
+      assigned.push({
+        student_id: studentId,
+        hall_id: 5,
+        room_number: roomNumberStr || '',
+        resident: residentStatus,
+        assigned_on: assignedOn
+      });
+    }
+
+    const csvLines = ['student_id,hall_id,room_number,resident,assigned_on'];
     for (const row of assigned) {
       csvLines.push([
         row.student_id,
         row.hall_id,
         row.room_number,
-        row.assignment_type,
+        row.resident,
         row.assigned_on
       ].join(','));
     }

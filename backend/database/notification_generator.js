@@ -5,11 +5,11 @@ const path = require('path');
 const createCsvWriter = require('csv-writer').createObjectCsvWriter;
 
 const pool = new Pool({
-    user: 'system',
-    host: 'localhost',
-    database: 'postgres',
-    password: 'Russel87',
-    port: 5432,
+  user: process.env.PGUSER,
+  host: process.env.PGHOST,
+  database: process.env.PGDATABASE,
+  password: process.env.PGPASSWORD,
+  port: process.env.PGPORT,
 });
 
 const notificationTypes = ['admin', 'system', 'dean'];

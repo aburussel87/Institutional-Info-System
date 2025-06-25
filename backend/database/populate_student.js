@@ -3,13 +3,14 @@ const { faker } = require('@faker-js/faker');
 const fs = require('fs');
 require('dotenv').config();
 
-const client = new Client({
-    user: 'system',
-    host: 'localhost',
-    database: 'postgres',
-    password: 'Russel87',
-    port: '5432'
+const pool = new Pool({
+  user: process.env.PGUSER,
+  host: process.env.PGHOST,
+  database: process.env.PGDATABASE,
+  password: process.env.PGPASSWORD,
+  port: process.env.PGPORT,
 });
+
 
 client.connect();
 
@@ -40,7 +41,7 @@ function saveToCsvRow(data) {
 
 async function updateStudents() {
     try {
-        const res = await client.query(`SELECT user_id FROM "User" WHERE role = 'Student' and user_id > 2509003`);
+        const res = await client.query(`SELECT user_id FROM "User" WHERE role = 'Student' and username is null`);
         const students = res.rows;
 
         for (const { user_id } of students) {

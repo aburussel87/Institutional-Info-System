@@ -4,17 +4,17 @@ const { Client } = require('pg');
 const { faker } = require('@faker-js/faker');  
 require('dotenv').config();
 
-const client = new Client({
-    user: 'system',
-    host: 'localhost',
-    database: 'postgres',
-    password: 'Russel87',
-    port: '5432'
+const pool = new Pool({
+  user: process.env.PGUSER,
+  host: process.env.PGHOST,
+  database: process.env.PGDATABASE,
+  password: process.env.PGPASSWORD,
+  port: process.env.PGPORT,
 });
 
 client.connect();
 
-const NUM_TEACHERS_PER_DEPT = 20;
+const NUM_TEACHERS_PER_DEPT = 1;
 const PASSWORD_LENGTH = 8;
 const departments = {
     1: 'CSE', 2: 'EEE', 3: 'BME', 4: 'NCE',
@@ -62,7 +62,7 @@ function sanitizeUsername(name) {
     return name.toLowerCase().replace(/[^a-z\s]/g, '').replace(/\s+/g, '.');
 }
 
-function saveToCsvRow(userId, username, email, phone, dob, gender,password, hashed,deptCode, joinDate, lastLogin, filename = 'teachers.csv') {
+function saveToCsvRow(userId, username, email, phone, dob, gender,password, hashed,deptCode, joinDate, lastLogin, filename = 'admin.csv') {
     const header = 'ID,Username,Email,Phone,DOB,Gender,Hashed Password,Join Date,Last Login\n';
     const row = `${userId},${username},${email},${phone},${dob},${gender},${password},${hashed},Teacher,${deptCode},${joinDate},${lastLogin}\n`;
     if (!fs.existsSync(filename)) fs.writeFileSync(filename, header);
@@ -75,7 +75,7 @@ async function insertTeacher(userId, username, email, phone, dob, gender, hash, 
         text: `INSERT INTO "User" 
       (user_id, username, password_hash, email, phone, dob, gender, role, 
        date_joined, is_active, last_login, login_attempts, two_fa_enabled) 
-      VALUES ($1,$2,$3,$4,$5,$6,$7,'Teacher',$8,true,$9,0,false)`,
+      VALUES ($1,$2,$3,$4,$5,$6,$7,'Admin',$8,true,$9,0,false)`,
         values: [
             userId, username, hash, email, phone,
             dob, gender, joinDate, lastLogin
@@ -91,7 +91,7 @@ async function insertTeacher(userId, username, email, phone, dob, gender, hash, 
 }
 
 (async () => {
-    for (let deptCode = 1; deptCode <= 12; deptCode++) {
+    for (let deptCode = 1; deptCode <= 1; deptCode++) {
         console.log(`Generating for Dept ${deptCode} - ${departments[deptCode]}`);
         for (let i = 0; i < NUM_TEACHERS_PER_DEPT; i++) {
             const joinYear = Math.floor(Math.random() * 26) + 2000;

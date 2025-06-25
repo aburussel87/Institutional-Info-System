@@ -1,3 +1,5 @@
+import random
+
 departments = {
     'CSE': 1,
     'EEE': 2,
@@ -123,27 +125,27 @@ course_titles = {
         ('Building Materials', 3), ('Materials Lab', 1.5),
         ('Urban Planning', 3), ('Planning Lab', 1.5)
     ]
-
 }
 
+# ---------- Main Course Inserts ----------
 course_counter = {}
 
-with open('courses.txt', 'w') as f:
+with open('courses.sql', 'w') as f:
     f.write("-- Auto-generated courses insert statements --\n\n")
 
     for dept, dept_id in departments.items():
         prefix = prefixes[dept]
-        course_counter[dept] = 100  
+        course_counter[dept] = 100
 
         for sem in semesters:
-            level = int(sem[1])  
-            term = int(sem[-1])  
+            level = int(sem[1])
+            term = int(sem[-1])
 
             for i, (title, credit) in enumerate(course_titles[dept]):
                 course_num = course_counter[dept]
                 course_counter[dept] += 1
 
-                last_digit = (course_num % 10)
+                last_digit = course_num % 10
                 if 'Lab' in title:
                     if last_digit % 2 != 0:
                         last_digit = (last_digit + 1) % 10
@@ -157,7 +159,7 @@ with open('courses.txt', 'w') as f:
                 if level > 1 and 'Lab' not in title:
                     prev_level = level - 1
                     prereq_course_num = course_num - 100
-                    prereq_last_digit = (prereq_course_num % 10)
+                    prereq_last_digit = prereq_course_num % 10
                     if prereq_last_digit % 2 == 0:
                         prereq_last_digit = (prereq_last_digit + 1) % 10
                     prereq_id = f"{prefix}{prev_level}{term}{prereq_course_num // 10}{prereq_last_digit}"
@@ -167,7 +169,47 @@ with open('courses.txt', 'w') as f:
 
                 sql = (f"INSERT INTO Course (course_id, title, credit_hours, semester, offered_by, department_id, pre_requisite, still_offered) "
                        f"VALUES ('{course_id}', '{title}', {credit}, '{sem}', {dept_id}, {dept_id}, {prerequisite}, {still_offered});\n")
-
                 f.write(sql)
 
-print("courses.sql file generated with 320+ insert statements.")
+print("Main department courses saved to courses.sql")
+
+# ---------- Cross-Department Offered Courses ----------
+def generate_cross_department_courses():
+    with open('cross_department_courses.sql', 'w') as f:
+        f.write("-- Auto-generated cross-department course offering --\n\n")
+
+        for dept, dept_id in departments.items():
+            available_courses = course_titles[dept].copy()
+
+            if len(available_courses) < 8:
+                print(f"Warning: {dept} has less than 8 unique courses for cross-department offering.")
+                continue
+
+            selected_courses = random.sample(available_courses, 8)
+
+            for sem, (title, credit) in zip(semesters, selected_courses):
+                prefix = prefixes[dept]
+                random_number = random.randint(500, 999)
+                last_digit = random_number % 10
+
+                # Maintain even/odd logic
+                if 'Lab' in title:
+                    if last_digit % 2 != 0:
+                        last_digit = (last_digit + 1) % 10
+                else:
+                    if last_digit % 2 == 0:
+                        last_digit = (last_digit + 1) % 10
+
+                course_id = f"{prefix}{random_number // 10}{last_digit}"
+
+                # Random target department (not same as offering dept)
+                target_departments = [d_id for d_name, d_id in departments.items() if d_id != dept_id]
+                target_department = random.choice(target_departments)
+
+                sql = (f"INSERT INTO Course (course_id, title, credit_hours, semester, offered_by, department_id, pre_requisite, still_offered) "
+                       f"VALUES ('{course_id}', '{title}', {credit}, '{sem}', {dept_id}, {target_department}, NULL, TRUE);\n")
+                f.write(sql)
+
+    print("Cross-department courses saved to cross_department_courses.sql")
+
+generate_cross_department_courses()

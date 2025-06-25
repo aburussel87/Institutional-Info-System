@@ -9,13 +9,14 @@ const { get } = require('axios');
 const imagePath = path.join(__dirname, '../database/images/logo.png');
 
 
-const client = new Pool({
-  user: 'system',
-  host: 'localhost',
-  database: 'postgres',
-  password: 'Russel87',
-  port: '5432'
+const pool = new Pool({
+  user: process.env.PGUSER,
+  host: process.env.PGHOST,
+  database: process.env.PGDATABASE,
+  password: process.env.PGPASSWORD,
+  port: process.env.PGPORT,
 });
+
 
 async function updateUserPhoto(userId, filePath) {
   try {
@@ -23,7 +24,7 @@ async function updateUserPhoto(userId, filePath) {
 
 
     const imageBuffer = fs.readFileSync(filePath);
-    await client.query(`UPDATE "User" SET photo = $1 WHERE user_id = $2`, [imageBuffer, 2505002]);
+    await pool.query(`UPDATE "User" SET photo = $1 WHERE user_id = $2`, [imageBuffer, 2505002]);
     // const result = await client.query('SELECT user_id FROM "User"');
     // for (const user of result.rows) {
     //   await client.query(`UPDATE "User" SET photo = $1 WHERE user_id = $2`, [imageBuffer, user.user_id]);
