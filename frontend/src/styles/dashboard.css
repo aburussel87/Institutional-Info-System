@@ -1,78 +1,180 @@
+/* styles/dashboard.css */
+
+/* --- General Body & Container Styling --- */
+body {
+  background-color: #e0e5ec; /* Soft background color */
+  font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  color: #343a40; /* Darker text for contrast */
+}
+
 .main-content {
-  padding-top: 50px;
+  padding-top: 20px;
+  background-color: #e0e5ec; /* Match body background */
+  min-height: calc(100vh - 56px); /* Adjust based on header height */
+  border-radius: 20px; /* Overall rounded feel */
 }
 
-.card-title {
-  font-weight: 600;
-  font-size: 1.2rem;
-}
-
+/* --- Soft UI Card Base Style --- */
+/* This applies to .card, info-card, course-card-item, and the graph card */
 .card {
-  border-radius: 12px;
-  border: none;
-  transition: box-shadow 0.3s ease;
+  background-color: #e0e5ec; /* Match background */
+  border: none; /* Remove default border */
+  border-radius: 20px; /* More pronounced rounded corners */
+  box-shadow: 7px 7px 15px rgba(174, 174, 192, 0.6), /* Bottom-right shadow (dark) */
+              -7px -7px 15px rgba(255, 255, 255, 1); /* Top-left highlight (light) */
+  transition: all 0.3s ease-in-out; /* Smooth transitions for hover/active states */
 }
 
 .card:hover {
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+  /* Slightly more 'popped out' on hover */
+  box-shadow: 10px 10px 20px rgba(174, 174, 192, 0.7),
+              -10px -10px 20px rgba(255, 255, 255, 1);
+  transform: translateY(-2px); /* Slight lift */
 }
 
-.card-body {
-  padding: 20px;
-}
-
-h1.h4 {
-  font-weight: bold;
-  color: #333;
-}
-
-#routineList {
-  max-height: 100%;
-  overflow-y: auto;
-}
-
-.react-calendar {
-  width: 100% !important;
-  border: none;
-  font-family: inherit;
-  line-height: 1.125em;
-}
-
-.react-calendar__tile--active {
-  background: #007bff;
-  color: white;
-}
-.equal-height {
+/* --- Info Cards Specifics --- */
+.info-card .card-body {
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
   height: 100%;
+  padding: 1.5rem; /* More generous padding */
 }
 
-.equal-height .card {
-  flex: 1;
-  display: flex;
-  flex-direction: row;
+.info-card .card-title {
+  font-size: 1.2rem; /* Slightly larger title */
+  margin-bottom: 15px;
+  color: #6c757d; /* Muted text color */
 }
 
-.equal-height .card-body {
-  flex-grow: 1;
+.info-card .card-text {
+  font-size: 3rem; /* Make numbers stand out even more */
+  line-height: 1;
+  font-weight: 700; /* Bolder numbers */
+  /* Using specific Bootstrap color classes directly on the p tag is fine here */
 }
 
+/* --- Enrolled Courses Section --- */
+.courses-scroll-container {
+  max-height: 400px; /* Adjust height as needed */
+  overflow-y: auto; /* Enable vertical scrolling */
+  padding-right: 15px; /* Space for scrollbar */
+  margin-right: -15px; /* Counteract padding to avoid extra margin */
+}
 
+/* Custom Scrollbar for Soft UI */
+.courses-scroll-container::-webkit-scrollbar {
+  width: 8px;
+}
 
+.courses-scroll-container::-webkit-scrollbar-track {
+  background: #e0e5ec; /* Match background */
+  border-radius: 10px;
+}
 
-@media (max-width: 768px) {
-  .card-body {
-    padding: 15px;
-  }
-.equal-height {
-    display: block;
-  }
-  .row > div {
-    margin-bottom: 1.5rem;
-  }
+.courses-scroll-container::-webkit-scrollbar-thumb {
+  background: #bbbec4; /* Soft scrollbar color */
+  border-radius: 10px;
+  border: 2px solid #e0e5ec; /* Inner border to create depth */
+}
 
-  .react-calendar {
-    font-size: 0.9rem;
-  }
+.courses-scroll-container::-webkit-scrollbar-thumb:hover {
+  background: #9fa3a9; /* Darker on hover */
+}
+
+/* Course Card Item specifics */
+.course-card-item .card-body {
+  padding: 1.2rem; /* Consistent padding */
+}
+
+.course-image {
+  width: 60px; /* Slightly larger image */
+  height: 60px;
+  object-fit: cover;
+  flex-shrink: 0;
+  box-shadow: 3px 3px 6px rgba(174, 174, 192, 0.4),
+              -3px -3px 6px rgba(255, 255, 255, 0.7); /* Soft UI shadows for image */
+  padding: 3px; /* Creates a small border/depth effect */
+  background-color: #e0e5ec; /* Match background */
+}
+
+/* Text inside course card item */
+.course-card-item h5 {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    font-size: 1.1rem; /* Slightly adjust size */
+    color: #343a40; /* Stronger color for title */
+}
+
+.course-card-item h5 span {
+    white-space: nowrap;
+    font-size: 0.9rem; /* Smaller for secondary info */
+    color: #6c757d; /* Muted text */
+}
+
+.course-card-item p {
+    font-size: 0.85rem; /* Smaller for offered by */
+    color: #888;
+}
+
+/* --- Chart Specific Styling --- */
+.card-title.text-primary {
+  color: #007bff !important; /* Ensure primary color for titles */
+}
+
+/* --- Button Styling (Soft UI Effect) --- */
+.btn.btn-outline-primary,
+.btn.btn-secondary {
+  background-color: #e0e5ec;
+  border: none;
+  color: #007bff; /* Primary color for outline buttons */
+  box-shadow: 3px 3px 6px rgba(174, 174, 192, 0.5),
+              -3px -3px 6px rgba(255, 255, 255, 0.8);
+  border-radius: 15px; /* Rounded buttons */
+  padding: 10px 20px; /* Comfortable padding */
+  transition: all 0.2s ease-in-out;
+}
+
+.btn.btn-outline-primary:hover,
+.btn.btn-secondary:hover {
+  box-shadow: 1px 1px 2px rgba(174, 174, 192, 0.3),
+              -1px -1px 2px rgba(255, 255, 255, 0.5);
+  transform: scale(0.98); /* Slight press effect */
+}
+
+.btn.btn-outline-primary:active,
+.btn.btn-secondary:active {
+  box-shadow: inset 2px 2px 5px rgba(174, 174, 192, 0.7),
+              inset -2px -2px 5px rgba(255, 255, 255, 0.8);
+  transform: scale(0.96); /* More pronounced press effect */
+}
+
+/* --- Modal Styling --- */
+.modal-content {
+  background-color: #e0e5ec;
+  border: none;
+  border-radius: 20px;
+  box-shadow: 10px 10px 20px rgba(174, 174, 192, 0.7),
+              -10px -10px 20px rgba(255, 255, 255, 1);
+}
+
+.modal-header, .modal-footer {
+  border-bottom: none;
+  border-top: none;
+  background-color: #e0e5ec;
+}
+
+.modal-title {
+  color: #343a40;
+}
+
+.modal-body ul.list-group-flush .list-group-item {
+  background-color: #e0e5ec; /* Ensure list items match background */
+  border-bottom: 1px solid rgba(174, 174, 192, 0.3); /* Subtle separator */
+}
+
+.modal-body ul.list-group-flush .list-group-item:last-child {
+  border-bottom: none;
 }

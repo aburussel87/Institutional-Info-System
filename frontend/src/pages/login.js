@@ -92,10 +92,6 @@ const Login = () => {
 
           <button type="submit" className="btn btn-primary w-100 btn-lg">Login</button>
         </form>
-
-        <p className="text-center mt-3 signup-text">
-          Don’t have an account? <a href="/signup" className="text-info text-decoration-none">Sign up</a>
-        </p>
       </div>
     </div>
   );

@@ -80,28 +80,28 @@ function formatGradeSheet(rows) {
 
   // sql is completely fine and functional
   // for now some dumme data are sent
-  // result = {
-  //   id: "2205157",
-  //   name: "Abu Russel",
-  //   current_semester : "Level 2 - Term I",
-  //   levelTerms: ["Level 1 - Term I", "Level 1 - Term II"],
-  //   grades: {
-  //     "Level 1 - Term I": [
-  //       { courseId: "CSE101", title: "Introduction to Computing", credit: 3.0, gpa: 3.75 },
-  //       { courseId: "MAT101", title: "Calculus I", credit: 3.0, gpa: 3.5 },
-  //       { courseId: "PHY101", title: "Physics I", credit: 3.0, gpa: 3.25 },
-  //       { courseId: "CSE102", title: "Structured programming language sessional", credit: 3.0, gpa: 3.75 },
-  //       { courseId: "CSE105", title: "Discrete Mathematcis", credit: 3.0, gpa: 3.5 },
-  //       { courseId: "EEE101", title: "Introduction to EEE", credit: 3.0, gpa: 3.25 }
-  //     ],
-  //     "Level 1 - Term II": [
-  //       { courseId: "CSE102", title: "Data Structures", credit: 3.0, gpa: 3.9 },
-  //       { courseId: "MAT102", title: "Linear Algebra", credit: 3.0, gpa: 3.7 },
-  //       { courseId: "ENG101", title: "English Language", credit: 2.0, gpa: 4.0 },
-  //       { courseId: "CHEM113", title: "Inorganic chemistry", credit: 3.0, gpa: 3.75 }
-  //     ]
-  //   }
-  // };
+  result = {
+    id: "2205157",
+    name: "Abu Russel",
+    current_semester : "Level 2 - Term I",
+    levelTerms: ["Level 1 - Term I", "Level 1 - Term II"],
+    grades: {
+      "Level 1 - Term I": [
+        { courseId: "CSE101", title: "Introduction to Computing", credit: 3.0, gpa: 3.75 },
+        { courseId: "MAT101", title: "Calculus I", credit: 3.0, gpa: 3.5 },
+        { courseId: "PHY101", title: "Physics I", credit: 3.0, gpa: 3.25 },
+        { courseId: "CSE102", title: "Structured programming language sessional", credit: 3.0, gpa: 3.75 },
+        { courseId: "CSE105", title: "Discrete Mathematcis", credit: 3.0, gpa: 3.5 },
+        { courseId: "EEE101", title: "Introduction to EEE", credit: 3.0, gpa: 3.25 }
+      ],
+      "Level 1 - Term II": [
+        { courseId: "CSE102", title: "Data Structures", credit: 3.0, gpa: 3.9 },
+        { courseId: "MAT102", title: "Linear Algebra", credit: 3.0, gpa: 3.7 },
+        { courseId: "ENG101", title: "English Language", credit: 2.0, gpa: 4.0 },
+        { courseId: "CHEM113", title: "Inorganic chemistry", credit: 3.0, gpa: 3.75 }
+      ]
+    }
+  };
   return result;
 
 }

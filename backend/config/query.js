@@ -17,19 +17,20 @@ const { generateRoutine, formatGradeSheet } = require('../utils');
 
 
 async function getEnrolledCourse(studentId) {
-    const query = `
+  const query = `
     SELECT 
     e.course_id,
     c.title AS course_title,
+    c.credit_hours,
     d.name AS offered_by,
     COALESCE(u.username, 'Not Assigned') AS teacher_name
 FROM enrollment e
 JOIN course c ON e.course_id = c.course_id
 JOIN department d ON d.department_id = c.offered_by
-LEFT JOIN subjectallocation sa ON e.course_id = sa.course_id AND e.section_type = sa.section_type
+LEFT JOIN subjectallocation sa ON e.course_id = sa.course_id 
 LEFT JOIN teacher t ON sa.teacher_id = t.teacher_id
 LEFT JOIN "User" u ON t.teacher_id = u.user_id
-WHERE e.student_id = $1;
+WHERE e.student_id = $1 AND (sa.section_type = 'All' or e.section_type = sa.section_type);
 `
   try {
     const result = await client.query(query, [studentId]);

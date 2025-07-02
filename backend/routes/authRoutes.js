@@ -1,13 +1,22 @@
 const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcryptjs');
+const { Pool } = require('pg');
 const jwt = require('jsonwebtoken');
-const pool = require('../config/db');
 const { updateLogin } = require('../config/query');
 const { use } = require('react');
 require('dotenv').config();
 
+const pool = new Pool({
+  user: process.env.PGUSER,
+  host: process.env.PGHOST,
+  database: process.env.PGDATABASE,
+  password: process.env.PGPASSWORD,
+  port: process.env.PGPORT,
+});
+
 async function authenticateUser(username, password) {
+  console.log('Authenticating user:', username);
   const res = await pool.query('SELECT * FROM "User" WHERE user_id = $1', [username]);
   if (res.rows.length === 0) {
     throw new Error('User not found');

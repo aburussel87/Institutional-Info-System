@@ -1,56 +1,67 @@
-/* Background gradient and full screen */
-.login-page {
-  background: linear-gradient(90deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
-  min-height: 100vh;
-  padding: 1rem;
-  box-sizing: border-box;
+/* login.css */
+
+.login-page-container {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
 }
 
-/* Glass card style */
-.login-card {
-  background: rgba(255 255 255 / 0.1);
-  backdrop-filter: blur(15px);
-  border: 1px solid rgba(255 255 255 / 0.2);
-  max-width: 400px;
+.particles-background {
+  position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
-  color: #e0e7ff;
+  height: 100%;
+  z-index: 0;
 }
 
-/* Logo styling */
-.logo {
-  max-width: 100px;
-  filter: drop-shadow(0 0 8px #00f7ff);
+.login-page {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
 }
 
-/* Signup link */
-.signup-text a:hover {
-  text-decoration: underline;
-}
-
-/* Customize the password toggle button */
-.btn-outline-secondary {
-  background: rgba(255 255 255 / 0.2);
+.login-card {
+  background-color: rgba(255, 255, 255, 0.95);
+  border-radius: 10px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+  padding: 40px;
+  max-width: 450px;
+  width: 100%;
   border: none;
-  color: #00f7ff;
+  backdrop-filter: blur(5px);
+}
+
+.logo {
+  max-width: 150px;
+  height: auto;
+}
+
+.form-control-lg {
+  padding: 0.75rem 1rem;
+  font-size: 1.1rem;
+}
+
+.btn-lg {
+  padding: 0.75rem 1.25rem;
   font-size: 1.2rem;
-  transition: background-color 0.3s ease;
 }
 
-.btn-outline-secondary:hover,
-.btn-outline-secondary:focus {
-  background: rgba(0 247 255 / 0.4);
-  color: #000;
-  outline: none;
-  box-shadow: none;
+.text-info {
+  color: #17a2b8 !important;
 }
 
-/* Responsive tweaks */
-@media (max-width: 480px) {
-  .login-card {
-    padding: 1.5rem;
-  }
+.text-info:hover {
+  color: #117a8b !important;
+}
 
-  .btn-lg {
-    font-size: 1.1rem;
-  }
+.position-relative input {
+  padding-right: 3rem;
+}
+
+.position-relative .btn-outline-secondary {
+  border: none;
+  background: transparent;
 }
