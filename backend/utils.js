@@ -1,6 +1,19 @@
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
 
+
+function abbreviateName(fullName) {
+  if (!fullName) return '';
+
+  const parts = fullName.trim().split(/\s+/);
+
+  if (parts.length === 1) {
+    return parts[0].substring(0, 2).toUpperCase();
+  } else {
+    return parts.map(part => part[0].toUpperCase()).join('');
+  }
+}
+
 function authenticateToken(req, res, next) {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
@@ -30,7 +43,7 @@ function generateRoutine(res) {
   };
 
   for (const row of res.rows) {
-    const time = row.start_time.slice(0, 5); // Example: '09:00'
+    const time = row.start_time.slice(0, 5); 
     const entry = `${row.course_title} - ${time}`;
     if (!routine[row.day_of_week]) {
       routine[row.day_of_week] = [];
@@ -38,7 +51,6 @@ function generateRoutine(res) {
     routine[row.day_of_week].push(entry);
   }
 
-  // Fill Free Day or Holiday
   for (const day in routine) {
     if (routine[day].length === 0) {
       if (day === 'Sunday') {
@@ -78,8 +90,6 @@ function formatGradeSheet(rows) {
     });
   }
 
-  // sql is completely fine and functional
-  // for now some dumme data are sent
   result = {
     id: "2205157",
     name: "Abu Russel",
@@ -103,12 +113,43 @@ function formatGradeSheet(rows) {
     }
   };
   return result;
+}
 
+
+function formatSemesterRoutine(rows) {
+  const routine = {};
+
+  rows.forEach(row => {
+    const day = row.day_of_week;
+    const timeSlot = `${row.start_time} - ${row.end_time}`;
+    const abbreviatedTeacher = abbreviateName(row.teacher_name);
+
+    const cell = {
+      section_type: row.section_type,
+      course_id: row.course_id,
+      course_title: row.course_title,
+      room_id: row.room_id,
+      room_type: row.room_type,
+      teacher_name: abbreviatedTeacher,
+      academic_session: row.academic_session,
+    };
+
+    if (!routine[day]) {
+      routine[day] = {};
+    }
+    if (!routine[day][timeSlot]) {
+      routine[day][timeSlot] = [];
+    }
+    routine[day][timeSlot].push(cell);
+  });
+
+  return routine;
 }
 
 module.exports = {
   authenticateToken,
   generateRoutine,
-  formatGradeSheet
+  formatGradeSheet,
+  formatSemesterRoutine
 };
 

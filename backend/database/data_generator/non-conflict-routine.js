@@ -1,6 +1,7 @@
 const { Pool } = require('pg');
 const fs = require('fs');
 const path = require('path');
+require('dotenv').config();
 
 const pool = new Pool({
   user: process.env.PGUSER,
@@ -10,7 +11,6 @@ const pool = new Pool({
   port: process.env.PGPORT,
 });
 
-
 const academicSession = '2025-26';
 const semester = 'L1T2';
 
@@ -19,62 +19,63 @@ const timeSlots = [
   { start: '09:00', end: '10:00' },
   { start: '10:00', end: '11:00' },
   { start: '11:00', end: '12:00' },
-  { start: '13:00', end: '14:00' },
-  { start: '14:00', end: '15:00' },
-  { start: '15:00', end: '16:00' },
-  { start: '16:00', end: '17:00' },
+  { start: '12:00', end: '13:00' },
 ];
 
 const labSlots = [
-  { start: '08:00', end: '10:30' },
-  { start: '10:30', end: '13:00' },
-  { start: '13:00', end: '15:30' },
-  { start: '15:30', end: '18:00' },
+  { start: '14:30', end: '16:30' },
 ];
 
 const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday'];
 
+function getSubsections(deptCount, isLab) {
+  if (deptCount >= 120) {
+    return isLab
+      ? ['A1', 'A2', 'B1', 'B2', 'C1', 'C2']
+      : ['A', 'B', 'C'];
+  } else {
+    return [isLab ? 'A1' : 'A'];
+  }
+}
+
 async function getStudents(course_id, section_type) {
   const res = await pool.query(
-    `SELECT student_id FROM Enrollment WHERE course_id = $1 AND section_type = $2 AND semester = $3`,
+    `SELECT student_id 
+     FROM Enrollment 
+     WHERE course_id = $1 AND (section_type = $2 OR $2 = 'All') AND semester = $3`,
     [course_id, section_type, semester]
   );
-  return res.rows.map(row => row.student_id);
+  return res.rows.map(row => parseInt(row.student_id));
 }
 
 async function hasConflict(day, start, end, teacher_id, room_id, studentIds) {
-  // Teacher conflict by joining SubjectAllocation on ClassSchedule course_id, section_type, academic_session
   const teacherConflict = await pool.query(
     `SELECT 1 FROM ClassSchedule c
-     JOIN SubjectAllocation s ON c.course_id = s.course_id AND c.section_type = s.section_type AND c.academic_session = s.academic_session
-     WHERE c.day_of_week = $1
-       AND c.start_time < $3
-       AND c.end_time > $2
-       AND s.teacher_id = $4
-       AND c.academic_session = $5`,
+     JOIN SubjectAllocation s 
+       ON c.course_id = s.course_id AND c.section_type = s.section_type AND c.academic_session = s.academic_session
+     WHERE c.day_of_week = $1 AND c.start_time < $3 AND c.end_time > $2
+       AND s.teacher_id = $4 AND c.academic_session = $5`,
     [day, start, end, teacher_id, academicSession]
   );
   if (teacherConflict.rowCount > 0) return true;
 
-  // Room conflict
   const roomConflict = await pool.query(
-    `SELECT 1 FROM ClassSchedule
-     WHERE day_of_week = $1 AND start_time < $3 AND end_time > $2 AND room_id = $4 AND academic_session = $5`,
+    `SELECT 1 FROM ClassSchedule 
+     WHERE day_of_week = $1 AND start_time < $3 AND end_time > $2 
+       AND room_id = $4 AND academic_session = $5`,
     [day, start, end, room_id, academicSession]
   );
   if (roomConflict.rowCount > 0) return true;
 
-  // Student conflict
   if (studentIds.length > 0) {
     const studentConflict = await pool.query(
       `SELECT 1 FROM ClassSchedule cs
-       JOIN Enrollment e ON cs.course_id = e.course_id AND cs.section_type = e.section_type
+       JOIN Enrollment e 
+         ON cs.course_id = e.course_id AND cs.section_type = e.section_type AND cs.academic_session = e.academic_session
        WHERE cs.day_of_week = $1
-         AND cs.start_time < $3
-         AND cs.end_time > $2
+         AND cs.start_time < $3 AND cs.end_time > $2
          AND e.student_id = ANY($4::int[])
-         AND e.semester = $5
-         AND cs.academic_session = $6`,
+         AND e.semester = $5 AND cs.academic_session = $6`,
       [day, start, end, studentIds, semester, academicSession]
     );
     if (studentConflict.rowCount > 0) return true;
@@ -84,133 +85,163 @@ async function hasConflict(day, start, end, teacher_id, room_id, studentIds) {
 }
 
 async function generateSchedule() {
-  const scheduledClasses = [];
+  const allScheduledClasses = [];
 
   try {
-    const allocations = await pool.query(
-      `SELECT * FROM SubjectAllocation WHERE academic_session = $1`,
-      [academicSession]
+    const departmentsRes = await pool.query(`SELECT department_id FROM Department`);
+    const departments = departmentsRes.rows.map(row => row.department_id);
+
+    if (departments.length === 0) {
+      console.log("❌ No departments found.");
+      return;
+    }
+
+    console.log(`Clearing existing schedule for ${academicSession}, ${semester}...`);
+    await pool.query(
+      `DELETE FROM ClassSchedule 
+       WHERE academic_session = $1 AND course_id IN (
+         SELECT course_id FROM Course WHERE semester = $2
+       )`,
+      [academicSession, semester]
     );
+    console.log("✅ Existing schedule cleared.");
 
-    let scheduleCount = 0;
+    for (const department_id of departments) {
+      console.log(`\n--- Scheduling for Department: ${department_id} ---`);
 
-    for (const allocation of allocations.rows) {
-      const { teacher_id, course_id, section_type } = allocation;
-      const studentIds = await getStudents(course_id, section_type);
-
-      const courseData = await pool.query(
-        `SELECT credit_hours, semester FROM Course WHERE course_id = $1`,
-        [course_id]
+      const allocationsRes = await pool.query(
+        `SELECT sa.course_id, sa.section_type, sa.teacher_id, c.credit_hours, c.semester as course_semester
+         FROM SubjectAllocation sa
+         JOIN Course c ON sa.course_id = c.course_id
+         JOIN Teacher t ON sa.teacher_id = t.teacher_id
+         WHERE sa.academic_session = $1 AND t.department_id = $2 AND c.semester = $3`,
+        [academicSession, department_id, semester]
       );
-      if (courseData.rowCount === 0) continue;
+      const allocations = allocationsRes.rows;
 
-      const { credit_hours, semester: courseSemester } = courseData.rows[0];
-      const isLab = parseInt(course_id.slice(-1)) % 2 === 0;
-
-      // Get rooms based on course type
-      let rooms;
-      if (isLab) {
-        rooms = await pool.query(
-          `SELECT room_id FROM Room WHERE room_id LIKE 'LAB%'`
-        );
-      } else {
-        rooms = await pool.query(
-          `SELECT room_id FROM Room WHERE room_type = 'Classroom'`
-        );
-      }
-
-      if (rooms.rowCount === 0) {
-        console.log(`❌ No suitable room for ${isLab ? 'Lab' : 'Theory'} course ${course_id} ${section_type}`);
+      if (allocations.length === 0) {
+        console.log(`No allocations for department ${department_id}.`);
         continue;
       }
 
-      if (isLab) {
-        // Lab: One 2.5 hour slot per week
-        let scheduled = false;
-        for (const day of days) {
-          for (const slot of labSlots) {
-            for (const room of rooms.rows) {
-              const conflict = await hasConflict(day, slot.start, slot.end, teacher_id, room.room_id, studentIds);
-              if (!conflict) {
-                const schedule_id = `${course_id}_${section_type}_${day}_${slot.start.replace(':', '')}`;
-                await pool.query(
-                  `INSERT INTO ClassSchedule ( course_id, section_type, room_id, day_of_week, start_time, end_time, academic_session)
-                   VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-                  [course_id, section_type, room.room_id, day, slot.start, slot.end,academicSession]
-                );
-                scheduledClasses.push({
-                  schedule_id,
-                  course_id,
-                  section_type,
-                  room_id: room.room_id,
-                  day,
-                  start_time: slot.start,
-                  end_time: slot.end,
-                  semester: courseSemester,
-                  academic_session: academicSession,
-                });
-                console.log(`✅ Lab Scheduled: ${course_id} ${section_type} on ${day} ${slot.start}-${slot.end} in ${room.room_id}`);
-                scheduleCount++;
-                scheduled = true;
-                break;
-              }
-            }
-            if (scheduled) break;
-          }
-          if (scheduled) break;
+      const deptStudentCountRes = await pool.query(
+        `SELECT COUNT(*) FROM Student WHERE department_id = $1 AND current_semester = $2`,
+        [department_id, semester]
+      );
+      const deptStudentCount = parseInt(deptStudentCountRes.rows[0].count);
+
+      const usedTeacherSlots = new Set();
+      const usedRoomSlots = new Set();
+      const scheduledCourseSectionDays = new Set();
+
+      let dayStartIndex = 0;
+
+      for (const allocation of allocations) {
+        const { teacher_id, course_id, section_type, credit_hours, course_semester } = allocation;
+
+        const isLab = parseInt(course_id.slice(-1)) % 2 === 0;
+
+        const roomsRes = await pool.query(
+          `SELECT room_id FROM Room 
+           WHERE room_type = $1 AND building_id = $2`,
+          [isLab ? 'Laboratory' : 'Classroom', department_id]
+        );
+        const rooms = roomsRes.rows;
+
+        if (rooms.length === 0) {
+          console.log(`❌ No ${isLab ? 'Lab' : 'Classroom'} for dept ${department_id} (${course_id}).`);
+          continue;
         }
-        if (!scheduled) console.log(`❌ Lab Conflict: Could not schedule ${course_id} ${section_type}`);
-      } else {
-        // Theory: schedule 'credit_hours' 1-hr classes per week
-        let theoryClassesScheduled = 0;
-        for (const day of days) {
-          for (const slot of timeSlots) {
-            for (const room of rooms.rows) {
-              if (theoryClassesScheduled >= credit_hours) break;
-              const conflict = await hasConflict(day, slot.start, slot.end, teacher_id, room.room_id, studentIds);
-              if (!conflict) {
-                const schedule_id = `${course_id}_${section_type}_${day}_${slot.start.replace(':', '')}`;
-                await pool.query(
-                  `INSERT INTO ClassSchedule (course_id, section_type, room_id, day_of_week, start_time, end_time, academic_session)
-                   VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-                  [course_id, section_type, room.room_id, day, slot.start, slot.end,  academicSession]
-                );
-                scheduledClasses.push({
-                  schedule_id,
-                  course_id,
-                  section_type,
-                  room_id: room.room_id,
-                  day,
-                  start_time: slot.start,
-                  end_time: slot.end,
-                  semester: courseSemester,
-                  academic_session: academicSession,
-                });
-                console.log(`✅ Theory Scheduled: ${course_id} ${section_type} on ${day} ${slot.start}-${slot.end} in ${room.room_id}`);
-                scheduleCount++;
-                theoryClassesScheduled++;
-              }
+
+        const slotsToUse = isLab ? labSlots : timeSlots;
+        const requiredClasses = isLab ? 1 : credit_hours;
+
+        const sections = (section_type === 'All')
+          ? getSubsections(deptStudentCount, isLab)
+          : [section_type];
+
+        for (const sec of sections) {
+          const studentIds = await getStudents(course_id, sec);
+          let classesScheduled = 0;
+
+          outer: for (let offset = 0; offset < days.length && classesScheduled < requiredClasses; offset++) {
+            const day = days[(dayStartIndex + offset) % days.length];
+
+            // 🚫 Already scheduled on this day? skip to next day
+            if (scheduledCourseSectionDays.has(`${course_id}_${sec}_${day}`)) {
+              continue outer;
             }
-            if (theoryClassesScheduled >= credit_hours) break;
+
+            let scheduledOnThisDay = false;
+
+            for (const slot of slotsToUse) {
+              if (classesScheduled >= requiredClasses) break outer;
+
+              const teacherSlotKey = `${teacher_id}_${day}_${slot.start}`;
+              if (usedTeacherSlots.has(teacherSlotKey)) continue;
+
+              for (const room of rooms) {
+                if (classesScheduled >= requiredClasses) break outer;
+
+                const roomSlotKey = `${room.room_id}_${day}_${slot.start}`;
+                if (usedRoomSlots.has(roomSlotKey)) continue;
+
+                const conflict = await hasConflict(day, slot.start, slot.end, teacher_id, room.room_id, studentIds);
+                if (!conflict) {
+                  await pool.query(
+                    `INSERT INTO ClassSchedule 
+                     (course_id, section_type, room_id, day_of_week, start_time, end_time, academic_session)
+                     VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+                    [course_id, sec, room.room_id, day, slot.start, slot.end, academicSession]
+                  );
+                  allScheduledClasses.push({
+                    course_id,
+                    section_type: sec,
+                    room_id: room.room_id,
+                    day,
+                    start_time: slot.start,
+                    end_time: slot.end,
+                    semester: course_semester,
+                    academic_session: academicSession,
+                    department_id
+                  });
+
+                  usedTeacherSlots.add(teacherSlotKey);
+                  usedRoomSlots.add(roomSlotKey);
+                  scheduledOnThisDay = true;
+
+                  console.log(`✅ Scheduled: ${course_id} ${sec} (${department_id}) on ${day} ${slot.start}-${slot.end} in ${room.room_id}`);
+                  classesScheduled++;
+                  break; // exit room loop
+                }
+              }
+
+              if (scheduledOnThisDay) break; // exit slot loop
+            }
+
+            if (scheduledOnThisDay) {
+              scheduledCourseSectionDays.add(`${course_id}_${sec}_${day}`);
+            }
           }
-          if (theoryClassesScheduled >= credit_hours) break;
-        }
-        if (theoryClassesScheduled < credit_hours) {
-          console.log(`❌ Theory Conflict: ${course_id} ${section_type} scheduled only ${theoryClassesScheduled} of ${credit_hours} needed`);
+
+          if (classesScheduled < requiredClasses) {
+            console.log(`⚠️ Could not fully schedule ${course_id} ${sec} (${department_id}): ${classesScheduled}/${requiredClasses} scheduled.`);
+          }
+
+          dayStartIndex++;
         }
       }
     }
 
-    console.log(`✅ Total Classes Scheduled: ${scheduleCount}`);
+    console.log(`\n--- Scheduling Complete ---`);
+    console.log(`✅ Total Classes Scheduled: ${allScheduledClasses.length}`);
 
-    // Write CSV file
     const csvLines = [
-      'schedule_id,course_id,section_type,room_id,day,start_time,end_time,semester,academic_session'
+      'course_id,section_type,room_id,day,start_time,end_time,semester,academic_session,department_id'
     ];
 
-    for (const entry of scheduledClasses) {
-      const line = [
-        entry.schedule_id,
+    for (const entry of allScheduledClasses) {
+      csvLines.push([
         entry.course_id,
         entry.section_type,
         entry.room_id,
@@ -219,16 +250,16 @@ async function generateSchedule() {
         entry.end_time,
         entry.semester,
         entry.academic_session,
-      ].join(',');
-      csvLines.push(line);
+        entry.department_id
+      ].join(','));
     }
 
-    const filePath = path.join(__dirname, 'classRoutine.csv');
+    const filePath = path.join(__dirname, 'fullClassRoutine.csv');
     fs.writeFileSync(filePath, csvLines.join('\n'));
-    console.log(`✅ Schedule saved to CSV: ${filePath}`);
+    console.log(`✅ Schedule saved to: ${filePath}`);
 
   } catch (err) {
-    console.error(err);
+    console.error('❌ Error during schedule generation:', err);
   } finally {
     await pool.end();
   }

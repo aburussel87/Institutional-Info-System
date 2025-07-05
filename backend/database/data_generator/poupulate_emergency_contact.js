@@ -1,5 +1,6 @@
 const { Pool } = require('pg');
 const {faker} = require('@faker-js/faker');
+require('dotenv').config();
 
 const pool = new Pool({
   user: process.env.PGUSER,

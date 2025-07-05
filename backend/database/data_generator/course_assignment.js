@@ -121,16 +121,6 @@ async function assignCourses() {
                 teacherIndexByDept[deptId].index = (currentIndex + 1) % teacherList.length;
 
                 if (sectionType === 'All') {
-                    if (Math.random() < 0.5) {
-                        let extraTeachers = 2;
-                        while (extraTeachers--) {
-                            currentIndex = teacherIndexByDept[deptId].index;
-                            teacherId = teacherList[currentIndex];
-                            await client.query(insertQuery, [teacherId, courseId, sectionType, academicSession]);
-                            saveAssignmentToCsv(teacherId, courseId, sectionType, academicSession);
-                            teacherIndexByDept[deptId].index = (currentIndex + 1) % teacherList.length;
-                        }
-                    }
                     break;
                 }
             }

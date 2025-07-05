@@ -1,0 +1,301 @@
+.routine-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #e0f2f7 0%, #c8e6c9 100%);
+  font-family: 'Roboto', sans-serif;
+  color: #333;
+  padding-top: 4rem;
+  padding-bottom: 2rem;
+}
+
+.routine-container .h4.text-primary {
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: #1a73e8 !important;
+  letter-spacing: 0.8px;
+  text-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.routine-container .btn-outline-primary {
+  border-color: #1a73e8;
+  color: #1a73e8;
+  transition: all 0.3s ease;
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  border-radius: 10px;
+}
+
+.routine-container .btn-outline-primary:hover {
+  background-color: #1a73e8;
+  color: #fff;
+  box-shadow: 0 4px 10px rgba(26, 115, 232, 0.3);
+  transform: translateY(-2px);
+}
+
+.routine-container .spinner-border {
+  width: 3.5rem;
+  height: 3.5rem;
+  border-width: 0.35rem;
+  color: #1a73e8;
+}
+
+.routine-container .alert {
+  font-size: 1.1rem;
+  max-width: 600px;
+  margin: 3rem auto;
+  border-radius: 1rem;
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+  background-color: rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.routine-grid-section.card {
+  border-radius: 1.5rem;
+  border: none;
+  background-color: rgba(255, 255, 255, 0.98);
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1), 0 5px 15px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+}
+
+.routine-grid-section .card-body {
+  padding: 2rem;
+}
+
+.routine-grid-container {
+  font-family: 'Inter', sans-serif;
+  background-color: #fcfcfc;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid #e0e0e0;
+  display: flex;
+  flex-direction: column;
+  /* Crucial for handling overflow - enable horizontal scroll at all times if content exceeds */
+  overflow-x: auto;
+}
+
+.routine-grid-header,
+.routine-grid-body {
+  display: grid;
+  /* Adjusted column sizing for better content fit and responsiveness */
+  grid-template-columns: 100px repeat(5, minmax(120px, 1fr)); /* 5 days (Sun-Thu) */
+  border-bottom: 1px solid #e5e5e5;
+  min-width: 700px; /* Ensure a minimum width for the grid to prevent excessive squishing */
+}
+
+.routine-grid-header {
+  background-color: #f0f0f0;
+  font-weight: bold;
+  color: #444;
+  font-size: 0.95rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.routine-grid-cell {
+  padding: 10px 5px;
+  border-right: 1px solid #e5e5e5;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  min-height: 70px;
+}
+
+.routine-grid-cell:last-child {
+  border-right: none;
+}
+
+.routine-grid-time-label {
+  background-color: #f5f5f5;
+  border-right: 1px solid #e5e5e5;
+  font-weight: bold;
+  color: #555;
+  position: sticky;
+  left: 0;
+  z-index: 2;
+}
+
+.routine-grid-time-slot {
+  background-color: #f5f5f5;
+  border-right: 1px solid #e5e5e5;
+  font-weight: 600;
+  color: #555;
+  position: sticky;
+  left: 0;
+  z-index: 1;
+}
+
+.routine-grid-day-header {
+  background-color: #f0f0f0;
+  color: #444;
+}
+
+.routine-grid-class-cell {
+  background-color: #ffffff;
+  color: #333;
+  border-bottom: 1px solid #e5e5e5;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  font-size: 0.8rem;
+  line-height: 1.2;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.routine-grid-class-cell:hover {
+  background-color: #eaf6ff;
+}
+
+.routine-class-item {
+  background-color: #e3f2fd;
+  border: 1px solid #bbdefb;
+  border-radius: 8px;
+  padding: 6px 8px;
+  margin: 3px 0;
+  width: 95%;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.routine-class-item:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.routine-course-id {
+  font-weight: bold;
+  color: #1976d2;
+  font-size: 0.85rem;
+}
+
+.routine-course-title {
+  color: #424242;
+  font-size: 0.75rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.routine-room-teacher {
+  color: #757575;
+  font-size: 0.7rem;
+}
+
+.routine-section-type {
+  font-style: italic;
+  color: #388e3c;
+  font-size: 0.65rem;
+  margin-top: 2px;
+}
+
+.routine-no-class {
+  color: #9e9e9e;
+  font-style: italic;
+}
+
+.routine-special-day {
+  background-color: #fff9c4;
+  border: 1px solid #ffd600;
+  border-radius: 8px;
+  padding: 5px 10px;
+  color: #f57f17;
+  font-weight: 600;
+  font-size: 0.85rem;
+  text-align: center;
+  width: 90%;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+@media (max-width: 1200px) {
+  .routine-grid-header,
+  .routine-grid-body {
+    grid-template-columns: 90px repeat(5, minmax(110px, 1fr));
+  }
+  .routine-grid-cell {
+    padding: 8px 4px;
+    min-height: 60px;
+  }
+  .routine-course-id {
+    font-size: 0.8rem;
+  }
+  .routine-course-title {
+    font-size: 0.7rem;
+  }
+  .routine-room-teacher,
+  .routine-section-type {
+    font-size: 0.65rem;
+  }
+}
+
+@media (max-width: 992px) {
+  .routine-grid-header,
+  .routine-grid-body {
+    grid-template-columns: 80px repeat(5, minmax(100px, 1fr));
+  }
+  .routine-grid-cell {
+    min-height: 55px;
+  }
+  .routine-container .h4.text-primary {
+    font-size: 1.8rem;
+  }
+  .routine-container .btn-outline-primary {
+    padding: 0.6rem 1.2rem;
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .routine-grid-header,
+  .routine-grid-body {
+    grid-template-columns: 70px repeat(5, minmax(90px, 1fr));
+  }
+  .routine-grid-cell {
+    padding: 6px 2px;
+    min-height: 50px;
+  }
+  .routine-course-id {
+    font-size: 0.75rem;
+  }
+  .routine-course-title {
+    font-size: 0.65rem;
+  }
+  .routine-room-teacher,
+  .routine-section-type {
+    font-size: 0.6rem;
+  }
+  .routine-special-day {
+    font-size: 0.8rem;
+    padding: 4px 8px;
+  }
+}
+
+@media (max-width: 576px) {
+  .routine-container {
+    padding-top: 2rem;
+  }
+  .routine-container .h4.text-primary {
+    font-size: 1.5rem;
+    text-align: center;
+    margin-bottom: 1rem;
+  }
+  .routine-container .d-flex.justify-content-between.align-items-center {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  .routine-grid-section .card-body {
+    padding: 1rem;
+  }
+  .routine-grid-container {
+    overflow-x: auto;
+  }
+  .routine-grid-header,
+  .routine-grid-body {
+    min-width: 550px; /* Adjust minimum width for smaller screens */
+    grid-template-columns: 60px repeat(5, 1fr);
+  }
+}

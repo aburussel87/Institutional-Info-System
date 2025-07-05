@@ -18,21 +18,26 @@ import {
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
-const sampleLabels = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-const sampleData = [5, 12, 8, 6, 9, 3, 7];
-
 const Dashboard = () => {
   const [user, setUser] = useState(null);
   const [msg, setMsg] = useState('');
   const [routine, setRoutine] = useState([]);
+  const [routineMap, setRoutineMap] = useState({});
   const [currentDate, setCurrentDate] = useState('');
   const [courses, setCourses] = useState([]);
   const [showRoutineModal, setShowRoutineModal] = useState(false);
+  const [showCourseModal, setShowCourseModal] = useState(false);
+  const [courseDetails, setCourseDetails] = useState(null);
 
   const navigate = useNavigate();
 
-  const handleShowRoutineModal = () => setShowRoutineModal(true);
   const handleCloseRoutineModal = () => setShowRoutineModal(false);
+  const handleShowRoutineModal = () => setShowRoutineModal(true);
+
+  const handleCloseCourseModal = () => {
+    setShowCourseModal(false);
+    setCourseDetails(null);
+  };
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -45,10 +50,7 @@ const Dashboard = () => {
     const fetchDashboardData = async () => {
       try {
         const response = await fetch(`${API_BASE_URL}/dashboard`, {
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
+          headers: { 'Authorization': `Bearer ${token}` }
         });
 
         if (!response.ok) {
@@ -63,11 +65,12 @@ const Dashboard = () => {
         setCourses(data.courses || []);
 
         const today = new Date();
-        const weekday = today.toLocaleDateString('en-US', { weekday: 'long' });
+        let weekday = today.toLocaleDateString('en-US', { weekday: 'long' });
         const formattedDate = today.toLocaleDateString('en-GB');
         setCurrentDate(`${weekday}, ${formattedDate}`);
 
         setRoutine(data.routine?.[weekday] || ["No classes scheduled for today."]);
+        setRoutineMap(data.routine || {});
       } catch (err) {
         setMsg(err.message || 'Unknown error');
         setTimeout(() => navigate('/login'), 1000);
@@ -77,29 +80,75 @@ const Dashboard = () => {
     fetchDashboardData();
   }, [navigate]);
 
+  const fetchCourseDetails = async (course) => {
+    const token = localStorage.getItem('token');
+    try {
+      const res = await fetch(`${API_BASE_URL}/course-details/${course.course_id}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (!res.ok) throw new Error("Failed to fetch course details");
+
+      const data = await res.json();
+      setCourseDetails(data.course[0]);
+      setShowCourseModal(true);
+    } catch (err) {
+      alert(err.message);
+    }
+  };
+
+  const findNextOrOngoingClass = () => {
+    const weekdays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    const now = new Date();
+    const todayIdx = now.getDay();
+    const todayName = weekdays[todayIdx];
+    const tomorrowIdx = (todayIdx + 1) % 7;
+
+    const timeToMinutes = (timeStr) => {
+      const [h, m] = timeStr.split(':').map(Number);
+      return h * 60 + m;
+    }
+
+    const currentMinutes = now.getHours() * 60 + now.getMinutes();
+
+    const todayRoutine = routineMap[todayName] || [];
+    const isFreeOrHoliday = (list) =>
+      list.length > 0 && ['Free day', 'holiday', 'no classes'].some(keyword =>
+        list[0].toLowerCase().includes(keyword));
+
+    if (!todayRoutine || isFreeOrHoliday(todayRoutine)) {
+      return todayRoutine[0] || 'Free Day';
+    }
+
+    for (let item of todayRoutine) {
+      const match = item.match(/- (\d{2}:\d{2})$/);
+      if (match) {
+        const classTime = timeToMinutes(match[1]);
+        if (currentMinutes >= classTime && currentMinutes <= classTime + 50) {
+          return `Ongoing: ${item}`;
+        } else if (classTime > currentMinutes) {
+          return `Upcoming: ${item}`;
+        }
+      }
+    }
+
+
+    const tomorrowName = weekdays[tomorrowIdx];
+    const tomorrowRoutine = routineMap?.[tomorrowName] || [];
+
+    if (!tomorrowRoutine || isFreeOrHoliday(tomorrowRoutine)) {
+      return tomorrowRoutine[0] || 'Free Day';
+    }
+
+    return `Next: ${tomorrowRoutine[0]}`;
+  };
+
   const chartData = {
-    labels: sampleLabels,
+    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
     datasets: [{
       label: 'Student Logins',
-      data: sampleData,
-      backgroundColor: [
-        'rgba(75, 192, 192, 0.7)',
-        'rgba(153, 102, 255, 0.7)',
-        'rgba(255, 159, 64, 0.7)',
-        'rgba(255, 99, 132, 0.7)',
-        'rgba(54, 162, 235, 0.7)',
-        'rgba(255, 206, 86, 0.7)',
-        'rgba(201, 203, 207, 0.7)'
-      ],
-      borderColor: [
-        'rgba(75, 192, 192, 1)',
-        'rgba(153, 102, 255, 1)',
-        'rgba(255, 159, 64, 1)',
-        'rgba(255, 99, 132, 1)',
-        'rgba(54, 162, 235, 1)',
-        'rgba(255, 206, 86, 1)',
-        'rgba(201, 203, 207, 1)'
-      ],
+      data: [5, 12, 8, 6, 9, 3, 7],
+      backgroundColor: 'rgba(75, 192, 192, 0.7)',
+      borderColor: 'rgba(75, 192, 192, 1)',
       borderWidth: 1,
       borderRadius: 5
     }]
@@ -109,40 +158,16 @@ const Dashboard = () => {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
-      legend: {
-        position: 'top',
-      },
+      legend: { position: 'top' },
       title: {
         display: true,
         text: 'Weekly Login Activity',
-        font: {
-          size: 16
-        }
+        font: { size: 16 }
       }
     },
     scales: {
-      y: {
-        beginAtZero: true,
-        ticks: {
-          stepSize: 1,
-          font: {
-            size: 12
-          }
-        },
-        grid: {
-          color: 'rgba(0,0,0,0.05)'
-        }
-      },
-      x: {
-        ticks: {
-          font: {
-            size: 12
-          }
-        },
-        grid: {
-          display: false
-        }
-      }
+      y: { beginAtZero: true, ticks: { stepSize: 1 } },
+      x: { grid: { display: false } }
     }
   };
 
@@ -150,98 +175,70 @@ const Dashboard = () => {
     <div className="main-content container-fluid px-4">
       <Header />
       <div className="d-flex justify-content-between align-items-center mt-4 mb-4">
-        <h1 className="h4 text-primary">Welcome to the Dashboard{user ? `, ${user.user_id || ''}` : ''}!</h1>
+        <h1 className="h4 text-primary">Welcome to the Dashboard{user ? `, ${user.user_id}` : ''}!</h1>
         <Button variant="outline-primary" onClick={handleShowRoutineModal}>
           Today's Routine <i className="bi bi-calendar-check ms-2"></i>
         </Button>
       </div>
-      {msg && (
-        <div className="alert alert-danger text-center" role="alert">
-          {msg}
-        </div>
-      )}
 
-      {/* Information Boxes (2x2 Grid) */}
+      {msg && <div className="alert alert-danger text-center">{msg}</div>}
+
       <div className="row g-4 mb-4">
-        <div className="col-lg-6 col-md-6 col-sm-12">
-          <div className="card info-card h-100"> {/* Removed shadow-sm */}
+        <div className="col-lg-6 col-md-6">
+          <div className="card info-card h-100">
             <div className="card-body text-center">
-              <h5 className="card-title text-muted">Total Enrolled Courses</h5>
-              <p className="card-text display-5 fw-bold text-success">{courses.length}</p>
+              <h5 className="text-muted">Total Enrolled Courses</h5>
+              <p className="display-5 fw-bold text-success">{courses.length}</p>
             </div>
           </div>
         </div>
-        <div className="col-lg-6 col-md-6 col-sm-12">
-          <div className="card info-card h-100"> {/* Removed shadow-sm */}
+
+        <div className="col-lg-6 col-md-6">
+          <div className="card info-card h-100">
             <div className="card-body text-center">
-              <h5 className="card-title text-muted">Upcoming Classes Today</h5>
-              <p className="card-text display-5 fw-bold text-info">
-                {routine.filter(item => item !== "No classes scheduled for today.").length}
+              <h5 className="text-muted">Upcoming / Ongoing Class</h5>
+              <p className="fs-5 fw-bold text-info">
+                {findNextOrOngoingClass()}
               </p>
-            </div>
-          </div>
-        </div>
-        <div className="col-lg-6 col-md-6 col-sm-12">
-          <div className="card info-card h-100"> {/* Removed shadow-sm */}
-            <div className="card-body text-center">
-              <h5 className="card-title text-muted">New Notifications</h5>
-              <p className="card-text display-5 fw-bold text-warning">--</p>
-            </div>
-          </div>
-        </div>
-        <div className="col-lg-6 col-md-6 col-sm-12">
-          <div className="card info-card h-100"> {/* Removed shadow-sm */}
-            <div className="card-body text-center">
-              <h5 className="card-title text-muted">Average Grade</h5>
-              <p className="card-text display-5 fw-bold text-primary">B+</p>
             </div>
           </div>
         </div>
       </div>
 
-
-      {/* Enrolled Courses Section */}
-      <div className="card mb-4"> {/* Removed shadow-sm */}
+      <div className="card mb-4">
         <div className="card-body">
-          <h5 className="card-title text-primary mb-3">Your Enrolled Courses</h5>
+          <h5 className="text-primary mb-3">Your Enrolled Courses</h5>
           {courses.length === 0 ? (
             <p className="text-muted">You are not currently enrolled in any courses.</p>
           ) : (
-            // Added a scrollable container for the course cards
             <div className="courses-scroll-container">
               {courses.map((course) => (
-                <div key={course.id} className="card mb-3 course-card-item"> {/* Each course is now a separate card, no shadow-sm here either */}
+                <div
+                  key={course.id}
+                  className="card mb-3 course-card-item"
+                  onClick={() => fetchCourseDetails(course)}
+                  style={{ cursor: 'pointer' }}
+                >
                   <div className="card-body d-flex align-items-center py-3 justify-content-between">
-                    {/* Part 1: Image, ID, Title, Offered By */}
-                    <div className="d-flex align-items-center me-3 flex-shrink-0"> {/* me-3 for spacing to Part 2, flex-shrink-0 to prevent this part from shrinking too much */}
+                    <div className="d-flex align-items-center">
                       <img
-                        src={course.image_url || `https://via.placeholder.com/50?text=${course.course_title ? course.course_title.charAt(0) : '?'}`}
-                        alt={course.course_title.charAt(0) || 'Course'}
-                        className="rounded-circle me-3 course-image"
+                        src={course.photo || `https://ui-avatars.com/api/?name=${course.course_title}&background=007bff&color=fff&bold=true&size=128`}
+                        alt="User"
+                        className="rounded-circle me-4"
+                        style={{ width: '100px', height: '100px', objectFit: 'cover' }}
                       />
-                      <div className="d-flex flex-column text-nowrap"> {/* text-nowrap tries to keep title/offeredby on one line if space allows */}
-                        <h5 className="mb-0 text-dark text-truncate" style={{ maxWidth: '500px' }}> {/* Add maxWidth for potential truncation */}
+                      <div className="d-flex flex-column">
+                        <h5 className="mb-0 text-dark text-truncate" style={{ maxWidth: '300px' }}>
                           {course.course_id}: {course.course_title}
                         </h5>
-                        <p className="mb-0 text-muted small text-truncate" style={{ maxWidth: '150px' }}>
+                        <p className="mb-0 text-muted small">
                           <strong>Offered By:</strong> {course.offered_by}
                         </p>
                       </div>
                     </div>
-
-                    {/* Part 2: Teacher Name (Middle, bold, large font, centered) */}
-                    <div className="text-center flex-grow-1 px-2"> {/* flex-grow-1 to take available space, px-2 for internal padding */}
-                      <p className="my-0 fw-bold fs-6 text-info text-nowrap text-truncate" style={{ maxWidth: '200px', margin: '0 auto' }}>
-                        {course.teacher_name || 'N/A'}
-                      </p>
-                    </div>
-
-                    {/* Part 3: Credits (Tail of the box) */}
-                    <div className="d-flex align-items-center ms-3 flex-shrink-0"> {/* ms-3 for spacing from Part 2, flex-shrink-0 to prevent shrinking */}
-                      <span className="badge bg-success fs-6 text-nowrap">
-                        {course.credit_hours ? course.credit_hours : 4} Credits {/* Default to 4 if null/undefined */}
-                      </span>
-                    </div>
+                    <span className="badge bg-success fs-6">
+                      {course.credit_hours || 4} Credits
+                    </span>
                   </div>
                 </div>
               ))}
@@ -250,18 +247,15 @@ const Dashboard = () => {
         </div>
       </div>
 
-
-      {/* Login Activity Graph */}
-      <div className="card mb-4"> {/* Removed shadow-sm */}
+      <div className="card mb-4">
         <div className="card-body">
-          <h5 className="card-title text-primary mb-3">Login Activity (Last 7 Days)</h5>
+          <h5 className="text-primary mb-3">Login Activity (Last 7 Days)</h5>
           <div style={{ height: '300px' }}>
             <Bar data={chartData} options={chartOptions} />
           </div>
         </div>
       </div>
 
-      {/* Today's Routine Modal */}
       <Modal show={showRoutineModal} onHide={handleCloseRoutineModal} centered>
         <Modal.Header closeButton>
           <Modal.Title>Today's Routine - {currentDate}</Modal.Title>
@@ -270,7 +264,7 @@ const Dashboard = () => {
           {routine.length > 0 && routine[0] !== "No classes scheduled for today." ? (
             <ul className="list-group list-group-flush">
               {routine.map((item, idx) => (
-                <li key={idx} className="list-group-item d-flex align-items-center">
+                <li key={idx} className="list-group-item">
                   <i className="bi bi-clock-fill me-2 text-info"></i>
                   {item}
                 </li>
@@ -281,9 +275,52 @@ const Dashboard = () => {
           )}
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={handleCloseRoutineModal}>
-            Close
-          </Button>
+          <Button variant="secondary" onClick={handleCloseRoutineModal}>Close</Button>
+        </Modal.Footer>
+      </Modal>
+
+      <Modal show={showCourseModal} onHide={handleCloseCourseModal} centered>
+        <Modal.Header closeButton>
+          <Modal.Title>Course Info</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {courseDetails ? (
+            <div className="classic-course-info p-4">
+              <h3 className="classic-title mb-3">{courseDetails.course_id}: {courseDetails.course_title}</h3>
+
+              <dl className="classic-definition-list">
+                <dt>Department:</dt>
+                <dd>{courseDetails.department_name}</dd>
+
+                <dt>Semester:</dt>
+                <dd>{courseDetails.semester}</dd>
+
+                <dt>Offered By:</dt>
+                <dd>{courseDetails.offered_by}</dd>
+
+                <dt>Total Enrolled Students:</dt>
+                <dd>{courseDetails.enrolled_students}</dd>
+              </dl>
+
+              <section>
+                <h4 className="mt-4 mb-2 classic-subtitle">Assigned Teacher{courseDetails.assigned_teachers.length > 1 ? 's' : ''}:</h4>
+                {courseDetails.assigned_teachers.length > 0 ? (
+                  <ul className="classic-teacher-list">
+                    {courseDetails.assigned_teachers.map(t => (
+                      <li key={t}>{t}</li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-muted fst-italic">No teachers assigned.</p>
+                )}
+              </section>
+            </div>
+          ) : (
+            <p>Loading details…</p>
+          )}
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={handleCloseCourseModal}>Close</Button>
         </Modal.Footer>
       </Modal>
     </div>

@@ -10,6 +10,9 @@ const gradeSheetRoutes = require('./routes/gradeSheetRoutes');
 const UserInfoRoutes = require('./routes/alluserRoutes');
 const UserRoutes = require('./routes/userRoutes');
 const userPhotoRoutes = require('./routes/imageRoutes');
+const courseInfoRoutes = require('./routes/courseInfoRoutes');
+const studentInfoRoutes = require('./routes/studentRoutes');
+const SemesterRoutineRoutes = require('./routes/semesterRoutineRoutes');
 
 
 const jwt = require('jsonwebtoken');
@@ -25,6 +28,9 @@ app.use('/api/gradesheet',gradeSheetRoutes);
 app.use('/api/allUser',UserInfoRoutes);
 app.use('/api/user',UserRoutes);
 app.use('/api/user', userPhotoRoutes);
+app.use('/api/course-details',courseInfoRoutes);
+app.use('/api/student-profile',studentInfoRoutes);
+app.use('/api/semesterRoutine',SemesterRoutineRoutes);
 
 
 const os = require('os');

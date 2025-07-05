@@ -1,0 +1,310 @@
+
+.student-info-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f0e6da 0%, #a2d2ff 100%);
+  font-family: 'Open Sans', sans-serif;
+  color: #333;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+.student-info-container .main-content {
+  width: 100%;
+  max-width: 1200px;
+  padding: 4rem 1.5rem 2rem;
+  box-sizing: border-box;
+}
+
+.student-info-container h2.header {
+  font-size: 3.5rem;
+  font-weight: 800;
+  margin: 1.5rem 0 1.5rem;
+  text-transform: uppercase;
+  font-family: 'Montserrat', sans-serif;
+  color: #2c3e50;
+  letter-spacing: 3px;
+  text-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+  background: linear-gradient(45deg, #2c3e50, #4a6a8a);
+  -webkit-background-clip: text; /* Ensures gradient applies to text */
+  -webkit-text-fill-color: transparent;
+  background-clip: text; /* Standard property */
+}
+
+.student-info-container .card {
+  border-radius: 1.5rem;
+  border: none;
+  background-color: rgba(255, 255, 255, 0.98);
+  /* REFINED: Softer default shadow */
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08), 0 3px 8px rgba(0, 0, 0, 0.04);
+  transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.student-info-container .card:hover {
+  transform: translateY(-12px) scale(1.01);
+  /* Keep hover shadow impactful */
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.15), 0 10px 20px rgba(0, 0, 0, 0.08);
+}
+
+.student-info-container .card-body {
+  padding: 3rem;
+}
+
+.student-info-container .d-flex.align-items-center.mb-4 {
+  position: relative;
+  padding-bottom: 1.5rem;
+  margin-bottom: 2rem !important;
+}
+
+.student-info-container .d-flex.align-items-center.mb-4::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60%;
+  height: 2px;
+  background-color: #e0e0e0;
+  border-radius: 2px;
+}
+
+.student-info-container .card-body img {
+  border-radius: 50%;
+  border: 6px solid #f9e4be;
+  box-shadow: 0 0 25px rgba(249, 228, 190, 0.7);
+  width: 140px;
+  height: 140px;
+  object-fit: cover;
+  flex-shrink: 0;
+  margin-right: 2rem;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.student-info-container .card-body img:hover {
+  transform: scale(1.08);
+  box-shadow: 0 0 35px rgba(249, 228, 190, 0.9);
+}
+
+.student-info-container h2,
+.student-info-container h4,
+.student-info-container h5 {
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.student-info-container h4 {
+  color: #2c3e50;
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+}
+
+.student-info-container h5 {
+  color: #1a73e8;
+  border-left: 6px solid #1a73e8;
+  padding-left: 1rem;
+  /* REDUCED: Adjusted vertical margin */
+  margin-top: 1.8rem;
+  margin-bottom: 1rem;
+  font-size: 1.5rem;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  font-family: 'Montserrat', sans-serif;
+  position: relative;
+  overflow: hidden;
+}
+
+.student-info-container h5::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(26, 115, 232, 0.1), transparent);
+  transform: translateX(-100%);
+  transition: transform 0.5s ease-out;
+}
+
+.student-info-container h5:hover::after {
+  transform: translateX(0);
+}
+
+.student-info-container .list-group-item {
+  font-size: 1.1rem;
+  /* REDUCED: Adjusted vertical padding for tighter lines */
+  padding: 0.8rem 0;
+  border: none;
+  border-bottom: 1px solid #e9ecef;
+  background-color: transparent;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  position: relative;
+  z-index: 1;
+}
+
+.student-info-container .list-group-item:last-child {
+  border-bottom: none;
+}
+
+.student-info-container .list-group-item:hover {
+  background-color: #f7f9fc;
+  transform: translateX(5px);
+}
+
+.student-info-container .list-group-item span {
+  font-weight: 600;
+  color: #495057;
+}
+
+.student-info-container .badge {
+  font-weight: 700;
+  padding: 0.6em 1em;
+  font-size: 0.9rem;
+  border-radius: 1.5rem;
+  text-transform: capitalize;
+}
+
+.student-info-container .badge.bg-success {
+  background-color: #28a745 !important;
+  box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3);
+}
+
+.student-info-container .badge.bg-danger {
+  background-color: #dc3545 !important;
+  box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3);
+}
+
+.student-info-container .badge.bg-secondary {
+  background-color: #6c757d !important;
+  box-shadow: 0 2px 8px rgba(108, 117, 125, 0.3);
+}
+
+.student-info-container .spinner-border {
+  width: 4rem;
+  height: 4rem;
+  border-width: 0.4rem;
+  color: #1a73e8;
+}
+
+.student-info-container .alert {
+  font-size: 1.2rem;
+  max-width: 700px;
+  margin: 3rem auto;
+  border-radius: 1.2rem;
+  padding: 2rem;
+  background-color: rgba(255, 255, 255, 0.95);
+  animation: fadeIn 0.8s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.student-info-container .text-muted {
+  color: #6a737d !important;
+  font-size: 1.05rem;
+  line-height: 1.6;
+}
+
+.student-info-container .text-primary {
+  color: #1a73e8 !important;
+}
+
+.student-info-container .text-dark {
+  color: #212529 !important;
+}
+
+@media (max-width: 992px) {
+  .student-info-container h2.header {
+    font-size: 3rem;
+    margin: 1.2rem 0 1.2rem; /* Adjusted responsive margin */
+  }
+  .student-info-container .card-body {
+    padding: 2.5rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .student-info-container h2.header {
+    font-size: 2.5rem;
+    letter-spacing: 1px;
+    margin: 1rem 0 1rem; /* Adjusted responsive margin */
+  }
+
+  .student-info-container .card-body {
+    padding: 2rem;
+  }
+
+  .student-info-container .card-body img {
+    width: 100px;
+    height: 100px;
+    border-width: 4px;
+    margin-right: 1.5rem;
+  }
+
+  .student-info-container h4 {
+    font-size: 1.6rem;
+  }
+
+  .student-info-container h5 {
+    font-size: 1.3rem;
+    padding-left: 0.8rem;
+    margin-top: 1.5rem; /* Adjusted responsive margin */
+    margin-bottom: 0.8rem; /* Adjusted responsive margin */
+  }
+
+  .student-info-container .list-group-item {
+    font-size: 1rem;
+    padding: 0.7rem 0; /* Adjusted responsive padding */
+  }
+}
+
+@media (max-width: 576px) {
+  .student-info-container h2.header {
+    font-size: 2rem;
+    margin: 0.8rem 0 0.8rem; /* Adjusted responsive margin */
+  }
+
+  .student-info-container .card-body {
+    padding: 1.5rem;
+  }
+
+  .student-info-container .d-flex.align-items-center.mb-4 {
+    flex-direction: column;
+    text-align: center;
+    padding-bottom: 1rem;
+    margin-bottom: 1.5rem !important;
+  }
+
+  .student-info-container .card-body img {
+    margin-bottom: 1rem;
+    margin-right: 0 !important;
+    width: 90px;
+    height: 90px;
+  }
+
+  .student-info-container .d-flex.align-items-center.mb-4::after {
+    width: 80%;
+  }
+
+  .student-info-container .list-group-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .student-info-container .list-group-item span {
+    margin-top: 0.4rem;
+    align-self: flex-end;
+    text-align: right;
+  }
+
+  .student-info-container .alert {
+    padding: 1.5rem;
+    font-size: 1rem;
+    margin: 2rem auto;
+  }
+}

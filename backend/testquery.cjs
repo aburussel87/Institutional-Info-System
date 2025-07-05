@@ -1,5 +1,6 @@
 const { Pool } = require('pg');
 require('dotenv').config();
+const {formatSemesterRoutine} = require('../backend/utils');
 
 const client = new Pool({
   user: process.env.PGUSER,
@@ -9,28 +10,27 @@ const client = new Pool({
   port: process.env.PGPORT,
 });
 
-async function getStudentInfo(sid) {
-  const query = 'SELECT * FROM Get_studentinfo($1)';
-  try {
-    const res = await client.query(query, [sid]); 
-    if (res.rows.length > 0) {
-      return res.rows[0];
-    } else {
-      return null;
-    }
-  } catch (err) {
-    console.error('Error executing query', err.stack);
-    throw err;
-  }
+async function getSemesterRoutine(sid) {
+  const query = `
+    SELECT * FROM get_class_routine($1,$2,$3);
+  `;
+  const subq = `
+   Select current_semester , academic_session, department_id from student where student_id = $1
+  `;
+  const r1 = await client.query(subq,[sid]);
+  let student = r1.rows[0];
+  const res = await client.query(query, [student.current_semester,student.academic_session,student.department_id]);
+  return formatSemesterRoutine(res.rows);
 }
+
 
 (async () => {
   try {
-    const result = await getStudentInfo(2304030);
+    const result = await getSemesterRoutine(2204032);
     console.log(result);
   } catch (error) {
-    console.error('Error:', error);
+    console.error('❌ Error:', error);
   } finally {
-    await client.end();  
+    await client.end();
   }
 })();

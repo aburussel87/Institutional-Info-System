@@ -1,139 +1,133 @@
-/* styles/dashboard.css */
-
-/* --- General Body & Container Styling --- */
-body {
-  background-color: #e0e5ec; /* Soft background color */
-  font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  color: #343a40; /* Darker text for contrast */
+/* --- General Body & Container Styling (No changes, assuming this is global) --- */
+html, body {
+  height: 100%;
+  overflow-y: auto;
 }
 
 .main-content {
-  padding-top: 20px;
-  background-color: #e0e5ec; /* Match body background */
-  min-height: calc(100vh - 56px); /* Adjust based on header height */
-  border-radius: 20px; /* Overall rounded feel */
+  min-height: calc(100vh - 56px); /* Assuming 56px for a fixed navbar height */
+  background-color: #e0e5ec; /* Soft UI background for dashboard */
+  border-radius: 20px;
+  padding: 20px;
 }
 
-/* --- Soft UI Card Base Style --- */
-/* This applies to .card, info-card, course-card-item, and the graph card */
+/* --- Soft UI Card Base Style (No changes) --- */
 .card {
   background-color: #e0e5ec; /* Match background */
-  border: none; /* Remove default border */
-  border-radius: 20px; /* More pronounced rounded corners */
-  box-shadow: 7px 7px 15px rgba(174, 174, 192, 0.6), /* Bottom-right shadow (dark) */
-              -7px -7px 15px rgba(255, 255, 255, 1); /* Top-left highlight (light) */
-  transition: all 0.3s ease-in-out; /* Smooth transitions for hover/active states */
+  border: none;
+  border-radius: 20px;
+  box-shadow: 7px 7px 15px rgba(174, 174, 192, 0.6),
+              -7px -7px 15px rgba(255, 255, 255, 1);
+  transition: all 0.3s ease-in-out;
 }
 
 .card:hover {
-  /* Slightly more 'popped out' on hover */
   box-shadow: 10px 10px 20px rgba(174, 174, 192, 0.7),
               -10px -10px 20px rgba(255, 255, 255, 1);
-  transform: translateY(-2px); /* Slight lift */
+  transform: translateY(-2px);
 }
 
-/* --- Info Cards Specifics --- */
+/* --- Info Cards Specifics (No changes) --- */
 .info-card .card-body {
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   height: 100%;
-  padding: 1.5rem; /* More generous padding */
+  padding: 1.5rem;
 }
 
 .info-card .card-title {
-  font-size: 1.2rem; /* Slightly larger title */
+  font-size: 1.2rem;
   margin-bottom: 15px;
-  color: #6c757d; /* Muted text color */
+  color: #6c757d;
 }
 
 .info-card .card-text {
-  font-size: 3rem; /* Make numbers stand out even more */
+  font-size: 3rem;
   line-height: 1;
-  font-weight: 700; /* Bolder numbers */
-  /* Using specific Bootstrap color classes directly on the p tag is fine here */
+  font-weight: 700;
 }
 
-/* --- Enrolled Courses Section --- */
+/* --- Enrolled Courses Section (No changes) --- */
 .courses-scroll-container {
-  max-height: 400px; /* Adjust height as needed */
-  overflow-y: auto; /* Enable vertical scrolling */
-  padding-right: 15px; /* Space for scrollbar */
-  margin-right: -15px; /* Counteract padding to avoid extra margin */
+  max-height: 400px;
+  overflow-y: auto;
+  padding-right: 15px;
+  margin-right: -15px;
 }
 
-/* Custom Scrollbar for Soft UI */
+/* Custom Scrollbar for Soft UI (No changes) */
 .courses-scroll-container::-webkit-scrollbar {
   width: 8px;
 }
 
 .courses-scroll-container::-webkit-scrollbar-track {
-  background: #e0e5ec; /* Match background */
+  background: #e0e5ec;
   border-radius: 10px;
 }
 
 .courses-scroll-container::-webkit-scrollbar-thumb {
-  background: #bbbec4; /* Soft scrollbar color */
+  background: #bbbec4;
   border-radius: 10px;
-  border: 2px solid #e0e5ec; /* Inner border to create depth */
+  border: 2px solid #e0e5ec;
 }
 
 .courses-scroll-container::-webkit-scrollbar-thumb:hover {
-  background: #9fa3a9; /* Darker on hover */
+  background: #9fa3a9;
 }
 
-/* Course Card Item specifics */
+/* Course Card Item specifics (No changes) */
 .course-card-item .card-body {
-  padding: 1.2rem; /* Consistent padding */
+  padding: 1.2rem;
 }
 
 .course-image {
-  width: 60px; /* Slightly larger image */
+  width: 60px;
   height: 60px;
   object-fit: cover;
   flex-shrink: 0;
   box-shadow: 3px 3px 6px rgba(174, 174, 192, 0.4),
-              -3px -3px 6px rgba(255, 255, 255, 0.7); /* Soft UI shadows for image */
-  padding: 3px; /* Creates a small border/depth effect */
-  background-color: #e0e5ec; /* Match background */
+              -3px -3px 6px rgba(255, 255, 255, 0.7);
+  padding: 3px;
+  background-color: #e0e5ec;
 }
 
-/* Text inside course card item */
+/* Text inside course card item (No changes) */
 .course-card-item h5 {
     display: flex;
     flex-wrap: wrap;
     align-items: baseline;
-    font-size: 1.1rem; /* Slightly adjust size */
-    color: #343a40; /* Stronger color for title */
+    font-size: 1.1rem;
+    color: #343a40;
 }
 
 .course-card-item h5 span {
     white-space: nowrap;
-    font-size: 0.9rem; /* Smaller for secondary info */
-    color: #6c757d; /* Muted text */
+    font-size: 0.9rem;
+    color: #6c757d;
 }
 
 .course-card-item p {
-    font-size: 0.85rem; /* Smaller for offered by */
+    font-size: 0.85rem;
     color: #888;
 }
 
-/* --- Chart Specific Styling --- */
+/* --- Chart Specific Styling (No changes) --- */
 .card-title.text-primary {
-  color: #007bff !important; /* Ensure primary color for titles */
+  color: #c94671 !important;
 }
 
-/* --- Button Styling (Soft UI Effect) --- */
+/* --- Button Styling (Soft UI Effect - No changes) --- */
 .btn.btn-outline-primary,
 .btn.btn-secondary {
   background-color: #e0e5ec;
   border: none;
-  color: #007bff; /* Primary color for outline buttons */
+  color: #007bff;
   box-shadow: 3px 3px 6px rgba(174, 174, 192, 0.5),
               -3px -3px 6px rgba(255, 255, 255, 0.8);
-  border-radius: 15px; /* Rounded buttons */
-  padding: 10px 20px; /* Comfortable padding */
+  border-radius: 15px;
+  padding: 10px 20px;
   transition: all 0.2s ease-in-out;
 }
 
@@ -141,40 +135,121 @@ body {
 .btn.btn-secondary:hover {
   box-shadow: 1px 1px 2px rgba(174, 174, 192, 0.3),
               -1px -1px 2px rgba(255, 255, 255, 0.5);
-  transform: scale(0.98); /* Slight press effect */
+  transform: scale(0.98);
 }
 
 .btn.btn-outline-primary:active,
 .btn.btn-secondary:active {
   box-shadow: inset 2px 2px 5px rgba(174, 174, 192, 0.7),
               inset -2px -2px 5px rgba(255, 255, 255, 0.8);
-  transform: scale(0.96); /* More pronounced press effect */
+  transform: scale(0.96);
 }
 
-/* --- Modal Styling --- */
-.modal-content {
-  background-color: #e0e5ec;
+/* --- Glassmorphism Modal Styling --- */
+/* Target the modal content directly for the main glass effect */
+.glassmorphism-modal .modal-content {
+  background: rgba(255, 255, 255, 0.15); /* Slightly transparent background */
+  backdrop-filter: blur(10px); /* Adjust blur strength as needed */
+  -webkit-backdrop-filter: blur(10px); /* For Safari support */
+  border-radius: 15px; /* Rounded corners */
+  border: 1px solid rgba(255, 255, 255, 0.3); /* Light border for definition */
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37); /* Pronounced shadow */
+  color: #e0e0e0; /* Default text color for the modal content */
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  transition: all 0.3s ease-in-out;
+}
+
+/* Ensure header and footer backgrounds are consistent with the modal body */
+.glassmorphism-modal .modal-header,
+.glassmorphism-modal .modal-footer {
+  background: transparent; /* Make them transparent to blend with modal-content */
+  border-color: rgba(255, 255, 255, 0.2); /* Light border for separation */
+  /* color: #a14949; -- Removed this as it seems like an old conflicting color */
+}
+
+.glassmorphism-modal .modal-title {
+  font-weight: 600;
+  font-size: 1.5rem;
+  color: #fff; /* White title for good visibility */
+}
+
+.glassmorphism-modal .modal-body p,
+.glassmorphism-modal .modal-body ul {
+  color: #e0e0e0; /* Light grey for body text */
+  font-size: 1.1rem;
+  line-height: 1.4;
+}
+
+.glassmorphism-modal .modal-body ul li {
+  margin-bottom: 6px;
+}
+
+/* Specific styling for buttons inside the glassmorphism modal */
+.glassmorphism-modal .btn { /* Target all buttons inside this modal */
+  background: rgba(255, 255, 255, 0.2); /* Semi-transparent button background */
   border: none;
-  border-radius: 20px;
-  box-shadow: 10px 10px 20px rgba(174, 174, 192, 0.7),
-              -10px -10px 20px rgba(255, 255, 255, 1);
+  color: #fff; /* White text for buttons */
+  transition: background 0.3s ease, color 0.3s ease;
+  border-radius: 8px; /* Slightly less rounded than soft UI buttons for contrast */
+  padding: 8px 15px; /* Adjust padding */
+  box-shadow: none; /* Remove soft UI button shadow if it applies by default */
 }
 
-.modal-header, .modal-footer {
-  border-bottom: none;
-  border-top: none;
-  background-color: #e0e5ec;
+.glassmorphism-modal .btn:hover {
+  background: rgba(255, 255, 255, 0.35); /* More opaque on hover */
+  color: #00bfff; /* Highlight text on hover, or keep white */
+  cursor: pointer;
+  transform: none; /* Remove any previous transform */
+  box-shadow: none;
 }
 
-.modal-title {
-  color: #343a40;
+.glassmorphism-modal .btn:active {
+  background: rgba(255, 255, 255, 0.45); /* Even more opaque on active */
+  transform: none; /* Remove transform */
+  box-shadow: none;
 }
 
-.modal-body ul.list-group-flush .list-group-item {
-  background-color: #e0e5ec; /* Ensure list items match background */
-  border-bottom: 1px solid rgba(174, 174, 192, 0.3); /* Subtle separator */
+/* --- Classic Course Info (No changes, assuming this is for a different modal type or display) --- */
+.classic-course-info {
+  font-family: "Georgia", "Times New Roman", serif;
+  color: #2c2c2c;
+  background-color: #fefefe;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  max-width: 480px;
+  margin: 0 auto;
 }
 
-.modal-body ul.list-group-flush .list-group-item:last-child {
-  border-bottom: none;
+.classic-title {
+  font-weight: 700;
+  font-size: 1.8rem;
+  border-bottom: 1px solid #ddd;
+  padding-bottom: 0.3rem;
+  color: #1a1a1a;
+}
+
+.classic-definition-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 20px;
+}
+
+.classic-definition-list dt,
+.classic-definition-list dd {
+  margin: 0;
+  padding: 0;
+  line-height: 1.5;
+}
+
+.classic-definition-list dt {
+  flex: 0 0 140px;
+  font-weight: 600;
+  color: #333;
+}
+
+.classic-definition-list dd {
+  flex: 1 1 auto;
+  color: #555;
+  white-space: nowrap;
 }

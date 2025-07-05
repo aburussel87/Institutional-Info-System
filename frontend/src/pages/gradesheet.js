@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from 'react-router-dom'; // ADD THIS
+import { useNavigate } from 'react-router-dom'; 
 import Header from '../pages/header';
 import '../styles/gradesheet.css'
 import API_BASE_URL from '../config/config';
@@ -7,7 +7,7 @@ import API_BASE_URL from '../config/config';
 export default function Gradesheet() {
     const navigate = useNavigate();
 
-    const [student, setStudent] = useState(null); // Student data from backend
+    const [student, setStudent] = useState(null); 
     const [selectedTerm, setSelectedTerm] = useState("");
     const [msg, setMsg] = useState("");
     const [semester, setSemester] = useState("");
@@ -77,7 +77,7 @@ export default function Gradesheet() {
     const totalCGPA = weightedSum / totalCreditsTillNow;
 
     return (
-        <main className="container mt-4">
+        <main className="gradesheet container mt-4">
             <Header />
             <div>
                 {msg && <p className="text-danger">{msg}</p>}

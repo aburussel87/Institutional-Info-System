@@ -74,10 +74,13 @@ const Header = () => {
         </Offcanvas.Header>
         <Offcanvas.Body>
           <a className="btn btn-outline-primary w-100 mb-2" href="/dashboard">Dashboard</a>
+          <a className="btn btn-outline-primary w-100 mb-2" href="/student">Personal Information</a>
+          <a className="btn btn-outline-primary w-100 mb-2" href="/studentRoutine">My routine</a>
           <a className="btn btn-outline-primary w-100 mb-2" href="/gradesheet">Gradesheet</a>
           <a className="btn btn-outline-primary w-100 mb-2" href="/userInfo">User Info</a>
           <a className="btn btn-outline-primary w-100 mb-2" href="/chat">Edu Bot</a>
-          <a className="btn btn-outline-danger w-100" href="/login">Logout</a>
+          <a className="btn btn-outline-danger w-100 mb-2" href="/login">Logout</a>
+          
         </Offcanvas.Body>
       </Offcanvas>
 

@@ -11,9 +11,8 @@ const pool = new Pool({
   port: process.env.PGPORT,
 });
 
-
 function isResident() {
-  return Math.random() < 0.9; 
+  return Math.random() < 0.9;
 }
 
 async function assignHallsToStudentsRoundRobin() {
@@ -47,8 +46,7 @@ async function assignHallsToStudentsRoundRobin() {
     const temporaryStudents = [];
 
     for (let i = 0; i < maleStudents.length; i++) {
-      if (i % 50 >= 40) temporaryStudents.push(maleStudents[i]);
-      else permanentStudents.push(maleStudents[i]);
+       permanentStudents.push(maleStudents[i]);
     }
 
     const assigned = [];
@@ -83,35 +81,30 @@ async function assignHallsToStudentsRoundRobin() {
       }
     }
 
-    for (let i = 0; i < temporaryStudents.length; i++) {
-      const studentId = temporaryStudents[i].student_id;
-      const hall = halls[i % halls.length];
-      const assignedOn = new Date().toISOString();
 
-      const residentStatus = isResident();
-      const roomNumberStr = residentStatus ? null : null; 
 
-      await client.query(
-        `INSERT INTO HallAssignment (student_id, hall_id, room_number, resident, assigned_on)
-         VALUES ($1, $2, $3, $4, $5)`,
-        [studentId, hall.hall_id, roomNumberStr, residentStatus, assignedOn]
-      );
-
-      assigned.push({
-        student_id: studentId,
-        hall_id: hall.hall_id,
-        room_number: roomNumberStr || '',
-        resident: residentStatus,
-        assigned_on: assignedOn
-      });
-    }
+    let femaleRoomNumber = 1;
+    let femaleRoomOccupants = 0;
 
     for (let i = 0; i < femaleStudents.length; i++) {
       const studentId = femaleStudents[i].student_id;
       const assignedOn = new Date().toISOString();
 
       const residentStatus = isResident();
-      const roomNumberStr = residentStatus ? null : null; // No room logic defined for female students yet
+
+      let roomNumberStr = null;
+      if (residentStatus) {
+        roomNumberStr = femaleRoomNumber.toString();
+        femaleRoomOccupants++;
+
+        if (femaleRoomOccupants >= maxPerRoom) {
+          femaleRoomNumber++;
+          femaleRoomOccupants = 0;
+          if (femaleRoomNumber > roomsPerHall) {
+            femaleRoomNumber = 1;
+          }
+        }
+      }
 
       await client.query(
         `INSERT INTO HallAssignment (student_id, hall_id, room_number, resident, assigned_on)

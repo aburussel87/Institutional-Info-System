@@ -1,5 +1,5 @@
 const client = require('./db');
-const { generateRoutine, formatGradeSheet } = require('../utils');
+const { generateRoutine, formatGradeSheet,formatSemesterRoutine } = require('../utils');
 
 
 // getUserInfo(uid) – Fetches all user information for a given user ID.
@@ -12,7 +12,67 @@ const { generateRoutine, formatGradeSheet } = require('../utils');
 // updateLogin(uid) – Increments login attempt count and updates last login timestamp for a user.
 // getUser(uid) – Fetches detailed user information including role-specific data.
 // getImage(uid) – Retrieves the profile image of a user based on their ID.
+// getCourseInfo
+// semester routine
 
+async function getSemesterRoutine(sid) {
+  const query = `
+    SELECT * FROM get_class_routine($1,$2,$3);
+  `;
+  const subq = `
+   Select current_semester , academic_session, department_id from student where student_id = $1
+  `;
+  const r1 = await client.query(subq,[sid]);
+  let student = r1.rows[0];
+  const res = await client.query(query, [student.current_semester,student.academic_session,student.department_id]);
+  return formatSemesterRoutine(res.rows);
+}
+
+
+async function getStudentInfo(studentId) {
+  const query = `
+    SELECT * FROM get_student_full_info($1);
+  `;
+
+  const res = await client.query(query, [studentId]);
+  return res.rows;
+}
+
+async function getCourseInfo(studentId) {
+  const query = `
+    WITH course_info AS (
+    SELECT c.course_id, c.title AS course_title, c.semester,
+           d1.name AS department_name,
+           d2.name AS offered_by
+    FROM course c
+    JOIN department d1 ON c.department_id = d1.department_id
+    JOIN department d2 ON c.offered_by = d2.department_id
+    WHERE c.course_id = $1
+),
+students AS (
+    SELECT COUNT(*) AS enrolled_students
+    FROM enrollment
+    WHERE course_id = $1
+),
+teachers AS (
+    SELECT ARRAY_AGG(u.username) AS assigned_teachers
+    FROM subjectallocation sa
+    JOIN teacher t ON sa.teacher_id = t.teacher_id
+    JOIN "User" u ON t.teacher_id = u.user_id
+    WHERE sa.course_id = $1
+)
+SELECT ci.course_id, ci.course_title, ci.semester,
+       ci.department_name, ci.offered_by,
+       COALESCE(s.enrolled_students, 0) AS enrolled_students,
+       COALESCE(t.assigned_teachers, ARRAY[]::TEXT[]) AS assigned_teachers
+FROM course_info ci
+CROSS JOIN students s
+CROSS JOIN teachers t;
+  `;
+
+  const res = await client.query(query, [studentId]);
+  return res.rows;
+}
 
 
 
@@ -134,33 +194,32 @@ async function getRoleInfo(uid) {
 }
 
 async function getStudentRoutine(studentId) {
-
   const query = `
-  SELECT 
-                en.student_id, 
-                en.course_id, 
-                c.title AS course_title,
-                cs.day_of_week, 
-                cs.start_time, 
-                cs.end_time
-            FROM enrollment en
-            JOIN classschedule cs 
-                ON en.course_id = cs.course_id 
-                AND en.section_type = cs.section_type
-            JOIN course c ON en.course_id = c.course_id
-            WHERE en.student_id = $1
-            ORDER BY 
-                CASE 
-                    WHEN cs.day_of_week = 'Saturday' THEN 1
-                    WHEN cs.day_of_week = 'Sunday' THEN 2
-                    WHEN cs.day_of_week = 'Monday' THEN 3
-                    WHEN cs.day_of_week = 'Tuesday' THEN 4
-                    WHEN cs.day_of_week = 'Wednesday' THEN 5
-                    WHEN cs.day_of_week = 'Thursday' THEN 6
-                    WHEN cs.day_of_week = 'Friday' THEN 7
-                END,
-                cs.start_time;
-`;
+    SELECT 
+      en.student_id, 
+      en.course_id, 
+      c.title AS course_title,
+      cs.day_of_week, 
+      cs.start_time, 
+      cs.end_time
+    FROM enrollment en
+    JOIN classschedule cs 
+      ON en.course_id = cs.course_id AND en.section_type in (cs.section_type, 'All')
+    JOIN course c 
+      ON en.course_id = c.course_id
+    WHERE en.student_id = $1
+    ORDER BY 
+      CASE 
+        WHEN cs.day_of_week = 'Saturday' THEN 1
+        WHEN cs.day_of_week = 'Sunday' THEN 2
+        WHEN cs.day_of_week = 'Monday' THEN 3
+        WHEN cs.day_of_week = 'Tuesday' THEN 4
+        WHEN cs.day_of_week = 'Wednesday' THEN 5
+        WHEN cs.day_of_week = 'Thursday' THEN 6
+        WHEN cs.day_of_week = 'Friday' THEN 7
+      END,
+      cs.start_time;
+  `;
 
   const res = await client.query(query, [studentId]);
   return generateRoutine(res);
@@ -286,5 +345,8 @@ module.exports = {
   updateLogin,
   getUser,
   getImage,
-  getEnrolledCourse
+  getEnrolledCourse,
+  getCourseInfo,
+  getStudentInfo,
+  getSemesterRoutine
 };
