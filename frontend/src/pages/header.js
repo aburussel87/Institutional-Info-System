@@ -117,6 +117,7 @@ const Header = () => {
           <a className="btn btn-outline-primary w-100 mb-2" href="/studentRoutine">My routine</a>
           <a className="btn btn-outline-primary w-100 mb-2" href="/courseOutline">Course Outlines</a>
           <a className="btn btn-outline-primary w-100 mb-2" href="/gradesheet">Gradesheet</a>
+          <a className="btn btn-outline-primary w-100 mb-2" href="/studentFee">Student Fee</a>
           <a className="btn btn-outline-danger w-100 mb-2" href="/login">Logout</a>
         </Offcanvas.Body>
       </Offcanvas>

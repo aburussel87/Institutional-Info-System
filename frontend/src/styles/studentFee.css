@@ -1,0 +1,205 @@
+
+/* Basic Reset & Body Styling */
+.student-fee-container {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f4f7f6;
+  padding: 20px;
+  max-width: 900px;
+  margin: 20px auto;
+  border-radius: 10px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* Header Styling (assuming your Header component has its own styles) */
+.student-fee-title {
+  text-align: center;
+  color: #2c3e50;
+  margin-bottom: 30px;
+  font-size: 2.5em;
+  font-weight: 700;
+  border-bottom: 2px solid #3498db;
+  padding-bottom: 10px;
+}
+
+/* Fee Card Styling */
+.student-fee-card {
+  background-color: #ffffff;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  overflow: hidden; /* Ensures child elements stay within bounds */
+}
+
+/* Fee Card Header (Clickable Area) */
+.student-fee-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18px 25px;
+  background-color: #3498db;
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.student-fee-header:hover {
+  background-color: #2980b9;
+}
+
+.student-fee-type-title {
+  margin: 0;
+  font-size: 1.6em;
+  font-weight: 600;
+}
+
+.student-fee-expand-icon {
+  font-size: 2em;
+  font-weight: bold;
+}
+
+/* Unpaid Section */
+.student-fee-unpaid-section {
+  padding: 15px 25px;
+  border-bottom: 1px solid #eee;
+  background-color: #fcfcfc;
+}
+
+.student-fee-unpaid-title {
+  color: #e74c3c;
+  font-size: 1.2em;
+  margin-bottom: 10px;
+  border-bottom: 1px dashed #e74c3c;
+  display: inline-block;
+  padding-bottom: 3px;
+}
+
+.student-fee-unpaid-list {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+.student-fee-unpaid-item {
+  background-color: #ffebee;
+  border: 1px solid #ef9a9a;
+  color: #c0392b;
+  padding: 10px 15px;
+  margin-bottom: 8px;
+  border-radius: 5px;
+  font-size: 0.95em;
+}
+
+.student-fee-no-dues {
+  color: #27ae60;
+  font-style: italic;
+  font-size: 1em;
+  padding: 5px 0;
+}
+
+/* Paid Section (Expanded) */
+.student-fee-paid-section {
+  padding: 15px 25px;
+  background-color: #e8f6f3; /* Light green background for paid section */
+  border-top: 1px solid #d1e7e0;
+}
+
+.student-fee-paid-title {
+  color: #27ae60;
+  font-size: 1.2em;
+  margin-bottom: 10px;
+  border-bottom: 1px dashed #27ae60;
+  display: inline-block;
+  padding-bottom: 3px;
+}
+
+.student-fee-paid-list {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+.student-fee-paid-item {
+  background-color: #e0f2f7; /* Light blue for paid items */
+  border: 1px solid #b3e0ed;
+  color: #2c3e50;
+  padding: 10px 15px;
+  margin-bottom: 8px;
+  border-radius: 5px;
+  font-size: 0.95em;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.student-fee-no-history {
+  color: #7f8c8d;
+  font-style: italic;
+  font-size: 1em;
+  padding: 5px 0;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .student-fee-container {
+    padding: 15px;
+    margin: 10px;
+  }
+
+  .student-fee-title {
+    font-size: 2em;
+  }
+
+  .student-fee-header {
+    padding: 15px 20px;
+  }
+
+  .student-fee-type-title {
+    font-size: 1.4em;
+  }
+
+  .student-fee-unpaid-section,
+  .student-fee-paid-section {
+    padding: 10px 20px;
+  }
+
+  .student-fee-unpaid-item,
+  .student-fee-paid-item {
+    padding: 8px 12px;
+    font-size: 0.9em;
+  }
+}
+
+@media (max-width: 480px) {
+  .student-fee-container {
+    padding: 10px;
+  }
+
+  .student-fee-title {
+    font-size: 1.8em;
+  }
+
+  .student-fee-header {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 12px 15px;
+  }
+
+  .student-fee-expand-icon {
+    margin-top: 5px;
+  }
+
+  .student-fee-type-title {
+    font-size: 1.2em;
+  }
+
+  .student-fee-unpaid-section,
+  .student-fee-paid-section {
+    padding: 8px 15px;
+  }
+
+  .student-fee-unpaid-item,
+  .student-fee-paid-item {
+    padding: 6px 10px;
+    font-size: 0.85em;
+  }
+}
