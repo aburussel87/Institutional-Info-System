@@ -12,6 +12,10 @@ const StudentFee = () => {
   const toggleExpand = (feeType) => {
     setExpandedFeeType(expandedFeeType === feeType ? null : feeType);
   };
+const formatDate = (dateString) => {
+  if (!dateString) return 'N/A';
+  return new Date(dateString).toLocaleDateString();
+};
 
   useEffect(() => {
     const fetchFeeData = async () => {
@@ -102,7 +106,7 @@ const StudentFee = () => {
               <ul className="student-fee-unpaid-list">
                 {feeData.unpaid[feeType].map((fee) => (
                   <li key={fee.id || `${feeType}-${fee.amount}-${fee.date}`} className="student-fee-unpaid-item">
-                    Amount: ${fee.amount} | Due Date: {fee.date}
+                    Amount: ${fee.amount} | Due Date: {formatDate(fee.due_date)}
                   </li>
                 ))}
               </ul>
@@ -120,7 +124,7 @@ const StudentFee = () => {
                     .sort((a, b) => new Date(b.date) - new Date(a.date))
                     .map((fee) => (
                       <li key={fee.id || `${feeType}-${fee.amount}-${fee.date}`} className="student-fee-paid-item">
-                        Amount: ${fee.amount} | Paid On: {fee.date}
+                        Amount: ${fee.amount} | Paid On: {formatDate(fee.paid_on)}
                       </li>
                     ))}
                 </ul>

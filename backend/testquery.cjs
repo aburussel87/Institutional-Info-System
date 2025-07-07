@@ -10,19 +10,19 @@ const client = new Pool({
   port: process.env.PGPORT,
 });
 
-async function getEnrolledCourseOutline(uid,role) {
+async function get_all_payments_ordered_by_type(sid) {
   const query = `
-    SELECT * FROM get_user_notifications($1,$2);
+    SELECT * FROM get_all_payments_ordered_by_type($1)
   `;
-  const res = await client.query(query, [uid, role]);
-  return res.rows;
+  const res = await client.query(query, [sid]);
+  return formatFee(res.rows);
 }
 
 
 (async () => {
   try {
-    const result = await getEnrolledCourseOutline(2204032,'Student');
-    console.log(result);
+    const result = await get_all_payments_ordered_by_type(2204032);
+    console.log(result.paid['Dining Fee']);
   } catch (error) {
     console.error(' Error:', error);
   } finally {

@@ -1,5 +1,5 @@
 const client = require('./db');
-const { generateRoutine, formatGradeSheet,formatSemesterRoutine } = require('../utils');
+const { generateRoutine, formatGradeSheet,formatSemesterRoutine,formatFee } = require('../utils');
 
 
 // getUserInfo(uid) 
