@@ -2,18 +2,58 @@ const client = require('./db');
 const { generateRoutine, formatGradeSheet,formatSemesterRoutine } = require('../utils');
 
 
-// getUserInfo(uid) – Fetches all user information for a given user ID.
-// getAllUser() – Retrieves all users from the database.
-// getRoleInfo(uid) – (Empty) Intended to fetch role-specific info for a user.
-// getStudentRoutine(studentId) – Gets the class schedule (routine) for a student based on current semester.
-// getTeacherRoutine(teacherId) – Gets the class schedule (routine) for a teacher based on subject allocations.
-// getUserNotifications(userId, role) – Retrieves relevant notifications for a user based on their role.
-// getGradeSheet(uid) – Returns a student's formatted gradesheet including GPA and course info.
-// updateLogin(uid) – Increments login attempt count and updates last login timestamp for a user.
-// getUser(uid) – Fetches detailed user information including role-specific data.
-// getImage(uid) – Retrieves the profile image of a user based on their ID.
+// getUserInfo(uid) 
+// getAllUser() 
+// getRoleInfo(uid) 
+// getStudentRoutine(studentId) 
+// getTeacherRoutine(teacherId) 
+// getUserNotifications(userId, role)
+// getGradeSheet(uid)
+// updateLogin(uid) 
+// getUser(uid) 
+// getImage(uid) 
 // getCourseInfo
 // semester routine
+// enrolled course outlines
+// get all fee of a student
+// pay fee 
+
+
+
+
+async function getUserNotifications(uid, role) {
+  const query = `
+    SELECT * FROM get_user_notifications($1,$2);
+  `;
+  const res = await client.query(query, [uid, role]);
+  return res.rows;
+}
+
+
+async function pay_student_fee(feeId) {
+  const query = `
+    SELECT * FROM pay_student_fee($1,CURRENT_DATE)
+  `;
+  const res = await client.query(query, [feeId]);
+  return res.rows;
+}
+
+
+async function get_all_payments_ordered_by_type(sid) {
+  const query = `
+    SELECT * FROM get_all_payments_ordered_by_type($1)
+  `;
+  const res = await client.query(query, [sid]);
+  return formatFee(res.rows);
+}
+
+async function getEnrolledCourseOutline(sid) {
+  const query = `
+    SELECT * FROM get_student_course_outlines($1);
+  `;
+  const res = await client.query(query, [sid]);
+  return res.rows;
+}
 
 async function getSemesterRoutine(sid) {
   const query = `
@@ -37,6 +77,8 @@ async function getStudentInfo(studentId) {
   const res = await client.query(query, [studentId]);
   return res.rows;
 }
+
+// all are function above this 
 
 async function getCourseInfo(studentId) {
   const query = `
@@ -109,7 +151,6 @@ async function getUser(uid) {
       emergency_contact: []
     };
 
-    // Get user general info
     let query = 'SELECT * FROM "User" WHERE user_id = $1';
     let result = await client.query(query, [uid]);
 
@@ -247,77 +288,30 @@ async function getTeacherRoutine(teacherId) {
 }
 
 
-async function getUserNotifications(userId, role) {
-  let query = '';
-  let values = [];
-
-  if (role === 'Student') {
-    query = `
-      SELECT message
-      FROM "notification"
-      WHERE student_id = $1
-         OR department_id = (
-            SELECT department_id FROM "student" WHERE student_id = $1
-         )
-         OR hall_id = (
-            SELECT hall_id FROM student WHERE student_id = $1
-         )
-         OR semester_id = (
-            SELECT current_semester FROM student WHERE student_id = $1
-         )
-         OR course_id IN (
-            SELECT course_id FROM "enrollment" e join student s
-            on e.student_id = s.student_id 
-            where e.student_id = $1 and e.semester = s.current_semester
-         )
-      ORDER BY created_at DESC;
-    `;
-    values = [userId];
-  } else if (role === 'Teacher') {
-    query = `
-      SELECT message
-      FROM "notification"
-      WHERE teacher_id = $1
-         OR department_id = (
-            SELECT department_id FROM "teacher" WHERE teacher_id = $1
-         )
-         OR course_id IN (
-            SELECT course_id FROM "subjectallocation" WHERE teacher_id = $1
-         )
-      ORDER BY created_at DESC;
-    `;
-    values = [userId];
-  } else if (role === 'Admin') {
-    query = `
-      SELECT message
-      FROM "notification"
-      ORDER BY created_at DESC;
-    `;
-  }
-
-  try {
-    const result = await client.query(query, values);
-    return result.rows.map(row => row.message);
-  } catch (err) {
-    console.error('Notification fetch error:', err);
-    return [];
-  }
-}
-
 async function getGradeSheet(uid) {
   const query = `
-  SELECT 
-  s.student_id,
-  s.current_semester AS level_term,
-  c.course_id,
-  c.title,
-  c.credit_hours AS credit,
-  cr.grade_point AS gpa
-FROM courseresult cr
-JOIN course c ON cr.course_id = c.course_id
-JOIN student s ON cr.student_id = s.student_id
-WHERE s.student_id = $1
-ORDER BY cr.semester;
+  SELECT
+    s.student_id,
+    s.current_semester as lt,
+    u.username AS name,
+    cr.semester AS level_term,
+    c.course_id,
+    c.title,
+    c.credit_hours AS credit,
+    cr.grade_point AS gpa
+FROM
+    CourseResult cr
+JOIN
+    Student s ON cr.student_id = s.student_id
+JOIN
+    "User" u ON u.user_id = s.student_id
+JOIN
+    Course c ON cr.course_id = c.course_id
+WHERE
+    s.student_id = $1
+ORDER BY
+    cr.semester, c.course_id;
+
   `;
   const result = await client.query(query, [uid]);
   return formatGradeSheet(result.rows);
@@ -348,5 +342,8 @@ module.exports = {
   getEnrolledCourse,
   getCourseInfo,
   getStudentInfo,
-  getSemesterRoutine
+  getSemesterRoutine,
+  getEnrolledCourseOutline,
+  pay_student_fee,
+  get_all_payments_ordered_by_type
 };

@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import Header from './header';
 import API_BASE_URL from '../config/config';
 import { Button } from 'react-bootstrap';
-import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import '../styles/routine.css';
@@ -66,49 +65,81 @@ const StudentRoutine = () => {
     fetchRoutineData();
   }, [navigate]);
 
-  const handleDownloadPdf = async () => {
-    const input = routineGridRef.current;
-    if (!input) {
-      alert("Routine grid not found for PDF export.");
-      return;
+const handleDownloadPdf = () => {
+  const pdf = new jsPDF('l', 'mm', 'a4'); // landscape
+  const pageWidth = pdf.internal.pageSize.getWidth();
+  const pageHeight = pdf.internal.pageSize.getHeight();
+  const margin = 10;
+  const contentWidth = pageWidth - 2 * margin;
+
+  const colWidths = [30, ...Array(5).fill((contentWidth - 30) / 5)];
+  const baseRowHeight = 6;
+
+  let yOffset = margin;
+
+  pdf.setFontSize(12);
+  pdf.setFont(undefined, 'bold');
+  pdf.text('XYZ University of Engineering & Technology', pageWidth / 2, yOffset, { align: 'center' });
+  yOffset += 7;
+  pdf.text(`Semester: ${semester || '-'} | Session: ${session || '-'}`, pageWidth / 2, yOffset, { align: 'center' });
+  yOffset += 10;
+
+  const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday'];
+
+  const drawRow = (values) => {
+    let xOffset = margin;
+    pdf.setFontSize(8);
+    pdf.setFont(undefined, 'normal');
+
+    const lineHeights = values.map((text, i) => {
+      const wrapped = pdf.splitTextToSize(text, colWidths[i] - 2);
+      return wrapped.length;
+    });
+
+    const maxLines = Math.max(...lineHeights);
+    const rowHeight = baseRowHeight * maxLines;
+
+    if (yOffset + rowHeight > pageHeight - margin) {
+      pdf.addPage();
+      yOffset = margin + 10;
+      drawRow(['Time', ...daysOfWeek]); // redraw header
     }
 
-    const originalBackground = input.style.backgroundColor;
-    const originalPadding = input.style.padding;
-    input.style.backgroundColor = '#fff';
-    input.style.padding = '10px';
+    values.forEach((text, i) => {
+      const wrapped = pdf.splitTextToSize(text, colWidths[i] - 2);
+      pdf.rect(xOffset, yOffset, colWidths[i], rowHeight, 'D');
+      pdf.text(wrapped, xOffset + 2, yOffset + 4);
+      xOffset += colWidths[i];
+    });
 
-    try {
-      const canvas = await html2canvas(input, {
-        scale: 2,
-        useCORS: true,
-      });
-
-      const imgData = canvas.toDataURL('image/png');
-      const pdf = new jsPDF('p', 'mm', 'a4');
-      const pageWidth = 210;
-
-      const headerText = `XYZ University of Engineering & Technology\nSemester: ${semester} | Academic Session: ${session}`;
-
-      pdf.setFontSize(14);
-      pdf.text(headerText, pageWidth / 2, 20, { align: 'center' });
-
-      const imgWidth = pageWidth - 20;
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
-
-      pdf.addImage(imgData, 'PNG', 10, 30, imgWidth, imgHeight);
-
-      pdf.save(`Routine_${new Date().toLocaleDateString('en-GB').replace(/\//g, '-')}.pdf`);
-    } catch (err) {
-      console.error(err);
-      alert("Failed to generate PDF.");
-    } finally {
-      input.style.backgroundColor = originalBackground;
-      input.style.padding = originalPadding;
-    }
+    yOffset += rowHeight;
   };
 
-  // Adjusted daysOfWeek to match the backend's deletion of Friday and Saturday
+  drawRow(['Time', ...daysOfWeek]);
+
+  sortedTimeSlots.forEach(timeSlot => {
+    const rowValues = [timeSlot];
+    daysOfWeek.forEach(day => {
+      const classes = weeklyRoutine[day]?.[timeSlot];
+      if (classes && classes.length > 0) {
+        const cellContent = classes.map(cls => {
+          return `${cls.course_id} (${cls.section_type})\n${cls.course_title}\n${cls.room_id} | ${cls.teacher_name}`;
+        }).join('\n---\n');
+        rowValues.push(cellContent);
+      } else {
+        rowValues.push('-');
+      }
+    });
+    drawRow(rowValues);
+  });
+
+  pdf.save(`Routine_${new Date().toLocaleDateString('en-GB').replace(/\//g, '-')}.pdf`);
+};
+
+
+
+
+
   const daysOfWeek = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday"];
   const allTimeSlots = new Set();
 

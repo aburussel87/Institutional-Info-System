@@ -65,21 +65,42 @@ function generateRoutine(res) {
 }
 
 
+function mapSemesterCodeToName(code) {
+  const map = {
+    L1T1: "Level 1 - Term I",
+    L1T2: "Level 1 - Term II",
+    L2T1: "Level 2 - Term I",
+    L2T2: "Level 2 - Term II",
+    L3T1: "Level 3 - Term I",
+    L3T2: "Level 3 - Term II",
+    L4T1: "Level 4 - Term I",
+    L4T2: "Level 4 - Term II"
+  };
+  return map[code] || code;
+}
+
 function formatGradeSheet(rows) {
-  let result = {
-    id: rows[0]?.student_id || null,
-    name: "",
-    semester: rows[0]?.level_term || "",
+  if (!rows || rows.length === 0) {
+    return {};
+  }
+
+  const result = {
+    id: rows[0].student_id,
+    name: rows[0].name,
+    current_semester: mapSemesterCodeToName(rows[0].lt),
     levelTerms: [],
     grades: {}
   };
 
-  for (const row of rows) {
-    const levelTerm = mapSemesterCodeToName(row.level_term); 
+  const seenTerms = new Set();
 
-    if (!result.levelTerms.includes(levelTerm)) {
+  for (const row of rows) {
+    const levelTerm = mapSemesterCodeToName(row.level_term);
+
+    if (!seenTerms.has(levelTerm)) {
       result.levelTerms.push(levelTerm);
       result.grades[levelTerm] = [];
+      seenTerms.add(levelTerm);
     }
 
     result.grades[levelTerm].push({
@@ -90,30 +111,9 @@ function formatGradeSheet(rows) {
     });
   }
 
-  result = {
-    id: "2205157",
-    name: "Abu Russel",
-    current_semester : "Level 2 - Term I",
-    levelTerms: ["Level 1 - Term I", "Level 1 - Term II"],
-    grades: {
-      "Level 1 - Term I": [
-        { courseId: "CSE101", title: "Introduction to Computing", credit: 3.0, gpa: 3.75 },
-        { courseId: "MAT101", title: "Calculus I", credit: 3.0, gpa: 3.5 },
-        { courseId: "PHY101", title: "Physics I", credit: 3.0, gpa: 3.25 },
-        { courseId: "CSE102", title: "Structured programming language sessional", credit: 3.0, gpa: 3.75 },
-        { courseId: "CSE105", title: "Discrete Mathematcis", credit: 3.0, gpa: 3.5 },
-        { courseId: "EEE101", title: "Introduction to EEE", credit: 3.0, gpa: 3.25 }
-      ],
-      "Level 1 - Term II": [
-        { courseId: "CSE102", title: "Data Structures", credit: 3.0, gpa: 3.9 },
-        { courseId: "MAT102", title: "Linear Algebra", credit: 3.0, gpa: 3.7 },
-        { courseId: "ENG101", title: "English Language", credit: 2.0, gpa: 4.0 },
-        { courseId: "CHEM113", title: "Inorganic chemistry", credit: 3.0, gpa: 3.75 }
-      ]
-    }
-  };
   return result;
 }
+
 
 
 function formatSemesterRoutine(rows) {
@@ -146,10 +146,32 @@ function formatSemesterRoutine(rows) {
   return routine;
 }
 
+function formatFee(fees) {
+  const result = {
+    paid: {},
+    unpaid: {}
+  };
+
+  for (const fee of fees) {
+    const section = fee.status === 'Paid' ? 'paid' : 'unpaid';
+    const type = fee.fee_type_name;
+
+    if (!result[section][type]) {
+      result[section][type] = [];
+    }
+
+    result[section][type].push(fee);
+  }
+
+  return result;
+}
+
+
 module.exports = {
   authenticateToken,
   generateRoutine,
   formatGradeSheet,
-  formatSemesterRoutine
+  formatSemesterRoutine,
+  formatFee
 };
 

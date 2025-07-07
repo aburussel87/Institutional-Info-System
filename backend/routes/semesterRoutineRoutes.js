@@ -12,7 +12,7 @@ router.get('/', authenticateToken, async (req, res) => {
   try {
     const uid = req.user.userId;
     const user = await getUserInfo(uid); 
-    console.log(user);
+    console.log("Semester Routine Requested by:"+uid);
     if (!user) {
       return res.status(404).json({ success: false, error: 'User not found' });
     }
@@ -22,7 +22,6 @@ router.get('/', authenticateToken, async (req, res) => {
     }else if(user.role == 'Teacher'){
       routine = await getTeacherRoutine(user.user_id);
     } 
-    console.log("Request by :" + uid);
     res.json({ success: true, user , routine});
   } catch (err) {
     console.error('Dashboard error:', err);

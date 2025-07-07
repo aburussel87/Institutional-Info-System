@@ -22,17 +22,29 @@ async function authenticateUser(username, password) {
     throw new Error('User not found');
   }
   const user = res.rows[0];
-  console.log(user);
   const isMatch = await bcrypt.compare(password, user.password_hash);
   if (!isMatch) {
+    console.log("Invalid login for: "+user.user_id);
     throw new Error('Invalid credentials');
+  }
+  
+  let student;
+  if(user.role == 'Student'){
+    const r = await pool.query('Select * from student where student_id = $1',[user.user_id]);
+    student = r.rows[0];
   }
   updateLogin(user.user_id);
   const token = jwt.sign(
-    { userId: user.user_id, role: user.role },
-    process.env.JWT_SECRET,
-    { expiresIn: process.env.JWT_EXPIRATION }
-  );
+  {
+    userId: user.user_id,
+    role: user.role,
+    semester: student ? student.current_semester : null,
+    department_id: student ? student.department_id : null
+  },
+  process.env.JWT_SECRET,
+  { expiresIn: process.env.JWT_EXPIRATION }
+);
+
 
   return { token };
 }

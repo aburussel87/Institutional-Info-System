@@ -14,7 +14,7 @@ router.get('/:course_id', authenticateToken, async (req, res) =>{
     if (!courseInfo) {
       return res.status(404).json({ success: false, error: 'Course not found' });
     }
-    console.log(courseInfo);
+    console.log("Course Info requested by: "+req.user.userId);
     res.json({ success: true, course:courseInfo });
   } catch (err) {
     console.error('Dashboard error:', err);

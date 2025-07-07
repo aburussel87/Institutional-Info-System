@@ -15,8 +15,8 @@ router.get('/', authenticateToken, async (req, res) => {
       return res.status(404).json({ success: false, error: 'User not found' });
     }
     const result = await getGradeSheet(uid);
-    console.log("Request by :" + uid);
-    res.json({ success: true, user , result,uid});
+    console.log("Requested gradesheet by :" + uid);
+    res.json({ success: true, user ,result,uid});
   } catch (err) {
     console.error('Dashboard error:', err);
     res.status(500).json({ success: false, error: 'Internal Server Error' });

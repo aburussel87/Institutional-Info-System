@@ -16,7 +16,7 @@ router.get('/photo/:userId', async (req, res) => {
 
   try {
     const result = await getImage(parseInt(userId));
-
+    console.log("Requested Image by: "+ parseInt(userId));
     const imageBuffer = result.photo;
     res.set('Content-Type', 'image/png');
     res.send(imageBuffer);

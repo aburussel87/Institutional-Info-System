@@ -14,7 +14,7 @@ router.get('/', authenticateToken, async (req, res) => {
     if (!users) {
       return res.status(404).json({ success: false, error: 'User not found' });
     }
-    console.log("Request by :" + uid);
+    console.log("All Users Requested by :" + uid);
     res.json({ success: true, users , });
   } catch (err) {
     console.error('Info error error:', err);

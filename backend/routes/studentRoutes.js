@@ -10,7 +10,6 @@ const router = express.Router();
 router.post('/', authenticateToken, async (req, res) => {
   try {
     const student_id = req.user.userId;
-    console.log(student_id);
     if (isNaN(student_id)) {
       return res.status(400).json({ success: false, error: 'Invalid user ID' });
     }
