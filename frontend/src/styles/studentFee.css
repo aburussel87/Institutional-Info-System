@@ -12,6 +12,7 @@
 
 /* Header Styling (assuming your Header component has its own styles) */
 .student-fee-title {
+  margin-top: 50px;
   text-align: center;
   color: #2c3e50;
   margin-bottom: 30px;
