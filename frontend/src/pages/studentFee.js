@@ -12,10 +12,37 @@ const StudentFee = () => {
   const toggleExpand = (feeType) => {
     setExpandedFeeType(expandedFeeType === feeType ? null : feeType);
   };
-const formatDate = (dateString) => {
-  if (!dateString) return 'N/A';
-  return new Date(dateString).toLocaleDateString();
-};
+
+  const formatDate = (dateString) => {
+    if (!dateString) return 'N/A';
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    });
+  };
+
+  const handlePay = async (feeId) => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/studentFee/pay/${feeId}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        },
+      });
+
+      if (!res.ok) throw new Error('Payment failed.');
+      else{
+        const data = await res.json();
+        alert(data.payment[0].msg || 'Payment successful!');
+      }
+      window.location.reload();
+    } catch (err) {
+      console.error(err);
+      alert(err.message || 'Payment failed. Please try again.');
+    }
+  };
 
   useEffect(() => {
     const fetchFeeData = async () => {
@@ -32,11 +59,9 @@ const formatDate = (dateString) => {
         });
 
         if (!response.ok) {
-          if (response.status === 401) {
-            setError('Unauthorized. Please log in.');
-          } else if (response.status === 404) {
-            setError('Fee details not found.');
-          } else {
+          if (response.status === 401) setError('Unauthorized. Please log in.');
+          else if (response.status === 404) setError('Fee details not found.');
+          else {
             const errorData = await response.json();
             throw new Error(errorData.error || 'Failed to fetch fee data');
           }
@@ -45,7 +70,7 @@ const formatDate = (dateString) => {
         const data = await response.json();
         setFeeData(data.fee);
       } catch (err) {
-        console.error('Error fetching fee data:', err);
+        console.error(err);
         setError(err.message || 'An unexpected error occurred.');
       } finally {
         setIsLoading(false);
@@ -59,8 +84,10 @@ const formatDate = (dateString) => {
     return (
       <div className="student-fee-container">
         <Header />
-        <h1 className="student-fee-title">Student Fee Dashboard</h1>
-        <p className="student-fee-loading">Loading fee details...</p>
+        <div className="content-area">
+          <h1 className="student-fee-title">Student Fee Dashboard</h1>
+          <p className="student-fee-loading">Loading fee details...</p>
+        </div>
       </div>
     );
   }
@@ -69,72 +96,102 @@ const formatDate = (dateString) => {
     return (
       <div className="student-fee-container">
         <Header />
-        <h1 className="student-fee-title">Student Fee Dashboard</h1>
-        <p className="student-fee-error">Error: {error}</p>
-        <p className="student-fee-error-suggestion">Please try again later or contact support.</p>
+        <div className="content-area">
+          <h1 className="student-fee-title">Student Fee Dashboard</h1>
+          <p className="student-fee-error">Error: {error}</p>
+          <p className="student-fee-error-suggestion">Please try again later or contact support.</p>
+        </div>
       </div>
     );
   }
 
-  if (!feeData || (Object.keys(feeData.paid).length === 0 && Object.keys(feeData.unpaid).length === 0)) {
+  if (!feeData || (Object.keys(feeData.paid).length === 0 && Object.keys(feeData.unpaid).length === 0 && Object.keys(feeData.due).length === 0)) {
     return (
       <div className="student-fee-container">
         <Header />
-        <h1 className="student-fee-title">Student Fee Dashboard</h1>
-        <p className="student-fee-no-data">No fee information available at this time.</p>
+        <div className="content-area">
+          <h1 className="student-fee-title">Student Fee Dashboard</h1>
+          <p className="student-fee-no-data">No fee information available at this time.</p>
+        </div>
       </div>
     );
   }
+
+  const allFeeTypes = Array.from(new Set([
+    ...Object.keys(feeData.paid),
+    ...Object.keys(feeData.unpaid)
+  ]));
 
   return (
     <div className="student-fee-container">
       <Header />
-      <h1 className="student-fee-title">Student Fee Dashboard</h1>
+      <div className="content-area">
+        <h1 className="student-fee-title">Student Fee Dashboard</h1> {/* Removed 💳 */}
 
-      {Object.keys(feeData.paid).map((feeType) => (
-        <div key={feeType} className="student-fee-card">
-          <div className="student-fee-header" onClick={() => toggleExpand(feeType)}>
-            <h2 className="student-fee-type-title">{feeType}</h2>
-            <span className="student-fee-expand-icon">
-              {expandedFeeType === feeType ? '-' : '+'}
-            </span>
-          </div>
+        {allFeeTypes.length > 0 ? (
+          allFeeTypes.map((feeType) => (
+            <div key={feeType} className="student-fee-card">
+              <div className="student-fee-header" onClick={() => toggleExpand(feeType)}>
+                <h2 className="student-fee-type-title">{feeType}</h2>
+                <button className="student-fee-toggle-btn">
+                  {expandedFeeType === feeType ? '▲' : '▼'}
+                </button>
+              </div>
 
-          <div className="student-fee-unpaid-section">
-            <h3 className="student-fee-unpaid-title">Unpaid Dues:</h3>
-            {feeData.unpaid[feeType] && feeData.unpaid[feeType].length > 0 ? (
-              <ul className="student-fee-unpaid-list">
-                {feeData.unpaid[feeType].map((fee) => (
-                  <li key={fee.id || `${feeType}-${fee.amount}-${fee.date}`} className="student-fee-unpaid-item">
-                    Amount: ${fee.amount} | Due Date: {formatDate(fee.due_date)}
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="student-fee-no-dues">No dues to clear for {feeType}.</p>
-            )}
-          </div>
-
-          {expandedFeeType === feeType && (
-            <div className="student-fee-paid-section">
-              <h3 className="student-fee-paid-title">Paid History:</h3>
-              {feeData.paid[feeType] && feeData.paid[feeType].length > 0 ? (
-                <ul className="student-fee-paid-list">
-                  {feeData.paid[feeType]
-                    .sort((a, b) => new Date(b.date) - new Date(a.date))
-                    .map((fee) => (
-                      <li key={fee.id || `${feeType}-${fee.amount}-${fee.date}`} className="student-fee-paid-item">
-                        Amount: ${fee.amount} | Paid On: {formatDate(fee.paid_on)}
+              <div className="student-fee-section student-fee-unpaid-section">
+                <h3 className="student-fee-unpaid-title">Unpaid Dues:</h3>
+                {feeData.unpaid[feeType] && feeData.unpaid[feeType].length > 0 ? (
+                  <ul className="student-fee-list student-fee-unpaid-list">
+                    {feeData.unpaid[feeType].map((fee) => (
+                      <li key={fee.student_fee_id} className="student-fee-item student-fee-unpaid-item">
+                        <div className="fee-info">
+                          <span>Amount: <strong className="amount-due">৳{fee.amount}</strong></span>
+                          <span>Due Date: <strong className="date-due">{formatDate(fee.due_date)}</strong></span>
+                        </div>
+                        <button
+                          className="student-fee-pay-btn"
+                          onClick={(e) => {
+                            e.stopPropagation(); 
+                            handlePay(fee.student_fee_id);
+                          }}
+                        >
+                          Pay Now
+                        </button>
                       </li>
                     ))}
-                </ul>
-              ) : (
-                <p className="student-fee-no-history">No paid history for {feeType}.</p>
+                  </ul>
+                ) : (
+                  <p className="student-fee-none student-fee-no-dues">No dues to clear for {feeType}.</p>
+                )}
+              </div>
+
+              {expandedFeeType === feeType && (
+                <div className="student-fee-section student-fee-paid-section">
+                  <h3 className="student-fee-paid-title">Paid History:</h3>
+                  {feeData.paid[feeType] && feeData.paid[feeType].length > 0 ? (
+                    <ul className="student-fee-list student-fee-paid-list">
+                      {feeData.paid[feeType]
+                        .sort((a, b) => new Date(b.paid_on) - new Date(a.paid_on))
+                        .map((fee) => (
+                          <li key={fee.student_fee_id} className="student-fee-item student-fee-paid-item">
+                            <div className="fee-info">
+                              <span>Amount: <strong className="amount-paid">৳{fee.amount}</strong></span>
+                              <span>Paid On: <strong className="date-paid">{formatDate(fee.paid_on)}</strong></span>
+                            </div>
+                          </li>
+                        ))}
+                    </ul>
+                  ) : (
+                    <p className="student-fee-none student-fee-no-history">No paid history for {feeType} yet.</p>
+                  )}
+                </div>
               )}
             </div>
-          )}
-        </div>
-      ))}
+          ))
+        ) : (
+          <p className="student-fee-no-data">No fee information available at this time.</p>
+        )}
+      </div>
     </div>
   );
 };

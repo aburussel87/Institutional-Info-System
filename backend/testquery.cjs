@@ -10,19 +10,20 @@ const client = new Pool({
   port: process.env.PGPORT,
 });
 
-async function get_all_payments_ordered_by_type(sid) {
+async function pay_student_fee(feeId) {
   const query = `
-    SELECT * FROM get_all_payments_ordered_by_type($1)
+    SELECT * FROM pay_student_fee($1,CURRENT_DATE)
   `;
-  const res = await client.query(query, [sid]);
-  return formatFee(res.rows);
+  const res = await client.query(query, [feeId]);
+  return res.rows;
 }
 
 
 (async () => {
   try {
-    const result = await get_all_payments_ordered_by_type(2204032);
-    console.log(result.paid['Dining Fee']);
+    const result = await pay_student_fee(2204032);
+    console.log(result[0].msg
+    );
   } catch (error) {
     console.error(' Error:', error);
   } finally {
