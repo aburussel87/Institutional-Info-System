@@ -10,7 +10,7 @@ import StudentRoutine from './pages/studentRoutine';
 import CourseOutline from './pages/courseOutline';
 import StudentFee from './pages/studentFee';
 import ExamSchedule from './pages/exam_schedule'; 
-
+import TeacherDashboard from './pages/teacher_dash';
 
 
 
@@ -45,7 +45,8 @@ export default function App() {
         <Route path='/studentRoutine' element = {<StudentRoutine/>} />
         <Route path='/courseOutline' element = {<CourseOutline/>} />
         <Route path='/studentFee' element = {<StudentFee/>} />
-        <Route path='/exam_schedule' element = {<ExamSchedule/>} /> 
+        <Route path='/exam_schedule' element = {<ExamSchedule/>} />
+        <Route path='/teacher_dash' element = {<TeacherDashboard/>} />
       </Routes>
     </Router>
   );

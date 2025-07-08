@@ -35,8 +35,8 @@ async function authenticateUser(username, password) {
   }
   else if(user.role == 'Teacher'){
     const r = await pool.query(' SELECT * FROM get_teacher_info($1)',[user.user_id]);
-    console.log(r.rows); //test
-    teacher = r.rows[0]; // This will contain teacher info
+    console.log(r.rows); 
+    teacher = r.rows[0]; 
   }
   updateLogin(user.user_id);
   const token = jwt.sign(

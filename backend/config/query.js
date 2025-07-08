@@ -2,23 +2,29 @@ const client = require('./db');
 const { generateRoutine, formatGradeSheet,formatSemesterRoutine,formatFee , formatExamData} = require('../utils');
 
 
-// getUserInfo(uid) 
-// getAllUser() 
-// getRoleInfo(uid) 
-// getStudentRoutine(studentId) 
-// getTeacherRoutine(teacherId) 
-// getUserNotifications(userId, role)
-// getGradeSheet(uid)
-// updateLogin(uid) 
-// getUser(uid) 
-// getImage(uid) 
-// getCourseInfo
-// semester routine
-// enrolled course outlines
-// get all fee of a student
-// pay fee 
 
 
+async function getTeacherInfo(teacherId) {
+  const query = `SELECT get_teacher_info($1);`;
+  const res = await client.query(query, [teacherId]);
+
+  if (!res.rows || res.rows.length === 0) {
+    return null;  
+  }
+
+  return res.rows[0] || null;
+}
+
+
+
+async function get_teached_Course(teacherId) {
+  const query = `
+    SELECT * FROM get_teacher_courses($1);
+  `;
+
+  const res = await client.query(query, [teacherId]);
+  return res.rows;
+}
 
 
 async function getStudent_exam_Routine(studentId) {
@@ -353,5 +359,7 @@ module.exports = {
   getEnrolledCourseOutline,
   pay_student_fee,
   get_all_payments_ordered_by_type,
-  getStudent_exam_Routine
+  getStudent_exam_Routine,
+  get_teached_Course,
+  getTeacherInfo
 };

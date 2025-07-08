@@ -1,6 +1,5 @@
 const { Pool } = require('pg');
 require('dotenv').config();
-const {formatExamData} = require('../backend/utils');
 
 const client = new Pool({
   user: process.env.PGUSER,
@@ -10,19 +9,19 @@ const client = new Pool({
   port: process.env.PGPORT,
 });
 
-async function getStudent_exam_Routine(studentId) {
+async function getTeacherInfo(teacherId) {
   const query = `
-    SELECT * FROM get_exam_routine($1);
+    SELECT get_teacher_info($1);
   `;
-  const res = await client.query(query, [studentId]);
-  return (formatExamData(res.rows));
+  const res = await client.query(query, [teacherId]);
+  return res.rows[0];
 }
 
 
 (async () => {
   try {
-    const result = await getStudent_exam_Routine(2204032);
-    console.log(result);
+    const result = await getTeacherInfo(2020111597);
+    console.log(result); // Access the function result
   } catch (error) {
     console.error(' Error:', error);
   } finally {
