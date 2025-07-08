@@ -37,7 +37,26 @@ const Login = () => {
       const data = await response.json();
       localStorage.setItem('token', data.token);
       setMsg('Login successful! Redirecting...');
-      setTimeout(() => navigate('/dashboard'), 1000);
+      // Check user role and redirect accordingly
+      let userRole = null;  //change from 
+      if (data.user && data.user.role) {
+        userRole = data.user.role;
+      } else {
+        // Try to decode from token if user object not present
+        try {
+          const payload = JSON.parse(atob(data.token.split('.')[1]));
+          userRole = payload.role;
+        } catch (e) {
+          userRole = null;
+        }
+      }
+      if (userRole === 'Student') {
+        setTimeout(() => navigate('/dashboard'), 1000);
+      } else if (userRole === 'Teacher') {
+        setTimeout(() => navigate('/teacher_dash'), 1000);
+       } //  else {
+      //   setTimeout(() => navigate('/dashboard'), 1000); // fallback
+      // }
     } catch (error) {
       console.error('Login error:', error);
       setMsg('An error occurred. Please try again later.');

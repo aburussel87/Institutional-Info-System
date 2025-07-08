@@ -1,0 +1,112 @@
+/* teacher_dashboard.css */
+
+.tdash-container {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  padding: 20px;
+  background: #f7faff;
+  min-height: 100vh;
+}
+
+.tdash-header-section {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.tdash-welcome-title {
+  font-size: 2rem;
+  font-weight: 600;
+  color: #2d2d74;
+}
+
+.tdash-subtitle {
+  font-size: 1rem;
+  color: #6c757d;
+}
+
+.tdash-error-msg {
+  background: #ffe5e5;
+  color: #b00020;
+  padding: 10px;
+  border-radius: 6px;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.tdash-overview {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin-bottom: 40px;
+  flex-wrap: wrap;
+}
+
+.tdash-card {
+  background: #ffffff;
+  border: 1px solid #dee2e6;
+  padding: 20px 30px;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  text-align: center;
+}
+
+.tdash-card-title {
+  color: #6c757d;
+  font-size: 1.1rem;
+  margin-bottom: 5px;
+}
+
+.tdash-card-value {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #198754;
+}
+
+.tdash-courses-section {
+  background: #fff;
+  padding: 20px 25px;
+  border-radius: 12px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.05);
+}
+
+.tdash-courses-title {
+  font-size: 1.3rem;
+  margin-bottom: 20px;
+  color: #2c3e50;
+  font-weight: 500;
+}
+
+.tdash-empty-msg {
+  color: #999;
+  font-style: italic;
+}
+
+.tdash-course-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+}
+
+.tdash-course-card {
+  background: #e9f5ff;
+  border-left: 6px solid #0d6efd;
+  border-radius: 10px;
+  padding: 20px;
+  transition: all 0.2s ease-in-out;
+}
+
+.tdash-course-card:hover {
+  background: #d8efff;
+  transform: translateY(-2px);
+}
+
+.tdash-course-name {
+  margin: 0;
+  font-size: 1.1rem;
+  color: #0b2545;
+  font-weight: 600;
+}
+
+.tdash-course-credit {
+  color: #495057;
+  margin-top: 5px;
+}

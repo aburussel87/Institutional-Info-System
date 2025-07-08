@@ -49,7 +49,7 @@ const Dashboard = () => {
 
     const fetchDashboardData = async () => {
       try {
-        const response = await fetch(`${API_BASE_URL}/dashboard`, {
+        const response = await fetch(`${API_BASE_URL}/dashboard/student`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
 

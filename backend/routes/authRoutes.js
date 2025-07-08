@@ -28,10 +28,15 @@ async function authenticateUser(username, password) {
     throw new Error('Invalid credentials');
   }
   
-  let student;
+  let student,teacher;
   if(user.role == 'Student'){
     const r = await pool.query('Select * from student where student_id = $1',[user.user_id]);
     student = r.rows[0];
+  }
+  else if(user.role == 'Teacher'){
+    const r = await pool.query(' SELECT * FROM get_teacher_info($1)',[user.user_id]);
+    console.log(r.rows); //test
+    teacher = r.rows[0]; // This will contain teacher info
   }
   updateLogin(user.user_id);
   const token = jwt.sign(
