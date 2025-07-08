@@ -1,7 +1,7 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
-const { getSemesterRoutine,getUserInfo} = require('../config/query');
+const { getSemesterRoutine, getUserInfo } = require('../config/query');
 const {authenticateToken} = require ('../utils');
 const router = express.Router();
 

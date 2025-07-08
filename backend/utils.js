@@ -204,11 +204,72 @@ function formatFee(fees) {
 }
 
 
+
+function parseDateString(dateStr) {
+  if (!dateStr) return null;
+
+  if (dateStr instanceof Date) {
+    return dateStr;
+  }
+
+  if (typeof dateStr !== 'string') {
+    throw new TypeError(`Invalid dateStr: expected string or Date, got ${typeof dateStr}`);
+  }
+
+  const [datePart, timePart] = dateStr.split(' ');
+  if (!datePart || !timePart) {
+    throw new Error(`Invalid date format: ${dateStr}`);
+  }
+
+  const [day, month, year] = datePart.split('/').map(Number);
+  const [hours, minutes, seconds] = timePart.split(':').map(Number);
+
+  return new Date(year, month - 1, day, hours, minutes, seconds);
+}
+
+
+function formatExamData(rows) {
+  if (!Array.isArray(rows) || rows.length === 0) {
+    return [];
+  }
+
+  return rows.map(row => {
+    const {
+      student_id,
+      exam_id,
+      course_id,
+      course_title,
+      exam_title,
+      exam_type,
+      total_marks,
+      date_of_exam,
+      semester,
+      academic_session
+    } = row;
+
+    return {
+      student_id,
+      exam_id,
+      course_id,
+      title: course_title,
+      exam_title,
+      exam_type,
+      total_marks: Number(total_marks),
+      date_of_exam: parseDateString(date_of_exam),
+      semester,
+      academic_session
+    };
+  });
+}
+
+
+
 module.exports = {
   authenticateToken,
   generateRoutine,
   formatGradeSheet,
   formatSemesterRoutine,
-  formatFee
+  formatFee,
+  formatExamData
 };
 

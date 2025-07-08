@@ -1,6 +1,5 @@
 const client = require('./db');
-const { generateRoutine, formatGradeSheet,formatSemesterRoutine,formatFee } = require('../utils');
-const { get } = require('../routes/semesterRoutineRoutes');
+const { generateRoutine, formatGradeSheet,formatSemesterRoutine,formatFee , formatExamData} = require('../utils');
 
 
 // getUserInfo(uid) 
@@ -21,6 +20,14 @@ const { get } = require('../routes/semesterRoutineRoutes');
 
 
 
+
+async function getStudent_exam_Routine(studentId) {
+  const query = `
+    SELECT * FROM get_exam_routine($1);
+  `;
+  const res = await client.query(query, [studentId]);
+  return (formatExamData(res.rows));
+}
 
 async function getUserNotifications(uid, role) {
   const query = `
@@ -266,41 +273,6 @@ async function getStudentRoutine(studentId) {
   const res = await client.query(query, [studentId]);
   return generateRoutine(res);
 }
-
-
-async function getStudent_exam_Routine(studentId) {
-  const query = `
-    SELECT 
-      en.student_id, 
-      en.course_id, 
-      c.title AS course_title,
-      cs.day_of_week, 
-      cs.start_time, 
-      cs.end_time
-    FROM enrollment en
-    JOIN classschedule cs 
-      ON en.course_id = cs.course_id AND en.section_type in (cs.section_type, 'All')
-    JOIN course c 
-      ON en.course_id = c.course_id
-    WHERE en.student_id = $1
-    ORDER BY 
-      CASE 
-        WHEN cs.day_of_week = 'Saturday' THEN 1
-        WHEN cs.day_of_week = 'Sunday' THEN 2
-        WHEN cs.day_of_week = 'Monday' THEN 3
-        WHEN cs.day_of_week = 'Tuesday' THEN 4
-        WHEN cs.day_of_week = 'Wednesday' THEN 5
-        WHEN cs.day_of_week = 'Thursday' THEN 6
-        WHEN cs.day_of_week = 'Friday' THEN 7
-      END,
-      cs.start_time;
-  `;
-
-  const res = await client.query(query, [studentId]);
-  return generate_exam_Routine(res);
-}
-
-
 
 async function getTeacherRoutine(teacherId) {
   const query = `

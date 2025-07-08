@@ -1,6 +1,6 @@
 const { Pool } = require('pg');
 require('dotenv').config();
-const {formatFee} = require('../backend/utils');
+const {formatExamData} = require('../backend/utils');
 
 const client = new Pool({
   user: process.env.PGUSER,
@@ -10,20 +10,19 @@ const client = new Pool({
   port: process.env.PGPORT,
 });
 
-async function pay_student_fee(feeId) {
+async function getStudent_exam_Routine(studentId) {
   const query = `
-    SELECT * FROM pay_student_fee($1,CURRENT_DATE)
+    SELECT * FROM get_exam_routine($1);
   `;
-  const res = await client.query(query, [feeId]);
-  return res.rows;
+  const res = await client.query(query, [studentId]);
+  return (formatExamData(res.rows));
 }
 
 
 (async () => {
   try {
-    const result = await pay_student_fee(2204032);
-    console.log(result[0].msg
-    );
+    const result = await getStudent_exam_Routine(2204032);
+    console.log(result);
   } catch (error) {
     console.error(' Error:', error);
   } finally {
