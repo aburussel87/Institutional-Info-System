@@ -1,6 +1,4 @@
 
-
---
 CREATE FUNCTION public.course_not_taken_recent_years(year_diff integer) RETURNS TABLE(course_id character varying, course_title character varying, department_id integer)
     LANGUAGE plpgsql
     AS $$
@@ -23,6 +21,7 @@ ALTER FUNCTION public.course_not_taken_recent_years(year_diff integer) OWNER TO 
 --
 -- Name: get_all_payments_ordered_by_type(integer); Type: FUNCTION; Schema: public; Owner: system
 --
+
 CREATE FUNCTION public.get_all_payments_ordered_by_type(uid integer) RETURNS TABLE(student_fee_id integer, student_id integer, fee_type_id character varying, fee_type_name character varying, amount integer, due_date timestamp without time zone, status public.feestatus, paid_on timestamp without time zone)
     LANGUAGE plpgsql
     AS $$
@@ -44,7 +43,16 @@ BEGIN
 		WHERE sf.student_id = uid
     ORDER BY
         ft.name, sf.student_fee_id;
+END;
+$$;
+
+
+ALTER FUNCTION public.get_all_payments_ordered_by_type(uid integer) OWNER TO system;
+
 --
+-- Name: get_class_routine(public.semester, character varying, integer); Type: FUNCTION; Schema: public; Owner: system
+--
+
 CREATE FUNCTION public.get_class_routine(p_semester public.semester, p_academic_session character varying, p_department_id integer) RETURNS TABLE(academic_session character varying, day_of_week character varying, start_time time without time zone, end_time time without time zone, section_type character varying, course_id character varying, course_title character varying, room_id character varying, room_type public.roomtype, teacher_name character varying)
     LANGUAGE plpgsql
     AS $$
@@ -66,7 +74,29 @@ BEGIN
         ON cs.course_id = c.course_id
     JOIN Room r
         ON cs.room_id = r.room_id
+    LEFT JOIN SubjectAllocation sa
+        ON sa.course_id = cs.course_id
+       AND sa.academic_session = cs.academic_session
+       AND (sa.section_type = cs.section_type OR sa.section_type = 'All')
+    LEFT JOIN Teacher t
+        ON sa.teacher_id = t.teacher_id
+    LEFT JOIN "User" u
+        ON t.teacher_id = u.user_id
+    WHERE cs.academic_session = p_academic_session
+      AND c.semester = p_semester
+      AND c.department_id = p_department_id
+      AND (cs.section_type IN ('A', 'A1', 'A2', 'All'))
+    ORDER BY cs.day_of_week, cs.start_time;
+END;
+$$;
+
+
+ALTER FUNCTION public.get_class_routine(p_semester public.semester, p_academic_session character varying, p_department_id integer) OWNER TO system;
+
 --
+-- Name: get_course_by_dept_by_level_term(integer, public.semester); Type: FUNCTION; Schema: public; Owner: system
+--
+
 CREATE FUNCTION public.get_course_by_dept_by_level_term(dept_id integer, sem public.semester) RETURNS SETOF public.course
     LANGUAGE plpgsql
     AS $$
@@ -123,7 +153,21 @@ BEGIN
   JOIN 
       Exam e ON en.course_id = e.course_id
   JOIN 
+      Course c ON e.course_id = c.course_id
+  WHERE 
+      en.student_id = p_student_id
+  ORDER BY 
+      e.date_of_exam ASC;
+END;
+$$;
+
+
+ALTER FUNCTION public.get_exam_routine(p_student_id integer) OWNER TO system;
+
 --
+-- Name: get_student_course_outlines(integer); Type: FUNCTION; Schema: public; Owner: system
+--
+
 CREATE FUNCTION public.get_student_course_outlines(p_student_id integer) RETURNS TABLE(course_id character varying, title character varying, outline text)
     LANGUAGE plpgsql
     AS $$
@@ -166,7 +210,49 @@ BEGIN
     s.department_id,
     s.academic_session,
     s.current_semester,
+
+    ha.hall_id,
+    h.name AS hall_name,
+    ha.room_number,
+    CASE
+      WHEN ha.resident IS TRUE THEN 'Resident'
+      ELSE 'Attached'
+    END::varchar AS hall_residency_status,  -- 👈 FIXED
+
+    ha.assigned_on,
+    ha.vacated_on,
+
+    ec.name AS emergency_contact_name,
+    ec.mobile AS emergency_contact_mobile,
+    ec.address AS emergency_contact_address,
+
+    adv.teacher_id AS advisor_id,
+    adv.total_student AS advisor_total_students,
+    u_adv.username AS advisor_name,
+    u_adv.email AS advisor_email,
+    u_adv.phone AS advisor_phone,
+    t.designation AS advisor_designation
+
+  FROM "User" u
+  JOIN Student s ON u.user_id = s.student_id
+  LEFT JOIN EmergencyContact ec ON u.user_id = ec.user_id
+  LEFT JOIN HallAssignment ha ON s.student_id = ha.student_id
+  LEFT JOIN Hall h ON ha.hall_id = h.hall_id
+  LEFT JOIN Advisor adv ON s.advisor_id = adv.teacher_id
+  LEFT JOIN Teacher t ON adv.teacher_id = t.teacher_id
+  LEFT JOIN "User" u_adv ON adv.teacher_id = u_adv.user_id
+
+  WHERE s.student_id = p_student_id;
+END;
+$$;
+
+
+ALTER FUNCTION public.get_student_full_info(p_student_id integer) OWNER TO system;
+
 --
+-- Name: get_teacher_courses(integer); Type: FUNCTION; Schema: public; Owner: system
+--
+
 CREATE FUNCTION public.get_teacher_courses(p_teacher_id integer) RETURNS TABLE(course_id character varying, course_title character varying, section_type character varying, academic_session character varying, credit_hours double precision)
     LANGUAGE plpgsql
     AS $$
@@ -188,7 +274,9 @@ $$;
 ALTER FUNCTION public.get_teacher_courses(p_teacher_id integer) OWNER TO system;
 
 --
+-- Name: get_teacher_info(integer); Type: FUNCTION; Schema: public; Owner: system
 --
+
 CREATE FUNCTION public.get_teacher_info(p_user_id integer) RETURNS json
     LANGUAGE plpgsql
     AS $$
@@ -210,7 +298,72 @@ BEGIN
 
     'emergency_contact', json_build_object(
       'name', ec.name,
+      'mobile', ec.mobile,
+      'address', ec.address
+    ),
+
+    'teacher_info', json_build_object(
+      'teacher_id', t.teacher_id,
+      'hire_date', t.hire_date,
+      'designation', t.designation
+    ),
+
+    'department', json_build_object(
+      'department_id', d.department_id,
+      'name', d.name
+    ),
+
+    'advisor_info', json_build_object(
+      'total_students', a.total_student
+    ),
+
+    'hod_info', json_build_object(
+      'department_id', hod.department_id,
+      'assigned_on', hod.assigned_on,
+      'resigned_on', hod.resigned_on
+    ),
+
+    'provost_info', json_build_object(
+      'hall_id', p.hall_id,
+      'assigned_on', p.assigned_on,
+      'resigned_on', p.resigned_on
+    ),
+
+    'courses_taught', (
+      SELECT json_agg(
+        json_build_object(
+          'course_id', sa.course_id,
+          'course_title', c.title,
+          'section_type', sa.section_type,
+          'academic_session', sa.academic_session
+        )
+      )
+      FROM SubjectAllocation sa
+      JOIN Course c ON sa.course_id = c.course_id
+      WHERE sa.teacher_id = t.teacher_id
+    )
+  )
+  INTO result
+  FROM "User" u
+  JOIN Teacher t ON u.user_id = t.teacher_id
+  LEFT JOIN Department d ON t.department_id = d.department_id
+  LEFT JOIN Advisor a ON t.teacher_id = a.teacher_id
+  LEFT JOIN head_of_department hod ON t.teacher_id = hod.teacher_id
+  LEFT JOIN Provost p ON t.teacher_id = p.teacher_id
+  LEFT JOIN EmergencyContact ec ON u.user_id = ec.user_id
+  WHERE u.user_id = p_user_id;
+
+  RETURN result;
+END;
+$$;
+
+
+ALTER FUNCTION public.get_teacher_info(p_user_id integer) OWNER TO system;
+
 --
+-- Name: get_teacherinfo(integer); Type: FUNCTION; Schema: public; Owner: system
+--
+
 CREATE FUNCTION public.get_teacherinfo(uid integer) RETURNS public.teacher_info
     LANGUAGE plpgsql
     AS $$
@@ -232,7 +385,19 @@ BEGIN
         s.hire_date,
 				s.designation
     INTO result
+    FROM "User" u , teacher s 
+		WHERE u.user_id = uid and s.teacher_id = uid;
+    RETURN result;
+END;
+$$;
+
+
+ALTER FUNCTION public.get_teacherinfo(uid integer) OWNER TO system;
+
 --
+-- Name: get_user_notifications(integer, public.userrole); Type: FUNCTION; Schema: public; Owner: system
+--
+
 CREATE FUNCTION public.get_user_notifications(p_uid integer, p_role public.userrole) RETURNS TABLE(notification_id integer, title character varying, message text, created_by character varying, created_at timestamp without time zone, student_id integer, teacher_id integer, department_id integer, course_id character varying, hall_id integer, semester_id public.semester)
     LANGUAGE plpgsql
     AS $$
@@ -254,7 +419,48 @@ BEGIN
          )
        OR n.course_id IN (
             SELECT e.course_id
+            FROM enrollment e
+            JOIN student s ON e.student_id = s.student_id
+            WHERE e.student_id = p_uid AND e.semester = s.current_semester
+         )
+    ORDER BY n.created_at DESC;
+
+  ELSIF p_role = 'Teacher' THEN
+    RETURN QUERY
+    SELECT n.notification_id, n.title, n.message, n.created_by, n.created_at,
+           n.student_id, n.teacher_id, n.department_id, n.course_id, n.hall_id, n.semester_id
+    FROM notification n
+    WHERE n.teacher_id = p_uid
+       OR n.department_id = (
+            SELECT t.department_id FROM teacher t WHERE t.teacher_id = p_uid
+         )
+       OR n.course_id IN (
+            SELECT sa.course_id
+            FROM subjectallocation sa
+            WHERE sa.teacher_id = p_uid
+         )
+    ORDER BY n.created_at DESC;
+
+  ELSIF p_role = 'Admin' THEN
+    RETURN QUERY
+    SELECT n.notification_id, n.title, n.message, n.created_by, n.created_at,
+           n.student_id, n.teacher_id, n.department_id, n.course_id, n.hall_id, n.semester_id
+    FROM notification n
+    ORDER BY n.created_at DESC;
+
+  ELSE
+    RAISE EXCEPTION 'Invalid role: %', p_role;
+  END IF;
+END;
+$$;
+
+
+ALTER FUNCTION public.get_user_notifications(p_uid integer, p_role public.userrole) OWNER TO system;
+
 --
+-- Name: increment_advisor_student_count(); Type: FUNCTION; Schema: public; Owner: system
+--
+
 CREATE FUNCTION public.increment_advisor_student_count() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
@@ -317,7 +523,19 @@ BEGIN
         INSERT INTO Advisor (teacher_id, total_student)
         VALUES (selected_id, 0)
         ON CONFLICT (teacher_id) DO NOTHING;
+
+        i := i + 1;
+    END LOOP;
+END;
+$$;
+
+
+ALTER FUNCTION public.insert_random_advisors() OWNER TO system;
+
 --
+-- Name: insert_user_to_teacher(integer); Type: FUNCTION; Schema: public; Owner: system
+--
+
 CREATE FUNCTION public.insert_user_to_teacher(p_user_id integer) RETURNS void
     LANGUAGE plpgsql
     AS $$
@@ -339,7 +557,15 @@ BEGIN
     ON CONFLICT (teacher_id) DO NOTHING;  
 
 END;
+$$;
+
+
+ALTER FUNCTION public.insert_user_to_teacher(p_user_id integer) OWNER TO system;
+
 --
+-- Name: pay_student_fee(integer, timestamp without time zone); Type: FUNCTION; Schema: public; Owner: system
+--
+
 CREATE FUNCTION public.pay_student_fee(p_student_fee_id integer, p_date timestamp without time zone DEFAULT NULL::timestamp without time zone) RETURNS TABLE(already_paid boolean, msg text)
     LANGUAGE plpgsql
     AS $$
@@ -361,7 +587,22 @@ BEGIN
   END IF;
 
   UPDATE StudentFee
+  SET
+    status = 'Paid',
+    paid_on = p_date
+  WHERE student_fee_id = p_student_fee_id;
+
+  RETURN QUERY SELECT FALSE, format('StudentFee ID %s updated to Paid', p_student_fee_id);
+END;
+$$;
+
+
+ALTER FUNCTION public.pay_student_fee(p_student_fee_id integer, p_date timestamp without time zone) OWNER TO system;
+
 --
+-- Name: students_taken_course(character varying); Type: FUNCTION; Schema: public; Owner: system
+--
+
 CREATE FUNCTION public.students_taken_course(c_id character varying) RETURNS SETOF public.std
     LANGUAGE plpgsql
     AS $$
@@ -380,6 +621,8 @@ BEGIN
 END;
 $$;
 
+
+ALTER FUNCTION public.students_taken_course(c_id character varying) OWNER TO system;
 
 
 
