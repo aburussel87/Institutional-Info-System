@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '../pages/header';
 import API_BASE_URL from '../config/config';
 import { Bar } from 'react-chartjs-2';
-import { Modal, Button } from 'react-bootstrap';
+import { Modal, Button, Spinner } from 'react-bootstrap';
 import '../styles/dashboard.css';
 
 import {
@@ -28,6 +28,8 @@ const Dashboard = () => {
   const [showRoutineModal, setShowRoutineModal] = useState(false);
   const [showCourseModal, setShowCourseModal] = useState(false);
   const [courseDetails, setCourseDetails] = useState(null);
+  const [sessionInfo, setSessionInfo] = useState([]);
+  const [loadingChart, setLoadingChart] = useState(true);
 
   const navigate = useNavigate();
 
@@ -48,6 +50,7 @@ const Dashboard = () => {
     }
 
     const fetchDashboardData = async () => {
+      setLoadingChart(true);
       try {
         const response = await fetch(`${API_BASE_URL}/dashboard/student`, {
           headers: { 'Authorization': `Bearer ${token}` }
@@ -63,6 +66,7 @@ const Dashboard = () => {
         const data = await response.json();
         setUser(data.user);
         setCourses(data.courses || []);
+        setSessionInfo(data.session_info || []);
 
         const today = new Date();
         let weekday = today.toLocaleDateString('en-US', { weekday: 'long' });
@@ -71,9 +75,12 @@ const Dashboard = () => {
 
         setRoutine(data.routine?.[weekday] || ["No classes scheduled for today."]);
         setRoutineMap(data.routine || {});
+
       } catch (err) {
         setMsg(err.message || 'Unknown error');
         setTimeout(() => navigate('/login'), 1000);
+      } finally {
+        setLoadingChart(false);
       }
     };
 
@@ -131,7 +138,6 @@ const Dashboard = () => {
       }
     }
 
-
     const tomorrowName = weekdays[tomorrowIdx];
     const tomorrowRoutine = routineMap?.[tomorrowName] || [];
 
@@ -142,32 +148,141 @@ const Dashboard = () => {
     return `Next: ${tomorrowRoutine[0]}`;
   };
 
-  const chartData = {
-    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-    datasets: [{
-      label: 'Student Logins',
-      data: [5, 12, 8, 6, 9, 3, 7],
-      backgroundColor: 'rgba(75, 192, 192, 0.7)',
-      borderColor: 'rgba(75, 192, 192, 1)',
-      borderWidth: 1,
-      borderRadius: 5
-    }]
-  };
+  const chartData = useMemo(() => {
+    const daysOfWeekShort = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
+
+    const labels = [];
+    const loginCounts = [];
+    const backgroundColors = [];
+    const borderColors = [];
+
+    const dataMap = new Map();
+
+    sessionInfo.forEach(item => {
+      const dateKey = new Date(item.login_date).toISOString().split('T')[0];
+      dataMap.set(dateKey, parseInt(item.login_count, 10));
+    });
+
+    const colors = [
+      'rgba(255, 99, 132, 0.8)', // Red
+      'rgba(54, 162, 235, 0.8)', // Blue
+      'rgba(255, 206, 86, 0.8)', // Yellow
+      'rgba(75, 192, 192, 0.8)', // Teal
+      'rgba(153, 102, 255, 0.8)',// Purple
+      'rgba(255, 159, 64, 0.8)', 
+      'rgba(201, 203, 207, 0.8)' 
+    ];
+
+    const borderColorsSolid = [
+      'rgba(255, 99, 132, 1)',
+      'rgba(54, 162, 235, 1)',
+      'rgba(255, 206, 86, 1)',
+      'rgba(75, 192, 192, 1)',
+      'rgba(153, 102, 255, 1)',
+      'rgba(255, 159, 64, 1)',
+      'rgba(201, 203, 207, 1)'
+    ];
+
+    for (let i = 6; i >= 0; i--) {
+      const date = new Date(now);
+      date.setDate(now.getDate() - i);
+
+      const formattedDateKey = date.toISOString().split('T')[0];
+      const dayName = daysOfWeekShort[date.getDay()];
+
+      labels.push(dayName);
+      loginCounts.push(dataMap.get(formattedDateKey) || 0);
+      backgroundColors.push(colors[6 - i]); // Assign color based on position (0-6)
+      borderColors.push(borderColorsSolid[6 - i]);
+    }
+
+    return {
+      labels: labels,
+      datasets: [{
+        label: 'Student Logins',
+        data: loginCounts,
+        backgroundColor: backgroundColors,
+        borderColor: borderColors,
+        borderWidth: 1,
+        borderRadius: 5
+      }]
+    };
+  }, [sessionInfo]);
 
   const chartOptions = {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
-      legend: { position: 'top' },
+      legend: {
+        position: 'top',
+        labels: {
+          font: {
+            size: 14
+          }
+        }
+      },
       title: {
         display: true,
         text: 'Weekly Login Activity',
-        font: { size: 16 }
+        font: {
+          size: 18,
+          weight: 'bold'
+        },
+        color: '#333'
+      },
+      tooltip: {
+        callbacks: {
+          label: function(context) {
+            let label = context.dataset.label || '';
+            if (label) {
+              label += ': ';
+            }
+            if (context.parsed.y !== null) {
+              label += context.parsed.y + ' logins';
+            }
+            return label;
+          }
+        },
+        backgroundColor: 'rgba(0,0,0,0.7)',
+        bodyFont: { size: 14 },
+        titleFont: { size: 16, weight: 'bold' }
       }
     },
     scales: {
-      y: { beginAtZero: true, ticks: { stepSize: 1 } },
-      x: { grid: { display: false } }
+      y: {
+        beginAtZero: true,
+        grid: {
+          color: 'rgba(0,0,0,0.05)'
+        },
+        ticks: {
+          stepSize: 1,
+          font: { size: 12 },
+          color: '#555'
+        },
+        title: {
+          display: true,
+          text: 'Number of Logins',
+          font: { size: 14, weight: 'bold' },
+          color: '#555'
+        }
+      },
+      x: {
+        grid: {
+          display: false
+        },
+        ticks: {
+          font: { size: 12, weight: 'bold' },
+          color: '#555'
+        },
+        title: {
+          display: true,
+          text: 'Day of Week',
+          font: { size: 14, weight: 'bold' },
+          color: '#555'
+        }
+      }
     }
   };
 
@@ -251,7 +366,14 @@ const Dashboard = () => {
         <div className="card-body">
           <h5 className="text-primary mb-3">Login Activity (Last 7 Days)</h5>
           <div style={{ height: '300px' }}>
-            <Bar data={chartData} options={chartOptions} />
+            {loadingChart ? (
+              <div className="d-flex justify-content-center align-items-center" style={{ height: '100%' }}>
+                <Spinner animation="border" variant="primary" />
+                <p className="ms-2">Loading chart...</p>
+              </div>
+            ) : (
+              <Bar data={chartData} options={chartOptions} />
+            )}
           </div>
         </div>
       </div>

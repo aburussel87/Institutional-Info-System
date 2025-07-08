@@ -2,6 +2,16 @@ const client = require('./db');
 const { generateRoutine, formatGradeSheet,formatSemesterRoutine,formatFee , formatExamData} = require('../utils');
 
 
+async function getSessionInfo(uid) {
+  const query = `
+    SELECT * from last_7_days_login($1);
+  `;
+  const res = await client.query(query, [uid]);
+  if (res.rows.length === 0) {
+    return null;
+  }
+  return res.rows;
+}
 
 
 async function getTeacherInfo(teacherId) {
@@ -361,5 +371,6 @@ module.exports = {
   get_all_payments_ordered_by_type,
   getStudent_exam_Routine,
   get_teached_Course,
-  getTeacherInfo
+  getTeacherInfo,
+  getSessionInfo
 };

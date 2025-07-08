@@ -1,7 +1,7 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
-const { getUserInfo,getStudentRoutine,getTeacherRoutine ,getEnrolledCourse, getTeacherInfo} = require('../config/query');
+const { getUserInfo,getStudentRoutine,getTeacherRoutine ,getEnrolledCourse, getTeacherInfo,getSessionInfo} = require('../config/query');
 const {authenticateToken} = require ('../utils');
 const router = express.Router();
 
@@ -24,7 +24,11 @@ router.get('/student', authenticateToken, async (req, res) => {
       routine = await getTeacherRoutine(user.user_id);
     } 
     console.log("Dashboard Info Request by :" + uid);
-    res.json({ success: true, user , routine,courses: enrolledCourses });
+    const session_info = await getSessionInfo(uid);
+    if (!session_info) {
+      return res.status(404).json({ success: false, error: 'Session info not found' });
+    }
+    res.json({ success: true, user , routine,courses: enrolledCourses, session_info });
   } catch (err) {
     console.error('Dashboard error:', err);
     res.status(500).json({ success: false, error: 'Internal Server Error' });
@@ -50,16 +54,17 @@ router.get('/teacher', authenticateToken, async (req, res) => {
     }
 
     const teacherInfo = result.get_teacher_info; 
-
+    const session_info = await getSessionInfo(uid);
+    if (!session_info) {
+      return res.status(404).json({ success: false, error: 'Session info not found' });
+    }
     console.log("Dashboard Info Request by Teacher:", uid);
-    res.json({ success: true, teacher: teacherInfo }); 
+    res.json({ success: true, teacher: teacherInfo, session_info });
 
   } catch (err) {
     console.error('Dashboard error:', err);
     res.status(500).json({ success: false, error: 'Internal Server Error' });
   }
 });
-
-
 
 module.exports = router;
