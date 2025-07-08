@@ -64,6 +64,41 @@ function generateRoutine(res) {
   return routine;
 }
 
+function format_exam_routine(res) {
+  let routine = {
+    Monday: [],
+    Tuesday: [],
+    Wednesday: [],
+    Thursday: [],
+    Friday: [],
+    Saturday: [],
+    Sunday: [],
+  };
+
+  for (const row of res.rows) {
+    const time = row.start_time.slice(0, 5); 
+    const entry = `${row.course_title} - ${time}`;
+    if (!routine[row.day_of_week]) {
+      routine[row.day_of_week] = [];
+    }
+    routine[row.day_of_week].push(entry);
+  }
+
+  for (const day in routine) {
+    if (routine[day].length === 0) {
+      if (day === 'Sunday') {
+        routine[day] = ['Holiday'];
+      } else {
+        routine[day] = ['Free Day'];
+      }
+    }
+  }
+
+  return routine;
+}
+
+
+
 
 function mapSemesterCodeToName(code) {
   const map = {
@@ -113,6 +148,8 @@ function formatGradeSheet(rows) {
 
   return result;
 }
+
+
 
 
 

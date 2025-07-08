@@ -9,6 +9,10 @@ import StudentInfo from './pages/student';
 import StudentRoutine from './pages/studentRoutine';
 import CourseOutline from './pages/courseOutline';
 import StudentFee from './pages/studentFee';
+import exam_schedule from './pages/exam_schedule'; 
+
+
+
 
 import 'bootstrap/dist/css/bootstrap.min.css';
 
@@ -41,6 +45,7 @@ export default function App() {
         <Route path='/studentRoutine' element = {<StudentRoutine/>} />
         <Route path='/courseOutline' element = {<CourseOutline/>} />
         <Route path='/studentFee' element = {<StudentFee/>} />
+        <Route path='/exam_schedule' element = {<exam_schedule/>} /> 
       </Routes>
     </Router>
   );
