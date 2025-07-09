@@ -28,9 +28,7 @@ const ExamSchedule = () => {
     const fetchExams = async () => {
       try {
         const res = await fetch(`${API_BASE_URL}/exam_schedule`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         });
 
         const data = await res.json();
@@ -70,6 +68,12 @@ const ExamSchedule = () => {
     setSelectedExamType(event.target.value);
   };
 
+  const isPastExam = (date) => {
+    const examDate = new Date(date);
+    const now = new Date();
+    return examDate < now;
+  };
+
   const filteredExams = selectedExamType
     ? examList.filter((exam) => exam.exam_type === selectedExamType)
     : examList;
@@ -100,22 +104,29 @@ const ExamSchedule = () => {
           <Spinner animation="border" variant="primary" />
           <p>Loading exams...</p>
         </div>
-      ) : filteredExams.length === 0 && selectedExamType !== '' ? (
-        <p className="examRoutineEmpty">No {selectedExamType} exams found.</p>
-      ) : filteredExams.length === 0 && selectedExamType === '' ? (
-        <p className="examRoutineEmpty">No exams found.</p>
+      ) : filteredExams.length === 0 ? (
+        <p className="examRoutineEmpty">
+          {selectedExamType
+            ? `No ${selectedExamType} exams found.`
+            : 'No exams found.'}
+        </p>
       ) : (
         <div className="examRoutineGrid">
           {filteredExams.map((exam) => (
             <div
               key={exam.exam_id}
-              className="examRoutineItem"
+              className={`examRoutineItem ${
+                isPastExam(exam.date_of_exam) ? 'pastExam' : ''
+              }`}
               onClick={() => openModal(exam)}
             >
               <div className="examRoutineItemTop">
                 <span className="examCourseId">{exam.course_id}</span>
               </div>
               <div className="examType">{exam.exam_type}</div>
+              {isPastExam(exam.date_of_exam) && (
+                <div className="examPastLabel">Past</div>
+              )}
             </div>
           ))}
         </div>

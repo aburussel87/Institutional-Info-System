@@ -211,3 +211,21 @@
     font-size: 1.8em;
   }
 }
+.pastExam {
+  opacity: 0.6;
+  background-color: #ffe6e6;
+  border: 1px solid #ffb3b3;
+  position: relative;
+}
+
+.examPastLabel {
+  position: absolute;
+  bottom: 5px;
+  right: 5px;
+  font-size: 0.75rem;
+  color: #b30000;
+  font-weight: bold;
+  background: #fff0f0;
+  padding: 2px 4px;
+  border-radius: 3px;
+}

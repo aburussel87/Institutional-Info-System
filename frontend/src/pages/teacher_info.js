@@ -6,17 +6,16 @@ import '../styles/teacher_info.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 const TeacherInfo = () => {
-  const [teacher, setTeacher] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [teacherData, setTeacherData] = useState(null);
+  const [loadingTeacher, setLoadingTeacher] = useState(true);
+  const [teacherError, setTeacherError] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchTeacherInfo = async () => {
+    const fetchTeacherProfile = async () => {
       const token = localStorage.getItem('token');
-      const user_id = localStorage.getItem('user_id');
 
-      if (!token || !user_id) {
+      if (!token) {
         navigate('/login');
         return;
       }
@@ -28,7 +27,7 @@ const TeacherInfo = () => {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`
           },
-          body: JSON.stringify({ required_uid: user_id })
+          body: JSON.stringify({ required_uid: localStorage.getItem('user_id') })
         });
 
         if (!response.ok) {
@@ -39,104 +38,110 @@ const TeacherInfo = () => {
             navigate('/login');
             return;
           }
-          throw new Error(errorData.error || 'Failed to fetch teacher information.');
+          throw new Error(errorData.error || 'Failed to fetch teacher profile.');
         }
 
         const data = await response.json();
 
         if (!data.success || !data.teacher) {
-          throw new Error('No teacher information found.');
+          throw new Error('No teacher profile found or malformed data.');
         }
 
-        setTeacher(data.teacher);
+        // The key is 'teacher' in the response, and its value is the actual teacher object
+        setTeacherData(data.teacher);
       } catch (err) {
-        setError(err.message);
+        setTeacherError(err.message);
       } finally {
-        setLoading(false);
+        setLoadingTeacher(false);
       }
     };
 
-    fetchTeacherInfo();
+    fetchTeacherProfile();
   }, [navigate]);
 
-  if (loading) return <div className="loader">Loading...</div>;
-  if (error) return <div className="error-msg">{error}</div>;
+  if (loadingTeacher) return <div className="teacher-profile-loader">Loading teacher profile...</div>;
+  if (teacherError) return <div className="teacher-profile-error-msg">{teacherError}</div>;
 
   return (
     <>
       <Header />
-      <div className="teacher-container">
-        <div className="card profile-card">
+      <div className="teacher-profile-container">
+        <div className="teacher-profile-card">
           <img
-            src={`data:image/jpeg;base64,${teacher.photo}`}
-            alt="Teacher"
-            className="profile-photo"
+            src={`${API_BASE_URL}/user/photo/${teacherData.teacher_info.teacher_id}`} 
+            alt="User"
+            className="rounded-circle shadow-sm"
+            style={{ width: '110px', height: '110px', objectFit: 'cover', border: '4px solid white' }}
+            onError={(e) => { 
+              e.target.onerror = null;
+              e.target.src = `https://ui-avatars.com/api/?name=${teacherData.username}&background=007bff&color=fff&bold=true&size=128`;
+            }}
           />
-          <h2>{teacher.username}</h2>
-          <p>{teacher.teacher_info.designation}</p>
+          <h2>{teacherData.username}</h2>
+          <p>{teacherData.teacher_info.designation}</p>
         </div>
 
-        <div className="card info-card">
-          <h3>Basic Info</h3>
-          <p><strong>Email:</strong> {teacher.email}</p>
-          <p><strong>Phone:</strong> {teacher.phone}</p>
-          <p><strong>DOB:</strong> {teacher.dob}</p>
-          <p><strong>Gender:</strong> {teacher.gender}</p>
-          <p><strong>Date Joined:</strong> {teacher.date_joined}</p>
-          <p><strong>Last Login:</strong> {teacher.last_login}</p>
-          <p><strong>2FA:</strong> {teacher.two_fa_enabled ? 'Enabled' : 'Disabled'}</p>
-          <p><strong>Active:</strong> {teacher.is_active ? 'Yes' : 'No'}</p>
+        <div className="teacher-info-card">
+          <h3>Basic Profile</h3>
+          <p><strong>Email:</strong> {teacherData.email}</p>
+          <p><strong>Phone:</strong> {teacherData.phone}</p>
+          <p><strong>DOB:</strong> {teacherData.dob}</p>
+          <p><strong>Gender:</strong> {teacherData.gender}</p>
+          <p><strong>Date Joined:</strong> {new Date(teacherData.date_joined).toLocaleDateString()}</p>
+          <p><strong>Last Login:</strong> {new Date(teacherData.last_login).toLocaleString()}</p>
+          <p><strong>2FA:</strong> {teacherData.two_fa_enabled ? 'Enabled' : 'Disabled'}</p>
+          <p><strong>Active:</strong> {teacherData.is_active ? 'Yes' : 'No'}</p>
         </div>
 
-        <div className="card info-card">
-          <h3>Teacher Info</h3>
-          <p><strong>Teacher ID:</strong> {teacher.teacher_info.teacher_id}</p>
-          <p><strong>Hire Date:</strong> {teacher.teacher_info.hire_date}</p>
+        <div className="teacher-info-card">
+          <h3>Academic Details</h3>
+          <p><strong>Teacher ID:</strong> {teacherData.teacher_info.teacher_id}</p>
+          <p><strong>Hire Date:</strong> {new Date(teacherData.teacher_info.hire_date).toLocaleDateString()}</p>
         </div>
 
-        <div className="card info-card">
+        <div className="teacher-info-card">
           <h3>Department</h3>
-          <p><strong>ID:</strong> {teacher.department.department_id}</p>
-          <p><strong>Name:</strong> {teacher.department.name}</p>
+          <p><strong>ID:</strong> {teacherData.department.department_id}</p>
+          <p><strong>Name:</strong> {teacherData.department.name}</p>
         </div>
 
-        <div className="card info-card">
+        <div className="teacher-info-card">
           <h3>Emergency Contact</h3>
-          <p><strong>Name:</strong> {teacher.emergency_contact.name}</p>
-          <p><strong>Mobile:</strong> {teacher.emergency_contact.mobile}</p>
-          <p><strong>Address:</strong> {teacher.emergency_contact.address}</p>
+          <p><strong>Name:</strong> {teacherData.emergency_contact.name}</p>
+          <p><strong>Mobile:</strong> {teacherData.emergency_contact.mobile}</p>
+          <p><strong>Address:</strong> {teacherData.emergency_contact.address}</p>
         </div>
 
-        {teacher.advisor_info?.total_students && (
-          <div className="card info-card">
-            <h3>Advisor Info</h3>
-            <p><strong>Total Students:</strong> {teacher.advisor_info.total_students}</p>
+        {teacherData.advisor_info?.total_students && (
+          <div className="teacher-info-card">
+            <h3>Advisor Role</h3>
+            <p><strong>Total Students Advised:</strong> {teacherData.advisor_info.total_students}</p>
           </div>
         )}
 
-        {teacher.hod_info?.department_id && (
-          <div className="card info-card">
-            <h3>HOD Info</h3>
-            <p><strong>Department ID:</strong> {teacher.hod_info.department_id}</p>
-            <p><strong>Assigned On:</strong> {teacher.hod_info.assigned_on}</p>
-            <p><strong>Resigned On:</strong> {teacher.hod_info.resigned_on || 'Still serving'}</p>
+        {teacherData.hod_info?.department_id && (
+          <div className="teacher-info-card">
+            <h3>Head of Department Role</h3>
+            <p><strong>Department ID:</strong> {teacherData.hod_info.department_id}</p>
+            <p><strong>Assigned On:</strong> {new Date(teacherData.hod_info.assigned_on).toLocaleDateString()}</p>
+            <p><strong>Resigned On:</strong> {teacherData.hod_info.resigned_on ? new Date(teacherData.hod_info.resigned_on).toLocaleDateString() : 'Still serving'}</p>
           </div>
         )}
 
-        {teacher.provost_info?.hall_id && (
-          <div className="card info-card">
-            <h3>Provost Info</h3>
-            <p><strong>Hall ID:</strong> {teacher.provost_info.hall_id}</p>
-            <p><strong>Assigned On:</strong> {teacher.provost_info.assigned_on}</p>
-            <p><strong>Resigned On:</strong> {teacher.provost_info.resigned_on || 'Still serving'}</p>
+        {teacherData.provost_info?.hall_id && (
+          <div className="teacher-info-card">
+            <h3>Provost Role</h3>
+            <p><strong>Hall ID:</strong> {teacherData.provost_info.hall_id}</p>
+            <p><strong>Assigned On:</strong> {new Date(teacherData.provost_info.assigned_on).toLocaleDateString()}</p>
+            <p><strong>Resigned On:</strong> {teacherData.provost_info.resigned_on ? new Date(teacherData.provost_info.resigned_on).toLocaleDateString() : 'Still serving'}</p>
           </div>
         )}
 
-        <div className="card info-card">
+        <div className="teacher-info-card">
           <h3>Courses Taught</h3>
-          {teacher.courses_taught?.length > 0 ? (
-            <ul>
-              {teacher.courses_taught.map((course, idx) => (
+          {teacherData.courses_taught?.length > 0 ? (
+            <ul className="teacher-courses-list">
+              {teacherData.courses_taught.map((course, idx) => (
                 <li key={idx}>
                   <strong>{course.course_title}</strong> ({course.section_type}) – {course.academic_session}
                 </li>
