@@ -58,6 +58,43 @@ async function get_teached_Course(teacherId) {
   return res.rows;
 }
 
+async function get_allstudent_info_under_ateacher(teacherId) {  //change by provat
+  const query = `
+    SELECT * FROM get_students_by_advisor($1);
+
+  `;
+
+  const res = await client.query(query, [teacherId]);
+  return res.rows;
+}
+
+async function get_hall_info_by_provost(teacherId) {
+  const query = `
+   
+SELECT * FROM get_hall_info_by_provost($1);
+
+  `;
+
+  const res = await client.query(query, [teacherId]);
+  return res.rows;
+}
+
+
+
+async function get_exam_info_by_teacher(teacherId) {
+  const query = `
+   
+
+SELECT * FROM get_all_exams_by_teacher($1);
+
+  `;
+
+  const res = await client.query(query, [teacherId]);
+  return res.rows;
+}
+
+
+
 
 async function getStudent_exam_Routine(studentId) {
   const query = `
@@ -340,5 +377,7 @@ module.exports = {
   getStudent_exam_Routine,
   get_teached_Course,
   getTeacherInfo,
-  getSessionInfo
+  getSessionInfo,
+  get_allstudent_info_under_ateacher,
+  get_hall_info_by_provost
 };
