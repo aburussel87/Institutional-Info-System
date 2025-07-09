@@ -2,10 +2,6 @@ const client = require('./db');
 const { generateRoutine, formatGradeSheet, formatSemesterRoutine, formatFee, formatExamData } = require('../utils');
 
 
-
-
-
-
 async function getGradeSheet(uid) {
   const query = `
   SELECT * FROM get_student_grades($1);
@@ -127,15 +123,6 @@ async function getStudentInfo(studentId) {
   `;
 
   const res = await client.query(query, [studentId]);
-  return res.rows;
-}
-
-async function getteacherInfo(teacherId) {  //change by provat
-  const query = `
-    SELECT * FROM get_teacher_info($1);
-  `;
-
-  const res = await client.query(query, [teacherId]);
   return res.rows;
 }
 

@@ -20,8 +20,6 @@ router.post('/', authenticateToken, async (req, res) => {
       return res.status(404).json({ success: false, error: 'Teacher not found or data structure is incorrect.' });
     }
     const teacher = result.get_teacher_info;
-
-    console.log('Processed teacher info sent to frontend:', teacher); 
     res.json({ success: true, teacher: teacher });
   } catch (err) {
     console.error('User details fetch error:', err);

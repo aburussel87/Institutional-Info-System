@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import { Offcanvas, Button, Badge, Form, Modal } from 'react-bootstrap'; 
+import { Offcanvas, Button, Badge, Form, Modal } from 'react-bootstrap';
 import '../styles/header.css';
 import API_BASE_URL from '../config/config';
 
@@ -10,6 +10,7 @@ const Header = () => {
   const [notifications, setNotifications] = useState([]);
   const [showDetailPopup, setShowDetailPopup] = useState(false);
   const [selectedNotification, setSelectedNotification] = useState(null);
+  const [showAllNotifications, setShowAllNotifications] = useState(false);
 
   const toggleSidebar = () => setShowSidebar(!showSidebar);
   const toggleNotifications = () => setShowNotifications(!showNotifications);
@@ -62,9 +63,9 @@ const Header = () => {
       .catch(err => console.error('Notification fetch error:', err));
   }, []);
 
-  const getGroupedNotifications = () => {
+  const getGroupedNotifications = (notifsToGroup) => {
     const grouped = {};
-    notifications.forEach(notif => {
+    notifsToGroup.forEach(notif => {
       const date = new Date(notif.created_at).toLocaleDateString('en-US', {
         year: 'numeric',
         month: 'long',
@@ -79,8 +80,7 @@ const Header = () => {
   };
 
   const getNotificationCategory = (notif) => {
-    if (notif.student_id) return `For You`;
-    if (notif.teacher_id) return `For You`;
+    if (notif.student_id || notif.teacher_id) return `For You`;
     if (notif.department_id) return `Department`;
     if (notif.course_id) return `${notif.course_id}`;
     if (notif.hall_id) return `Hall ${notif.hall_id}`;
@@ -91,7 +91,7 @@ const Header = () => {
   const handleNotificationItemClick = (notification) => {
     setSelectedNotification(notification);
     setShowDetailPopup(true);
-    setShowNotifications(false); // Close the small popup when detail opens
+    setShowNotifications(false);
   };
 
   const handleCloseDetailPopup = () => {
@@ -99,7 +99,8 @@ const Header = () => {
     setSelectedNotification(null);
   };
 
-  const groupedNotifications = getGroupedNotifications();
+  const notificationsToDisplay = showAllNotifications ? notifications : notifications.slice(0, 10);
+  const groupedNotifications = getGroupedNotifications(notificationsToDisplay);
 
   return (
     <header className="main-header d-flex align-items-center justify-content-between px-3 py-2">
@@ -150,9 +151,21 @@ const Header = () => {
               ref={popupRef}
               id="notificationPopup"
               className="position-absolute bg-white shadow rounded p-3 border"
-              style={{ top: '40px', right: 0, overflowY: 'auto', zIndex: 1050, color: 'black' }}
+              style={{ top: '40px', right: 0, overflowY: 'auto', zIndex: 1050, color: 'black', maxHeight: '400px', width: '300px' }}
             >
-              <div className="fw-bold mb-3 border-bottom pb-2">Notifications</div>
+              <div className="fw-bold mb-3 border-bottom pb-2 d-flex justify-content-between align-items-center">
+                <span>Notifications</span>
+                {notifications.length > 10 && (
+                  <Button
+                    variant="link"
+                    size="sm"
+                    onClick={() => setShowAllNotifications(!showAllNotifications)}
+                    className="p-0 text-decoration-none"
+                  >
+                    {showAllNotifications ? 'Hide' : 'See All'}
+                  </Button>
+                )}
+              </div>
               <div id="notificationList">
                 {Object.keys(groupedNotifications).length > 0 ? (
                   Object.keys(groupedNotifications).map(date => (
@@ -162,13 +175,12 @@ const Header = () => {
                         <div
                           key={notif.notification_id || idx}
                           className="p-2 mb-2 bg-light rounded shadow-sm notification-item"
-                          onClick={() => handleNotificationItemClick(notif)} // Make it clickable
+                          onClick={() => handleNotificationItemClick(notif)}
                           style={{ cursor: 'pointer' }}
                         >
                           <span className="notification-category">{getNotificationCategory(notif)}</span>
                           <span className="notification-separator">: </span>
                           <span className="notification-title">{notif.title}</span>
-                          {/* Removing message from here, it will be in detail popup */}
                         </div>
                       ))}
                     </div>
@@ -186,7 +198,6 @@ const Header = () => {
         </div>
       </div>
 
-      {/* Notification Detail Modal */}
       {selectedNotification && (
         <Modal show={showDetailPopup} onHide={handleCloseDetailPopup} centered size="lg">
           <Modal.Header closeButton className="notification-detail-header">
