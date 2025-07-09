@@ -262,6 +262,65 @@ function formatExamData(rows) {
   });
 }
 
+ function formatTeacherInfo(rawData) {
+  if (!rawData) return null;
+
+  return {
+    user_id: rawData.user_id,
+    username: rawData.username || 'N/A',
+    email: rawData.email || 'N/A',
+    phone: rawData.phone || 'N/A',
+    dob: rawData.dob || 'N/A',
+    gender: rawData.gender || 'N/A',
+    date_joined: rawData.date_joined || 'N/A',
+    last_login: rawData.last_login || 'N/A',
+    is_active: rawData.is_active ?? false,
+    two_fa_enabled: rawData.two_fa_enabled ?? false,
+    photo: rawData.photo || null,
+
+    emergency_contact: {
+      name: rawData.emergency_contact?.name || 'N/A',
+      mobile: rawData.emergency_contact?.mobile || 'N/A',
+      address: rawData.emergency_contact?.address || 'N/A'
+    },
+
+    teacher_info: {
+      teacher_id: rawData.teacher_info?.teacher_id || 'N/A',
+      hire_date: rawData.teacher_info?.hire_date || 'N/A',
+      designation: rawData.teacher_info?.designation || 'N/A'
+    },
+
+    department: {
+      department_id: rawData.department?.department_id || 'N/A',
+      name: rawData.department?.name || 'N/A'
+    },
+
+    advisor_info: {
+      total_students: rawData.advisor_info?.total_students || 0
+    },
+
+    hod_info: rawData.hod_info?.department_id ? {
+      department_id: rawData.hod_info.department_id,
+      assigned_on: rawData.hod_info.assigned_on,
+      resigned_on: rawData.hod_info.resigned_on
+    } : null,
+
+    provost_info: rawData.provost_info?.hall_id ? {
+      hall_id: rawData.provost_info.hall_id,
+      assigned_on: rawData.provost_info.assigned_on,
+      resigned_on: rawData.provost_info.resigned_on
+    } : null,
+
+    courses_taught: Array.isArray(rawData.courses_taught) ? rawData.courses_taught.map(course => ({
+      course_id: course.course_id,
+      course_title: course.course_title,
+      section_type: course.section_type,
+      academic_session: course.academic_session
+    })) : []
+  };
+}
+
+
 
 
 module.exports = {
@@ -270,6 +329,7 @@ module.exports = {
   formatGradeSheet,
   formatSemesterRoutine,
   formatFee,
-  formatExamData
+  formatExamData,
+  formatTeacherInfo
 };
 

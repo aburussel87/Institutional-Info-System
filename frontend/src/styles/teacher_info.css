@@ -1,0 +1,70 @@
+.teacher-container {
+  max-width: 1200px;
+  margin: 2rem auto;
+  padding: 1rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  justify-content: center;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.card {
+  background: #f9fafe;
+  border-radius: 15px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  padding: 20px;
+  width: 100%;
+  max-width: 400px;
+  transition: 0.3s ease-in-out;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+}
+
+.profile-card {
+  text-align: center;
+}
+
+.profile-photo {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-bottom: 15px;
+  border: 3px solid #dce1ff;
+}
+
+.info-card h3 {
+  margin-bottom: 15px;
+  color: #2c3e50;
+  border-bottom: 1px solid #ccc;
+  padding-bottom: 5px;
+}
+
+.info-card p,
+.info-card li {
+  margin: 6px 0;
+  color: #4a4a4a;
+  font-size: 15px;
+}
+
+ul {
+  padding-left: 1.2rem;
+}
+
+.loader {
+  text-align: center;
+  padding: 3rem;
+  font-size: 1.5rem;
+  color: #666;
+}
+
+.error-msg {
+  text-align: center;
+  padding: 3rem;
+  color: red;
+  font-size: 1.2rem;
+}

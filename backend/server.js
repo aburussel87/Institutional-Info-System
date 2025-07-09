@@ -16,7 +16,7 @@ const SemesterRoutineRoutes = require('./routes/semesterRoutineRoutes');
 const EnrolledCourseOutlineRoutes = require('./routes/enrolledCourseOutlineRoutes');
 const StudentFeeRoutes = require('./routes/studentFeeRoutes');
 const exam_scheduleRoutes = require('./routes/exam_scheduleRoutes');
-
+const teacherInfoRoutes = require('./routes/teacherInfoRoutes');
 
 
 const jwt = require('jsonwebtoken');
@@ -38,6 +38,8 @@ app.use('/api/semesterRoutine',SemesterRoutineRoutes);
 app.use('/api/courseOutline', EnrolledCourseOutlineRoutes);
 app.use('/api/studentFee', StudentFeeRoutes);
 app.use('/api/exam_schedule', exam_scheduleRoutes);
+app.use('/api/teacher-profile', teacherInfoRoutes);
+
 
 
 const os = require('os');
