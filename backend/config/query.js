@@ -1,6 +1,32 @@
 const client = require('./db');
-const { generateRoutine, formatGradeSheet,formatSemesterRoutine,formatFee , formatExamData} = require('../utils');
+const { generateRoutine, formatGradeSheet, formatSemesterRoutine, formatFee, formatExamData } = require('../utils');
 
+
+
+
+
+
+async function getGradeSheet(uid) {
+  const query = `
+  SELECT * FROM get_student_grades($1);
+  `;
+  const result = await client.query(query, [uid]);
+  return formatGradeSheet(result.rows);
+}
+
+
+async function getEnrolledCourse(studentId) {
+  const query = `
+    SELECT * FROM get_student_enrolled_courses($1);
+  `;
+  try {
+    const result = await client.query(query, [studentId]);
+    return result.rows;
+  } catch (err) {
+    console.error('Error fetching enrolled courses:', err);
+    throw err;
+  }
+}
 
 async function getSessionInfo(uid) {
   const query = `
@@ -19,7 +45,7 @@ async function getTeacherInfo(teacherId) {
   const res = await client.query(query, [teacherId]);
 
   if (!res.rows || res.rows.length === 0) {
-    return null;  
+    return null;
   }
 
   return res.rows[0] || null;
@@ -86,9 +112,9 @@ async function getSemesterRoutine(sid) {
   const subq = `
    Select current_semester , academic_session, department_id from student where student_id = $1
   `;
-  const r1 = await client.query(subq,[sid]);
+  const r1 = await client.query(subq, [sid]);
   let student = r1.rows[0];
-  const res = await client.query(query, [student.current_semester,student.academic_session,student.department_id]);
+  const res = await client.query(query, [student.current_semester, student.academic_session, student.department_id]);
   return formatSemesterRoutine(res.rows);
 }
 
@@ -140,32 +166,6 @@ CROSS JOIN teachers t;
   return res.rows;
 }
 
-
-
-async function getEnrolledCourse(studentId) {
-  const query = `
-    SELECT 
-    e.course_id,
-    c.title AS course_title,
-    c.credit_hours,
-    d.name AS offered_by,
-    COALESCE(u.username, 'Not Assigned') AS teacher_name
-FROM enrollment e
-JOIN course c ON e.course_id = c.course_id
-JOIN department d ON d.department_id = c.offered_by
-LEFT JOIN subjectallocation sa ON e.course_id = sa.course_id 
-LEFT JOIN teacher t ON sa.teacher_id = t.teacher_id
-LEFT JOIN "User" u ON t.teacher_id = u.user_id
-WHERE e.student_id = $1 AND (sa.section_type = 'All' or e.section_type = sa.section_type);
-`
-  try {
-    const result = await client.query(query, [studentId]);
-    return result.rows;
-  } catch (err) {
-    console.error('Error fetching enrolled courses:', err);
-    throw err;
-  }
-}
 
 async function getUser(uid) {
   try {
@@ -308,36 +308,6 @@ async function getTeacherRoutine(teacherId) {
 
   const res = await client.query(query, [teacherId]);
   return generateRoutine(res);
-}
-
-
-async function getGradeSheet(uid) {
-  const query = `
-  SELECT
-    s.student_id,
-    s.current_semester as lt,
-    u.username AS name,
-    cr.semester AS level_term,
-    c.course_id,
-    c.title,
-    c.credit_hours AS credit,
-    cr.grade_point AS gpa
-FROM
-    CourseResult cr
-JOIN
-    Student s ON cr.student_id = s.student_id
-JOIN
-    "User" u ON u.user_id = s.student_id
-JOIN
-    Course c ON cr.course_id = c.course_id
-WHERE
-    s.student_id = $1
-ORDER BY
-    cr.semester, c.course_id;
-
-  `;
-  const result = await client.query(query, [uid]);
-  return formatGradeSheet(result.rows);
 }
 
 
