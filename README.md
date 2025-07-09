@@ -1,70 +1,168 @@
-# Getting Started with Create React App
+# 🚀 Full-Stack Project
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+This project is a **full-stack application** with:  
+- 📦 **Backend**: Node.js + Express (`backend/`)  
+- 🎨 **Frontend**: React (`frontend/`, bootstrapped with [Create React App](https://github.com/facebook/create-react-app))  
 
-## Available Scripts
+It is designed to run both frontend & backend locally or under the same Wi-Fi network.
 
-In the project directory, you can run:
+---
 
-### `npm start`
+## 📂 Project Structure
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+```
+root/
+├── backend/
+│   ├── server.js
+│   └── …
+├── frontend/
+│   ├── src/
+│   ├── public/
+│   └── …
+└── README.md
+```
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+---
 
-### `npm test`
+## ⚙️ Installation & Setup
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+### 1️⃣ Clone the Repository
 
-### `npm run build`
+```bash
+git clone <your-repository-url>
+cd <your-project-folder>
+```
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+---
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+### 2️⃣ Install Backend Dependencies
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+```bash
+cd backend
+npm install
+```
 
-### `npm run eject`
+---
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+### 3️⃣ Install Frontend Dependencies
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+```bash
+cd ../frontend
+npm install
+```
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+---
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+## 🚀 Running the Project
 
-## Learn More
+### Run Backend Server
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+From the `backend` folder:
+```bash
+cd backend
+npx nodemon server.js
+```
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+> The backend server will start (usually at [http://localhost:5000](http://localhost:5000) or your configured port).
 
-### Code Splitting
+---
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+### Run Frontend Server
 
-### Analyzing the Bundle Size
+From the `frontend` folder:
+```bash
+cd frontend
+npm start
+```
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+> The frontend React app will start at [http://localhost:3000](http://localhost:3000).
 
-### Making a Progressive Web App
+---
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+## 🌐 Configure API Endpoint
 
-### Advanced Configuration
+When running the app on **different devices under the same Wi-Fi**, you must set the frontend to point to the backend’s **local IP address**.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+### Steps:
 
-### Deployment
+1️⃣ Find the local IP of the backend machine:
+```bash
+ifconfig      # (on Mac/Linux)
+ipconfig      # (on Windows)
+```
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+You’ll see something like:
+```
+IPv4 Address: 192.168.1.100
+```
 
-### `npm run build` fails to minify
+---
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+2️⃣ Update the frontend config file:
+Edit:
+```
+frontend/src/config/config.js
+```
+
+Set:
+```js
+const API_BASE_URL = "http://192.168.1.100:5000";
+export default API_BASE_URL;
+```
+
+Replace `192.168.1.100` with your actual local IP.
+
+---
+
+## 📜 Available Scripts
+
+### Frontend
+
+From the `frontend/` folder:
+
+#### `npm start`
+Runs the React app in development mode.  
+Open [http://localhost:3000](http://localhost:3000).
+
+#### `npm test`
+Runs the tests in watch mode.  
+[More info](https://facebook.github.io/create-react-app/docs/running-tests)
+
+#### `npm run build`
+Builds the React app for production into the `build/` folder.
+
+#### `npm run eject`
+Removes Create React App abstraction and gives full control over configurations.  
+**Note: irreversible.**
+[More info](https://facebook.github.io/create-react-app/docs/available-scripts)
+
+---
+
+### Backend
+
+From the `backend/` folder:
+
+#### `npx nodemon server.js`
+Runs the backend in development mode with auto-reload.
+
+> (You can also install nodemon globally with `npm install -g nodemon` and just run `nodemon server.js`.)
+
+---
+
+## 📖 Learn More
+
+- [React Documentation](https://reactjs.org/)
+- [Create React App Docs](https://facebook.github.io/create-react-app/docs/getting-started)
+- [Node.js Documentation](https://nodejs.org/en/docs/)
+- [Express.js Documentation](https://expressjs.com/)
+
+---
+
+## 🐞 Troubleshooting
+
+If `npm run build` (frontend) fails to minify, see:  
+👉 [CRA Troubleshooting Guide](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+
+---
+
+✨ Happy coding!
