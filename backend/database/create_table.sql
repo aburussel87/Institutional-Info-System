@@ -17,7 +17,7 @@ CREATE TYPE FeeTypeEnum AS ENUM (
   'CertificateFee'
 );
 --
-
+SELECT * FROM room
 
 CREATE TABLE "User" (
   user_id INT PRIMARY KEY,
@@ -144,6 +144,7 @@ CREATE TABLE GradeSheet (
 
 CREATE TABLE Course (
   course_id VARCHAR(10) PRIMARY KEY,
+	outline TEXT,
   title VARCHAR(100),
   credit_hours FLOAT,
   semester Semester,
@@ -154,6 +155,7 @@ CREATE TABLE Course (
   CONSTRAINT fk_course_offered_by FOREIGN KEY (offered_by) REFERENCES Department(department_id),
   CONSTRAINT fk_course_department FOREIGN KEY (department_id) REFERENCES Department(department_id)
 );
+
 
 
 CREATE TABLE Enrollment (
@@ -168,8 +170,21 @@ CREATE TABLE Enrollment (
   FOREIGN KEY (course_id) REFERENCES Course(course_id) ON DELETE CASCADE
 );
 
+
+-- find name of primary key and dropping
+-- SELECT conname 
+-- FROM pg_constraint 
+-- WHERE conrelid = 'exam'::regclass AND contype = 'p';
+-- 
+-- ALTER TABLE exam
+-- DROP CONSTRAINT exam_pkey;
+
+-- ALTER table exam DROP COLUMN exam_id
+-- ALTER TABLE exam add COLUMN exam_id serial;
+-- ALTER TABLE exam add PRIMARY KEY (exam_id)
+
 CREATE TABLE Exam (
-  exam_id VARCHAR(10) PRIMARY KEY,
+  exam_id serial PRIMARY KEY,
   course_id VARCHAR(10) NOT NULL,
   teacher_id INT,
   title VARCHAR(50),
@@ -182,9 +197,28 @@ CREATE TABLE Exam (
   FOREIGN KEY (teacher_id) REFERENCES Teacher(teacher_id)
 );
 
+-- find name of foreign key constraint if not named explicitely
+-- SELECT conname
+-- FROM pg_constraint
+-- WHERE conrelid = 'examresult'::regclass
+--   AND contype = 'f'
+--   AND conkey @> (SELECT array_agg(attnum)
+--                  FROM pg_attribute
+--                  WHERE attrelid = 'examresult'::regclass
+--                    AND attname = 'exam_id');
+
+-- examresult_exam_id_fkey
+-- ALTER TABLE ExamResult
+-- DROP CONSTRAINT examresult_exam_id_fkey;
+
+-- ALTER TABLE examresult
+-- ADD CONSTRAINT fk_examresult_examid
+-- FOREIGN KEY (exam_id)
+-- REFERENCES exam(exam_id);
+
 CREATE TABLE ExamResult (
   result_id SERIAL PRIMARY KEY,
-  exam_id VARCHAR(10) NOT NULL,
+  exam_id BIGINT NOT NULL,
   student_id INT,
   marks_obtained INT,
   remarks TEXT,
@@ -247,7 +281,7 @@ CREATE TABLE HallAssignment (
   FOREIGN KEY (hall_id) REFERENCES Hall(hall_id)
 );
 
-
+SELECT * FROM hallassignment
 
 CREATE TABLE Provost (
   teacher_id INT,
@@ -307,6 +341,7 @@ CREATE TABLE Notification (
   )
 );
 
+SELECT * FROM notification
 CREATE TABLE Feedback (
   feedback_id VARCHAR(10) PRIMARY KEY,
   student_id INT NOT NULL,
@@ -364,10 +399,10 @@ CREATE TABLE UserSession (
   session_id SERIAL PRIMARY KEY,
   user_id INT,
   login_time TIMESTAMP,
-  logout_time TIMESTAMP,
   ip_address VARCHAR(45),
   FOREIGN KEY (user_id) REFERENCES "User"(user_id)
 );
+
 
 CREATE TABLE AuditLog (
   log_id SERIAL PRIMARY KEY,
