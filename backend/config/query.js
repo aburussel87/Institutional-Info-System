@@ -2,6 +2,12 @@ const client = require('./db');
 const { generateRoutine, formatGradeSheet, formatSemesterRoutine, formatFee, formatExamData } = require('../utils');
 
 
+async function getRegistrationCourse(sid) {
+  const query = `SELECT * from get_registration_course($1);`;
+  const res = await client.query(query, [sid]);
+  return res.rows;
+}
+
 async function getGradeSheet(uid) {
   const query = `
   SELECT * FROM get_student_grades($1);
@@ -379,5 +385,7 @@ module.exports = {
   getTeacherInfo,
   getSessionInfo,
   get_allstudent_info_under_ateacher,
-  get_hall_info_by_provost
+  get_hall_info_by_provost,
+  get_exam_info_by_teacher,
+  getRegistrationCourse
 };

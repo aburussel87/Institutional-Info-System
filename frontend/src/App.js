@@ -12,6 +12,7 @@ import StudentFee from './pages/studentFee';
 import ExamSchedule from './pages/exam_schedule'; 
 import TeacherDashboard from './pages/teacher_dash';
 import TeacherInfo from './pages/teacher_info';
+import CourseRegistration from './pages/registration';
 
 
 
@@ -50,6 +51,7 @@ export default function App() {
         <Route path='/exam_schedule' element = {<ExamSchedule/>} />
         <Route path='/teacher_dash' element = {<TeacherDashboard/>} />
         <Route path='/teacher_info' element = {<TeacherInfo/>} />
+        <Route path='/registration' element = {<CourseRegistration/>} />
 
       </Routes>
     </Router>

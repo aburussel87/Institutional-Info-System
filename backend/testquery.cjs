@@ -1,27 +1,16 @@
-const { Pool } = require('pg');
-require('dotenv').config();
+const client = require('../backend/config/db'); 
 
-const client = new Pool({
-  user: process.env.PGUSER,
-  host: process.env.PGHOST,
-  database: process.env.PGDATABASE,
-  password: process.env.PGPASSWORD,
-  port: process.env.PGPORT,
-});
+async function getRegistrationCourse(studentId) {
+  const pending = await client.query('SELECT course_id, approved_by FROM enrollment WHERE student_id = $1 AND semester = (SELECT current_semester FROM student WHERE student_id = $2) and approved_by IS not NULL', [studentId, studentId]);
 
-async function getTeacherInfo(teacherId) {
-  const query = `
-    SELECT get_teacher_info($1);
-  `;
-  const res = await client.query(query, [teacherId]);
-  return res.rows[0];
+  return pending.rows;
 }
 
 
 (async () => {
   try {
-    const result = await getTeacherInfo(2020111597);
-    console.log(result); // Access the function result
+    const result = await getRegistrationCourse(2204032);
+    console.log("Registration courses:", result);
   } catch (error) {
     console.error(' Error:', error);
   } finally {
