@@ -117,6 +117,7 @@ const Header = () => {
           <a className="btn btn-outline-primary w-100 mb-2" href="/student">Personal Information</a>
           <a className="btn btn-outline-primary w-100 mb-2" href="/studentRoutine">My routine</a>
           <a className="btn btn-outline-primary w-100 mb-2" href="/courseOutline">Course Outlines</a>
+          <a className="btn btn-outline-primary w-100 mb-2" href="/registration">Registration</a>
           <a className="btn btn-outline-primary w-100 mb-2" href="/gradesheet">Gradesheet</a>
           <a className="btn btn-outline-primary w-100 mb-2" href="/studentFee">Student Fee</a>
           <a className="btn btn-outline-primary w-100 mb-2" href="/exam_schedule">Exam Routine</a>
