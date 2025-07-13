@@ -1,175 +1,135 @@
-# 🚀 Full-Stack Project
+# 🚀 Institutional Information System
 
-This project is a **full-stack application** with:  
-- 📦 **Backend**: Node.js + Express (`backend/`)  
-- 🎨 **Frontend**: React (`frontend/`, bootstrapped with [Create React App](https://github.com/facebook/create-react-app))  
+This is a full-stack application for managing institutional information, built with React, Node js and PostgreSQL for the database. The system is designed to provide a comprehensive platform for data management and access.
+## 🚀 Deployment Sites
 
-It is designed to run both frontend & backend locally or under the same Wi-Fi network.
+* **Vercel**
+* **Render**
+* **Supabase**
+## 🔗 Live Demo & Credentials
 
----
+The application can be accessed at the following link. Use the provided credentials to log in.
+
+  * **URL:**   [`Institutional Information System`](https://institutional-info-system.vercel.app)
+  * **User ID:** `2204032`
+  * **Password:** `TCB349A3`
+
+## 🛠️ Technology Stack
+
+  * **Frontend:** React (bootstrapped with Create React App)
+  * **Backend:** Node.js, Express.js
+  * **Database:** PostgreSQL
 
 ## 📂 Project Structure
 
+The project is organized into two main directories, separating the frontend and backend components for clear development and deployment.
+
 ```
 root/
-├── backend/
-│   ├── server.js
-│   └── …
-├── frontend/
-│   ├── src/
-│   ├── public/
-│   └── …
+├── backend/                  # Node.js + Express.js backend
+│   ├── server.js             # Main server entry point
+│   └── …                     # Additional backend files (controllers, routes, models)
+├── frontend/                 # React application
+│   ├── src/                  # Source code for the React app
+│   └── …                     # Other frontend directories
 └── README.md
 ```
 
----
-
 ## ⚙️ Installation & Setup
 
-### 1️⃣ Clone the Repository
+Follow these steps to get the project running on your local machine.
+
+### 1\. Clone the Repository
+
+Begin by cloning the project from its GitHub repository.
 
 ```bash
-git clone <https://github.com/aburussel87/Institutional-Info-System>
+git clone https://github.com/aburussel87/Institutional-Info-System
 ```
 
----
+### 2\. Install Dependencies
 
-### 2️⃣ Install Backend Dependencies
+Navigate into each directory to install the necessary dependencies for both the backend and frontend.
 
 ```bash
+# Install backend dependencies
 cd backend
 npm install
-```
 
----
-
-### 3️⃣ Install Frontend Dependencies
-
-```bash
+# Install frontend dependencies
 cd ../frontend
 npm install
 ```
 
----
-
 ## 🚀 Running the Project
 
-### Run Backend Server
+The backend and frontend servers must be run separately.
 
-From the `backend` folder:
+### 1\. Start the Backend Server
+
+From the `backend/` directory, run the server in development mode with auto-reloading using `nodemon`.
+
 ```bash
 cd backend
 npx nodemon server.js
 ```
 
-> The backend server will start (usually at [http://localhost:5000](http://localhost:5000) or your configured port).
+The server will typically start at `http://localhost:5000`. If you need to access it from another device on the same network, note the network IP address provided in the terminal output.
 
----
+## 🌐 API Endpoint Configuration
 
-### Run Frontend Server
+For the frontend to communicate with the backend, ensure the API endpoint is correctly configured.
 
-From the `frontend` folder:
+If running the frontend and backend on different devices within the same network, you must update the API URL in the frontend code to the backend machine's local IP address.
+
+1.  **Find the Backend's Local IP:**
+    After starting the backend server, the terminal will display the network IP address. For example: `http://192.168.0.173:5000`.
+
+2.  **Update the Frontend Configuration:**
+    Edit the `frontend/src/config/config.js` file and replace the placeholder IP address with the actual IP of the backend machine.
+
+    ```js
+    const API_BASE_URL = "http://192.168.0.173:5000";
+    export default API_BASE_URL;
+    ```
+
+### 2\. Start the Frontend Application
+
+In a new terminal, navigate to the `frontend/` directory and start the React development server.
+
 ```bash
 cd frontend
 npm start
 ```
 
-> The frontend React app will start at [http://localhost:3000](http://localhost:3000).
+The application will open in your browser at `http://localhost:3000`.
 
----
 
-## 🌐 Configure API Endpoint
-
-When running the app on **different devices under the same Wi-Fi**, you must set the frontend to point to the backend’s **local IP address**.
-
-### Steps:
-
-1️⃣ Find the local IP of the backend machine:
--- After you run your backend server, you will see like this-
-```bash
-[nodemon] 3.1.10
-[nodemon] to restart at any time, enter `rs`
-[nodemon] watching path(s): *.*
-[nodemon] watching extensions: js,mjs,cjs,json
-[nodemon] starting `node server.js`
-
- Server running at:
-   → Local:   http://localhost:5000
-   → Network: http://192.168.0.173:5000
-```
-
-You’ll see something like:
-```
-   → Network: http://192.168.0.173:5000
-```
-
----
-
-2️⃣ Update the frontend config file:
-Edit:
-```
-frontend/src/config/config.js
-```
-
-Set:
-```js
-const API_BASE_URL = "http://192.168.1.100:5000";
-export default API_BASE_URL;
-```
-
-Replace `192.168.1.100` with your actual local IP.
-
----
 
 ## 📜 Available Scripts
 
-### Frontend
+### Frontend Scripts
 
-From the `frontend/` folder:
+The following scripts are available in the `frontend/` directory:
 
-#### `npm start`
-Runs the React app in development mode.  
-Open [http://localhost:3000](http://localhost:3000).
+  * `npm start`: Runs the app in development mode.
+  * `npm test`: Launches the test runner in interactive watch mode.
+  * `npm run build`: Builds the app for production to the `build` folder.
+  * `npm run eject`: Ejects the project from Create React App's configuration.
 
-#### `npm test`
-Runs the tests in watch mode.  
-[More info](https://facebook.github.io/create-react-app/docs/running-tests)
+### Backend Scripts
 
-#### `npm run build`
-Builds the React app for production into the `build/` folder.
+The following script is available in the `backend/` directory:
 
-#### `npm run eject`
-Removes Create React App abstraction and gives full control over configurations.  
-**Note: irreversible.**
-[More info](https://facebook.github.io/create-react-app/docs/available-scripts)
+  * `npx nodemon server.js`: Runs the server with automatic restarts on file changes.
 
----
+## 📚 Resources
 
-### Backend
-
-From the `backend/` folder:
-
-#### `npx nodemon server.js`
-Runs the backend in development mode with auto-reload.
-
-> (You can also install nodemon globally with `npm install -g nodemon` and just run `nodemon server.js`.)
-
----
-
-## 📖 Learn More
-
-- [React Documentation](https://reactjs.org/)
-- [Create React App Docs](https://facebook.github.io/create-react-app/docs/getting-started)
-- [Node.js Documentation](https://nodejs.org/en/docs/)
-- [Express.js Documentation](https://expressjs.com/)
-
----
+  * [React Documentation](https://reactjs.org/)
+  * [Create React App Documentation](https://create-react-app.dev/docs/getting-started)
+  * [Node.js Documentation](https://nodejs.org/en/docs/)
+  * [Express.js Documentation](https://expressjs.com/en/4x/api.html)
 
 ## 🐞 Troubleshooting
 
-If `npm run build` (frontend) fails to minify, see:  
-👉 [CRA Troubleshooting Guide](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
-
----
-
-✨ Happy coding!
+  * If `npm run build` fails to minify, refer to the [Create React App Troubleshooting guide](https://www.google.com/search?q=https://create-react-app.dev/docs/troubleshooting/%23npm-run-build-fails-to-minify).
