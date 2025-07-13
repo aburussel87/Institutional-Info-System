@@ -42,7 +42,6 @@ const Login = () => {
       if (data.user && data.user.role) {
         userRole = data.user.role;
       } else {
-        // Try to decode from token if user object not present
         try {
           const payload = JSON.parse(atob(data.token.split('.')[1]));
           userRole = payload.role;
@@ -52,7 +51,7 @@ const Login = () => {
       }
       if (userRole === 'Student') {
         setTimeout(() => navigate('/dashboard'), 1000);
-      } else if (userRole === 'Teacher') {
+      } else if (userRole === 'Teacher' || userRole === 'Advisor' || userRole === 'Provost') {
         setTimeout(() => navigate('/teacher_dash'), 1000);
        } //  else {
       //   setTimeout(() => navigate('/dashboard'), 1000); // fallback

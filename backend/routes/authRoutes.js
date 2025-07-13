@@ -4,6 +4,7 @@ const bcrypt = require('bcryptjs');
 const { Pool } = require('pg');
 const jwt = require('jsonwebtoken');
 const { updateLogin } = require('../config/query');
+const { ro } = require('@faker-js/faker');
 require('dotenv').config();
 
 const pool = new Pool({
@@ -35,19 +36,34 @@ async function authenticateUser(username, password) {
   }
 
   let student, teacher;
-
+  let role;
   if (user.role === 'Student') {
     const r = await pool.query(
       'SELECT * FROM student WHERE student_id = $1', 
       [user.user_id]
     );
     student = r.rows[0];
+    role = 'Student';
   } 
   else if (user.role === 'Teacher') {
     const r = await pool.query(
       'SELECT * FROM get_teacher_info($1)', 
       [user.user_id]
     );
+    const advisor = await pool.query(
+      'SELECT * FROM advisor WHERE teacher_id = $1',
+      [user.user_id]
+    );
+    const provost = await pool.query(
+      'SELECT * FROM provost WHERE teacher_id = $1 AND resigned_on is null',
+      [user.user_id]
+    );
+    if (advisor.rows.length > 0) {
+      role = 'Advisor';
+    }
+    else if (provost.rows.length > 0) {
+      role = 'Provost';
+    } 
     teacher = r.rows[0];
   }
 
@@ -56,7 +72,7 @@ async function authenticateUser(username, password) {
   const token = jwt.sign(
     {
       userId: user.user_id,
-      role: user.role,
+      role: role,
       semester: student ? student.current_semester : null,
       department_id: student ? student.department_id : null
     },

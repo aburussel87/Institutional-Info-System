@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { Offcanvas, Button, Badge, Form, Modal } from 'react-bootstrap'; 
+import { jwtDecode } from 'jwt-decode';
 import '../styles/header.css';
 import API_BASE_URL from '../config/config';
 
@@ -10,12 +11,31 @@ const Header = () => {
   const [notifications, setNotifications] = useState([]);
   const [showDetailPopup, setShowDetailPopup] = useState(false);
   const [selectedNotification, setSelectedNotification] = useState(null);
+  const [isAdvisor, setIsAdvisor] = useState(false);
+  const [isProvost, setIsProvost] = useState(false);
 
   const toggleSidebar = () => setShowSidebar(!showSidebar);
   const toggleNotifications = () => setShowNotifications(!showNotifications);
 
   const bellRef = useRef(null);
   const popupRef = useRef(null);
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+
+    try {
+      const decoded = jwtDecode(token);
+      if (decoded.role === 'Advisor' || decoded.isAdvisor === true || (decoded.roles && decoded.roles.includes('Advisor'))) {
+        setIsAdvisor(true);
+      }
+      if (decoded.role === 'Provost' || decoded.isProvost === true || (decoded.roles && decoded.roles.includes('Provost'))) {
+        setIsProvost(true);
+      }
+    } catch (err) {
+      console.error("Invalid token", err);
+    }
+  }, []);
 
   useEffect(() => {
     function handleClickOutside(event) {
@@ -91,7 +111,7 @@ const Header = () => {
   const handleNotificationItemClick = (notification) => {
     setSelectedNotification(notification);
     setShowDetailPopup(true);
-    setShowNotifications(false); // Close the small popup when detail opens
+    setShowNotifications(false);
   };
 
   const handleCloseDetailPopup = () => {
@@ -113,8 +133,17 @@ const Header = () => {
         </Offcanvas.Header>
         <Offcanvas.Body>
           <a className="btn btn-outline-primary w-100 mb-2" href="/teacher_dash">Dashboard</a>
-          <a className="btn btn-outline-secondary w-100 mb-2" href="/teacher_info">Profile</a>
-         
+          <a className="btn btn-outline-primary w-100 mb-2" href="/teacher_info">Profile</a>
+          {isAdvisor && (
+            <a className="btn btn-outline-primary w-100 mb-2" href="/advisor">
+              Advisor Panel
+            </a>
+          )}
+          {isProvost && (
+            <a className="btn btn-outline-primary w-100 mb-2" href="/provost">
+              Provost Panel
+            </a>
+          )}
           <a className="btn btn-outline-danger w-100 mb-2" href="/login">Logout</a>
         </Offcanvas.Body>
       </Offcanvas>
@@ -158,13 +187,12 @@ const Header = () => {
                         <div
                           key={notif.notification_id || idx}
                           className="p-2 mb-2 bg-light rounded shadow-sm notification-item"
-                          onClick={() => handleNotificationItemClick(notif)} // Make it clickable
+                          onClick={() => handleNotificationItemClick(notif)}
                           style={{ cursor: 'pointer' }}
                         >
                           <span className="notification-category">{getNotificationCategory(notif)}</span>
                           <span className="notification-separator">: </span>
                           <span className="notification-title">{notif.title}</span>
-                          {/* Removing message from here, it will be in detail popup */}
                         </div>
                       ))}
                     </div>
@@ -182,7 +210,6 @@ const Header = () => {
         </div>
       </div>
 
-      {/* Notification Detail Modal */}
       {selectedNotification && (
         <Modal show={showDetailPopup} onHide={handleCloseDetailPopup} centered size="lg">
           <Modal.Header closeButton className="notification-detail-header">
