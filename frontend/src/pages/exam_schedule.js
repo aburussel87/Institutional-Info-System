@@ -81,7 +81,7 @@ const ExamSchedule = () => {
   return (
     <div className="examRoutineContainer">
       <Header />
-      <h2 className="examRoutineHeading">Exam Routine</h2>
+      <h2 className="examRoutineHeading">Exam Details</h2>
 
       <div className="examTypeFilter">
         <Form.Select
@@ -114,7 +114,7 @@ const ExamSchedule = () => {
         <div className="examRoutineGrid">
           {filteredExams.map((exam) => (
             <div
-              key={exam.exam_id}
+              key={exam.teacher_id}
               className={`examRoutineItem ${
                 isPastExam(exam.date_of_exam) ? 'pastExam' : ''
               }`}
@@ -140,7 +140,7 @@ const ExamSchedule = () => {
           {selectedExam && (
             <div className="examRoutineDetailBox">
               <p>
-                <strong>Exam ID:</strong> {selectedExam.exam_id}
+                <strong>Teacher ID:</strong> {selectedExam.teacher_id}
               </p>
               <p>
                 <strong>Course:</strong> {selectedExam.course_id}
@@ -159,7 +159,7 @@ const ExamSchedule = () => {
                 {new Date(selectedExam.date_of_exam).toLocaleString()}
               </p>
               <p>
-                <strong>Semester:</strong> {selectedExam.semester}
+                <strong>Semester:</strong> {selectedExam.semester + '|' + selectedExam.section}
               </p>
               <p>
                 <strong>Session:</strong> {selectedExam.academic_session}
