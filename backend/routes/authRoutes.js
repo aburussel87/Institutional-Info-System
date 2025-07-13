@@ -4,16 +4,16 @@ const bcrypt = require('bcryptjs');
 const { Pool } = require('pg');
 const jwt = require('jsonwebtoken');
 const { updateLogin } = require('../config/query');
-const { ro } = require('@faker-js/faker');
 require('dotenv').config();
 
 const pool = new Pool({
-  user: process.env.PGUSER,
   host: process.env.PGHOST,
-  database: process.env.PGDATABASE,
-  password: process.env.PGPASSWORD,
   port: process.env.PGPORT,
+  user: process.env.PGUSER,
+  password: process.env.PGPASSWORD,
+  database: process.env.PGDATABASE
 });
+
 
 async function authenticateUser(username, password) {
   console.log('Authenticating user:', username);

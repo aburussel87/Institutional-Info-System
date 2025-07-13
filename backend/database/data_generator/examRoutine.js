@@ -140,11 +140,10 @@ async function populateExams(semester, departmentId) {
       console.log(`Preparing exam: ${exam.exam_id} on ${exam.date_of_exam}`);
 
       await client.query(
-        `INSERT INTO Exam (exam_id, course_id, title, exam_type, total_marks, date_of_exam, semester, academic_session)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+        `INSERT INTO Exam (course_id, title, exam_type, total_marks, date_of_exam, semester, academic_session)
+         VALUES ($1, $2, $3, $4, $5, $6, $7)
          ON CONFLICT (exam_id) DO NOTHING`,
         [
-          exam.exam_id,
           exam.course_id,
           exam.title,
           exam.exam_type,
