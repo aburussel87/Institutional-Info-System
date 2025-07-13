@@ -6,13 +6,15 @@ import { Button } from 'react-bootstrap';
 import jsPDF from 'jspdf';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import '../styles/routine.css';
+import { jwtDecode } from "jwt-decode";
 
 const StudentRoutine = () => {
   const [weeklyRoutine, setWeeklyRoutine] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [semester, setSemester] = useState('');
-  const [session, setSession] = useState('');
+  const [semester, setSemester] = useState("");
+  const [department_id, setDepartmentId] = useState("");
+
 
   const navigate = useNavigate();
   const routineGridRef = useRef(null);
@@ -30,7 +32,13 @@ const StudentRoutine = () => {
       setTimeout(() => navigate('/login'), 1000);
       return;
     }
-
+    try {
+      const decoded = jwtDecode(token);
+      setSemester(decoded.semester || "Unknown Semester");
+      setDepartmentId(decoded.department_id || "Unknown Department");
+    } catch (e) {
+      console.warn("Failed to decode token for semester");
+    }
     const fetchRoutineData = async () => {
       try {
         const response = await fetch(`${API_BASE_URL}/semesterRoutine`, {
@@ -44,14 +52,13 @@ const StudentRoutine = () => {
 
         const data = await response.json();
         if (data.routine) {
-          // Ensure Friday and Saturday are removed from the object if they exist
           const filteredRoutine = { ...data.routine };
           delete filteredRoutine.Friday;
           delete filteredRoutine.Saturday;
           setWeeklyRoutine(filteredRoutine);
 
           if (data.semester) setSemester(data.semester);
-          if (data.academic_session) setSession(data.academic_session);
+          if (data.department_id) setDepartmentId(data.department_id);
         } else {
           setError('No routine data available.');
         }
@@ -63,78 +70,78 @@ const StudentRoutine = () => {
     };
 
     fetchRoutineData();
-  }, [navigate]);
+  }, [navigate, semester]);
 
-const handleDownloadPdf = () => {
-  const pdf = new jsPDF('l', 'mm', 'a4'); // landscape
-  const pageWidth = pdf.internal.pageSize.getWidth();
-  const pageHeight = pdf.internal.pageSize.getHeight();
-  const margin = 10;
-  const contentWidth = pageWidth - 2 * margin;
+  const handleDownloadPdf = () => {
+    const pdf = new jsPDF('l', 'mm', 'a4'); // landscape
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
+    const margin = 10;
+    const contentWidth = pageWidth - 2 * margin;
 
-  const colWidths = [30, ...Array(5).fill((contentWidth - 30) / 5)];
-  const baseRowHeight = 6;
+    const colWidths = [30, ...Array(5).fill((contentWidth - 30) / 5)];
+    const baseRowHeight = 6;
 
-  let yOffset = margin;
+    let yOffset = margin;
 
-  pdf.setFontSize(12);
-  pdf.setFont(undefined, 'bold');
-  pdf.text('XYZ University of Engineering & Technology', pageWidth / 2, yOffset, { align: 'center' });
-  yOffset += 7;
-  pdf.text(`Semester: ${semester || '-'} | Session: ${session || '-'}`, pageWidth / 2, yOffset, { align: 'center' });
-  yOffset += 10;
+    pdf.setFontSize(12);
+    pdf.setFont(undefined, 'bold');
+    pdf.text('Institutional Information System', pageWidth / 2, yOffset, { align: 'center' });
+    yOffset += 7;
+    pdf.text(`Semester: ${semester || '-'} | Department ID: ${department_id || '-'}`, pageWidth / 2, yOffset, { align: 'center' });
+    yOffset += 10;
 
-  const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday'];
+    const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday'];
 
-  const drawRow = (values) => {
-    let xOffset = margin;
-    pdf.setFontSize(8);
-    pdf.setFont(undefined, 'normal');
+    const drawRow = (values) => {
+      let xOffset = margin;
+      pdf.setFontSize(8);
+      pdf.setFont(undefined, 'normal');
 
-    const lineHeights = values.map((text, i) => {
-      const wrapped = pdf.splitTextToSize(text, colWidths[i] - 2);
-      return wrapped.length;
-    });
+      const lineHeights = values.map((text, i) => {
+        const wrapped = pdf.splitTextToSize(text, colWidths[i] - 2);
+        return wrapped.length;
+      });
 
-    const maxLines = Math.max(...lineHeights);
-    const rowHeight = baseRowHeight * maxLines;
+      const maxLines = Math.max(...lineHeights);
+      const rowHeight = baseRowHeight * maxLines;
 
-    if (yOffset + rowHeight > pageHeight - margin) {
-      pdf.addPage();
-      yOffset = margin + 10;
-      drawRow(['Time', ...daysOfWeek]); // redraw header
-    }
-
-    values.forEach((text, i) => {
-      const wrapped = pdf.splitTextToSize(text, colWidths[i] - 2);
-      pdf.rect(xOffset, yOffset, colWidths[i], rowHeight, 'D');
-      pdf.text(wrapped, xOffset + 2, yOffset + 4);
-      xOffset += colWidths[i];
-    });
-
-    yOffset += rowHeight;
-  };
-
-  drawRow(['Time', ...daysOfWeek]);
-
-  sortedTimeSlots.forEach(timeSlot => {
-    const rowValues = [timeSlot];
-    daysOfWeek.forEach(day => {
-      const classes = weeklyRoutine[day]?.[timeSlot];
-      if (classes && classes.length > 0) {
-        const cellContent = classes.map(cls => {
-          return `${cls.course_id} (${cls.section_type})\n${cls.course_title}\n${cls.room_id} | ${cls.teacher_name}`;
-        }).join('\n---\n');
-        rowValues.push(cellContent);
-      } else {
-        rowValues.push('-');
+      if (yOffset + rowHeight > pageHeight - margin) {
+        pdf.addPage();
+        yOffset = margin + 10;
+        drawRow(['Time', ...daysOfWeek]); // redraw header
       }
-    });
-    drawRow(rowValues);
-  });
 
-  pdf.save(`Routine_${new Date().toLocaleDateString('en-GB').replace(/\//g, '-')}.pdf`);
-};
+      values.forEach((text, i) => {
+        const wrapped = pdf.splitTextToSize(text, colWidths[i] - 2);
+        pdf.rect(xOffset, yOffset, colWidths[i], rowHeight, 'D');
+        pdf.text(wrapped, xOffset + 2, yOffset + 4);
+        xOffset += colWidths[i];
+      });
+
+      yOffset += rowHeight;
+    };
+
+    drawRow(['Time', ...daysOfWeek]);
+
+    sortedTimeSlots.forEach(timeSlot => {
+      const rowValues = [timeSlot];
+      daysOfWeek.forEach(day => {
+        const classes = weeklyRoutine[day]?.[timeSlot];
+        if (classes && classes.length > 0) {
+          const cellContent = classes.map(cls => {
+            return `${cls.course_id} (${cls.section_type})\n${cls.course_title}\n${cls.room_id} | ${cls.teacher_name}`;
+          }).join('\n---\n');
+          rowValues.push(cellContent);
+        } else {
+          rowValues.push('-');
+        }
+      });
+      drawRow(rowValues);
+    });
+
+    pdf.save(`Routine_${new Date().toLocaleDateString('en-GB').replace(/\//g, '-')}.pdf`);
+  };
 
 
 
