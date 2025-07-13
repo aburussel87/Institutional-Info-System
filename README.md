@@ -29,8 +29,7 @@ root/
 ### 1️⃣ Clone the Repository
 
 ```bash
-git clone <your-repository-url>
-cd <your-project-folder>
+git clone <https://github.com/aburussel87/Institutional-Info-System>
 ```
 
 ---
@@ -86,14 +85,22 @@ When running the app on **different devices under the same Wi-Fi**, you must set
 ### Steps:
 
 1️⃣ Find the local IP of the backend machine:
+-- After you run your backend server, you will see like this-
 ```bash
-ifconfig      # (on Mac/Linux)
-ipconfig      # (on Windows)
+[nodemon] 3.1.10
+[nodemon] to restart at any time, enter `rs`
+[nodemon] watching path(s): *.*
+[nodemon] watching extensions: js,mjs,cjs,json
+[nodemon] starting `node server.js`
+
+ Server running at:
+   → Local:   http://localhost:5000
+   → Network: http://192.168.0.173:5000
 ```
 
 You’ll see something like:
 ```
-IPv4 Address: 192.168.1.100
+   → Network: http://192.168.0.173:5000
 ```
 
 ---
