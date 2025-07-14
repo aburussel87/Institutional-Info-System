@@ -13,8 +13,7 @@ import ExamSchedule from './pages/exam_schedule';
 import TeacherDashboard from './pages/teacher_dash';
 import TeacherInfo from './pages/teacher_info';
 import CourseRegistration from './pages/registration';
-
-
+import PasswordReset from './pages/passwordReset';
 
 
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -52,6 +51,7 @@ export default function App() {
         <Route path='/teacher_dash' element = {<TeacherDashboard/>} />
         <Route path='/teacher_info' element = {<TeacherInfo/>} />
         <Route path='/registration' element = {<CourseRegistration/>} />
+        <Route path='/passwordReset' element={<PasswordReset />} />
 
       </Routes>
     </Router>

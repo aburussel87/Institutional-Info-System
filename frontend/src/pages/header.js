@@ -99,6 +99,37 @@ const Header = () => {
     setSelectedNotification(null);
   };
 
+  const handleResetPassword = async () => {
+  const token = localStorage.getItem('token');
+  if (!token) {
+    alert('You are not logged in. Please login first.');
+    return;
+  }
+
+  try {
+    const res = await fetch(`${API_BASE_URL}/password/reset/request`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    const data = await res.json();
+
+    if (res.ok) {
+      alert(data.message || 'Password reset email sent! Please check your email.');
+      localStorage.setItem('resetToken', data.token);
+      window.location.href = '/login';
+    } else {
+      alert(data.message || 'Failed to reset password.');
+    }
+  } catch (err) {
+    console.error('Reset password error:', err);
+    alert('Network error. Please try again.');
+  }
+};
+
   const notificationsToDisplay = showAllNotifications ? notifications : notifications.slice(0, 10);
   const groupedNotifications = getGroupedNotifications(notificationsToDisplay);
 
@@ -121,6 +152,13 @@ const Header = () => {
           <a className="btn btn-outline-primary w-100 mb-2" href="/gradesheet">Gradesheet</a>
           <a className="btn btn-outline-primary w-100 mb-2" href="/studentFee">Student Fee</a>
           <a className="btn btn-outline-primary w-100 mb-2" href="/exam_schedule">Exam Routine</a>
+          <Button
+            className="btn btn-outline-primary w-100 mb-2"
+            onClick={handleResetPassword}
+          >
+            Reset Password
+          </Button>
+
           <a className="btn btn-outline-danger w-100 mb-2" href="/login">Logout</a>
         </Offcanvas.Body>
       </Offcanvas>
