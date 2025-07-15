@@ -134,6 +134,7 @@ const Header = () => {
         <Offcanvas.Body>
           <a className="btn btn-outline-primary w-100 mb-2" href="/teacher_dash">Dashboard</a>
           <a className="btn btn-outline-primary w-100 mb-2" href="/teacher_info">Profile</a>
+          <a className="btn btn-outline-primary w-100 mb-2" href="/add_exam_page">Schedule Exam</a>
           {isAdvisor && (
             <a className="btn btn-outline-primary w-100 mb-2" href="/advisor">
               Advisor Panel

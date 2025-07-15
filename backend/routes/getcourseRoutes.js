@@ -1,25 +1,23 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
+const { get_course_info_by_teacher } = require('../config/query');
 const {authenticateToken} = require ('../utils');
-const {getUserNotifications} = require ('../config/query');
 const router = express.Router();
+
+
 
 router.get('/', authenticateToken, async (req, res) => {
   try {
     const uid = req.user.userId;
-    let role = req.user.role;
-    if (role === 'Advisor' || role === 'Provost') {
-      role = 'Teacher'; 
-    }
-    const notifications = await getUserNotifications(uid,role); 
-    if (!notifications) {
+    const courses = await get_course_info_by_teacher(uid); 
+    if (!courses) {
       return res.status(404).json({ success: false, error: 'User not found' });
     }
-
-    res.json({ success: true, notifications });
+    console.log("All Users Requested by :" + uid);
+    res.json({ success: true, courses , });
   } catch (err) {
-    console.error('Dashboard error:', err);
+    console.error('Info error error:', err);
     res.status(500).json({ success: false, error: 'Internal Server Error' });
   }
 });

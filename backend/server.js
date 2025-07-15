@@ -20,6 +20,7 @@ const teacherInfoRoutes = require('./routes/teacherInfoRoutes');
 const registrationRoutes = require('./routes/registrationRoutes');
 const resetPassRoutes = require('./routes/resetPassRoutes');
 
+const coureinfoRoutes = require('./routes/getcourseRoutes');
 
 const jwt = require('jsonwebtoken');
 const app = express();
@@ -43,6 +44,8 @@ app.use('/api/exam_schedule', exam_scheduleRoutes);
 app.use('/api/teacher-profile', teacherInfoRoutes);
 app.use('/api/registration', registrationRoutes);
 app.use('/api/password', resetPassRoutes);
+app.use('/api/get_course_info', coureinfoRoutes);//change by provat
+
 
 
 const os = require('os');

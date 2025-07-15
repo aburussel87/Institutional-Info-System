@@ -1,0 +1,54 @@
+/* Container setup */
+.addexam-container {
+  background: #f9fbfd;
+  min-height: 100vh;
+  padding: 20px;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+/* Page title */
+.addexam-title {
+  text-align: center;
+  color: #2a2a72;
+  font-weight: 700;
+  margin-bottom: 30px;
+}
+
+/* Course grid */
+.addexam-card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+  padding: 0 5%;
+}
+
+/* Individual course card */
+.addexam-card {
+  cursor: pointer;
+  border: none;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.addexam-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+}
+
+/* Spinner */
+.addexam-spinner {
+  display: flex;
+  justify-content: center;
+  margin-top: 40px;
+}
+
+/* Alert */
+.addexam-alert {
+  position: fixed;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 300px;
+  text-align: center;
+}

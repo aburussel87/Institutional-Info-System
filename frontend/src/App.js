@@ -14,6 +14,10 @@ import TeacherDashboard from './pages/teacher_dash';
 import TeacherInfo from './pages/teacher_info';
 import CourseRegistration from './pages/registration';
 import PasswordReset from './pages/passwordReset';
+import AddExam from './pages/add_exam_page';
+
+
+
 
 
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -52,6 +56,7 @@ export default function App() {
         <Route path='/teacher_info' element = {<TeacherInfo/>} />
         <Route path='/registration' element = {<CourseRegistration/>} />
         <Route path='/passwordReset' element={<PasswordReset />} />
+        <Route path='/add_exam_page' element = {<AddExam/>} />  
 
       </Routes>
     </Router>

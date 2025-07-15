@@ -1,5 +1,6 @@
 const client = require('./db');
 const { generateRoutine, formatGradeSheet, formatSemesterRoutine, formatFee, formatExamData } = require('../utils');
+const { get } = require('../routes/dashboardRoutes');
 
 
 async function getRegistrationCourse(sid) {
@@ -98,6 +99,61 @@ SELECT * FROM get_all_exams_by_teacher($1);
   const res = await client.query(query, [teacherId]);
   return res.rows;
 }
+
+
+async function get_course_info_by_teacher(teacherId) {
+  const query = `
+   
+
+SELECT * FROM get_course_by_teacher_id($1);
+
+  `;
+
+  const res = await client.query(query, [teacherId]);
+  return res.rows;
+}
+
+async function add_exam({
+  course_id,
+  teacher_id,
+  title,
+  exam_type,
+  total_marks,
+  date_of_exam,
+  semester,
+  academic_session
+}) {
+  const query = `
+    SELECT * FROM add_exam_by_teacher(
+      $1::VARCHAR,
+      $2::INT,
+      $3::VARCHAR,
+      $4::ExamType,
+      $5::INT,
+      $6::TIMESTAMP,
+      $7::Semester,
+      $8::VARCHAR
+    );
+  `;
+
+  const values = [
+    course_id,
+    teacher_id,
+    title,
+    exam_type,
+    total_marks,
+    date_of_exam,
+    semester,
+    academic_session
+  ];
+
+  const res = await client.query(query, values);
+  return res.rows;
+}
+
+
+
+
 
 
 
@@ -387,5 +443,7 @@ module.exports = {
   get_allstudent_info_under_ateacher,
   get_hall_info_by_provost,
   get_exam_info_by_teacher,
-  getRegistrationCourse
+  getRegistrationCourse,
+  get_course_info_by_teacher
+  
 };
