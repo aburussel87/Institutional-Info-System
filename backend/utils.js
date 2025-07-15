@@ -322,7 +322,31 @@ function formatExamData(rows) {
   };
 }
 
+function formatStudentWithRoommates(data) {
+  if (!Array.isArray(data) || data.length === 0) {
+    throw new Error("Invalid or empty data array");
+  }
 
+  const studentInfo = {
+    student_id: data[0].student_id,
+    student_name: data[0].student_name,
+    is_resident: data[0].is_resident,
+    hall: {
+      hall_id: data[0].hall_id,
+      hall_name: data[0].hall_name,
+      hall_location: data[0].hall_location
+    },
+    room_number: data[0].room_number
+  };
+
+  const roommates = data.map(item => ({
+    roommate_id: item.roommate_id,
+    roommate_name: item.roommate_name,
+    roommate_resident: item.roommate_resident
+  }));
+
+  return { student: studentInfo, roommates };
+}
 
 
 module.exports = {
@@ -332,6 +356,7 @@ module.exports = {
   formatSemesterRoutine,
   formatFee,
   formatExamData,
-  formatTeacherInfo
+  formatTeacherInfo,
+  formatStudentWithRoommates
 };
 

@@ -7,7 +7,6 @@ const router = express.Router();
 
 
 
-
 router.get('/student', authenticateToken, async (req, res) => {
   try {
     const uid = req.user.userId;

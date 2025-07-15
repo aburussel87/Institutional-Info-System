@@ -1,97 +1,428 @@
-.provost-container-light {
- 
-  background-color: #f8f9fa;
-  padding: 30px;
-  font-family: 'Segoe UI', sans-serif;
-  min-height: 100vh;
-}
-
-.provost-content-card {
-  background-color: #ffffff;
-  padding: 25px;
-  border-radius: 15px;
-  box-shadow: 0px 4px 12px rgba(0,0,0,0.1);
-  max-width: 1000px;
-  margin: auto ;
-}
-
-.provost-title {
-  font-size: 26px;
-  font-weight: bold;
-  color: #333;
-  text-align: center;
-  margin-bottom: 30px;
-}
-
-.provost-student-list {
+.provost-container-overall {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  margin-bottom: 30px;
+  min-height: 100vh;
+  background: linear-gradient(to bottom right, #f8f9fa, #e9ecef);
+  font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
 }
 
-.provost-student-item {
-  padding: 12px 18px;
-  border-radius: 10px;
-  background-color: #e9ecef;
-  cursor: pointer;
+.provost-main-content {
+  flex-grow: 1;
+  padding: 100px 25px 30px 25px;
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.provost-section-title {
+  color: #2c3e50;
+  text-align: center;
+  margin-bottom: 40px;
+  font-size: 2.8rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  position: relative;
+  padding-bottom: 15px;
+}
+
+.provost-section-title::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  transform: translateX(-50%);
+  width: 80px;
+  height: 4px;
+  background-color: #007bff;
+  border-radius: 2px;
+}
+
+.categorized-students-section {
+  margin-top: 30px;
+}
+
+.semester-accordion-item {
+  border: none;
+  margin-bottom: 15px;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+}
+
+.semester-accordion-header .accordion-button {
+  background-color: #007bff;
+  color: white;
+  font-size: 1.5rem;
+  font-weight: 600;
+  padding: 1.2rem 1.5rem;
+  border-radius: 12px 12px 0 0;
   transition: background-color 0.3s ease;
 }
 
-.provost-student-item:hover {
-  background-color: #dee2e6;
+.semester-accordion-header .accordion-button:not(.collapsed) {
+  background-color: #0056b3;
+  box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.1);
 }
 
-.provost-student-item.selected {
-  background-color: #ced4da;
-  font-weight: bold;
+.semester-accordion-header .accordion-button:focus {
+  box-shadow: none;
+  border-color: transparent;
 }
 
-.provost-student-name {
+.semester-accordion-header .accordion-button::after {
+  filter: brightness(0) invert(1);
+}
+
+.semester-accordion-body {
+  background-color: #ffffff;
+  padding: 20px;
+  border-bottom-left-radius: 12px;
+  border-bottom-right-radius: 12px;
+  border: 1px solid #dee2e6;
+  border-top: none;
+}
+
+.department-accordion-item {
+  border: 1px solid #e9ecef;
+  margin-bottom: 10px;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+}
+
+.department-accordion-header .accordion-button {
+  background-color: #f0f8ff;
+  color: #34495e;
+  font-size: 1.15rem;
+  font-weight: 500;
+  padding: 1rem 1.2rem;
+  border-radius: 8px 8px 0 0;
+  transition: background-color 0.2s ease;
+}
+
+.department-accordion-header .accordion-button:not(.collapsed) {
+  background-color: #e2f2ff;
+}
+
+.department-accordion-header .accordion-button:focus {
+  box-shadow: none;
+  border-color: transparent;
+}
+
+.department-accordion-body {
+  background-color: #fcfdff;
+  padding: 15px;
+  border-top: 1px solid #e9ecef;
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
+}
+
+.provost-card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 20px;
+  padding: 10px 0;
+}
+
+.provost-student-card {
+  background: white;
+  border: 1px solid #dee2e6;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+  transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
+  cursor: pointer;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 15px;
+  height: 220px;
+}
+
+.provost-student-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+  background-color: #f0f8ff;
+}
+
+.provost-student-card .card-body {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.provost-student-card img {
+  margin-bottom: 10px;
+  border: 4px solid #ffffff;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.provost-student-card .provost-card-title {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #0056b3;
+  margin-bottom: 5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
+}
+
+.provost-student-card .card-subtitle {
+  font-size: 0.9rem;
+  color: #6c757d;
+}
+
+.no-students-message {
+  grid-column: 1 / -1;
+  text-align: center;
+  font-size: 1.3rem;
+  color: #7f8c8d;
+  padding: 50px 20px;
+  background-color: #f8f9fa;
+  border-radius: 10px;
+  border: 1px dashed #ced4da;
+  margin-top: 30px;
+}
+
+.modal-header-custom {
+  background-color: #007bff;
+  color: white;
+  border-bottom: none;
+  padding: 1.5rem;
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
+}
+
+.modal-title-custom {
+  font-weight: 600;
+  font-size: 1.8rem;
+}
+
+.modal-header-custom .btn-close {
+  filter: invert(1);
+  color: white;
+}
+
+.modal-body-custom {
+  padding: 2.5rem;
+  background-color: #fdfdfd;
+}
+
+.student-details-section {
+  background-color: #e6f7ff;
+  border: 1px solid #b3e0ff;
+  padding: 20px;
+  border-radius: 8px;
+}
+
+.details-section-title {
+  font-size: 1.6rem;
+  font-weight: 600;
+  color: #0056b3;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #a3d9ff;
+}
+
+.details-section-title i {
   color: #007bff;
 }
 
-.provost-hall-details {
+.student-details-section p {
+  font-size: 1.1rem;
+  margin-bottom: 10px;
+  color: #34495e;
+}
+
+.student-details-section p strong {
+  color: #2c3e50;
+  margin-right: 5px;
+}
+
+.roommate-table {
   margin-top: 20px;
-}
-
-.provost-details-title {
-  font-size: 20px;
-  margin-bottom: 15px;
-  color: #495057;
-}
-
-.provost-details-table {
-  width: 100%;
-  border-collapse: collapse;
-  background-color: #fff;
-  border-radius: 10px;
+  border-radius: 8px;
   overflow: hidden;
+  border: 1px solid #e0e0e0;
 }
 
-.provost-details-table th,
-.provost-details-table td {
-  border: 1px solid #dee2e6;
-  padding: 10px 12px;
-  text-align: center;
-  font-size: 14px;
+.roommate-table thead.table-header-custom {
+  background-color: #007bff;
+  color: white;
 }
 
-.provost-details-table th {
-  background-color: #f1f3f5;
-  color: #495057;
+.roommate-table th {
+  padding: 15px;
+  font-weight: 600;
+  font-size: 1rem;
+  border-color: #0060cb;
 }
 
-.provost-details-table tbody tr:nth-child(even) {
+.roommate-table td {
+  padding: 12px 15px;
+  font-size: 1rem;
+  color: #34495e;
+  vertical-align: middle;
+}
+
+.roommate-table tbody tr:nth-of-type(even) {
   background-color: #f8f9fa;
 }
 
-.provost-student-info {
-  line-height: 1.4;
-  font-size: 16px;
+.roommate-table tbody tr:hover {
+  background-color: #e9f5ff;
 }
 
-.provost-student-item.selected {
-  background-color: #4e97ca;
-  border-left: 4px solid #2196f3;
+.text-muted.text-center {
+  padding: 20px;
+  font-style: italic;
+  font-size: 1.1rem;
+  color: #6c757d !important;
+}
+
+.modal-footer .btn {
+  padding: 10px 25px;
+  font-size: 1.1rem;
+  border-radius: 8px;
+}
+
+@media (max-width: 992px) {
+  .provost-section-title {
+    font-size: 2.2rem;
+  }
+  .semester-accordion-header .accordion-button {
+    font-size: 1.3rem;
+    padding: 1rem 1.2rem;
+  }
+  .department-accordion-header .accordion-button {
+    font-size: 1.05rem;
+    padding: 0.8rem 1rem;
+  }
+  .provost-card-grid {
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 15px;
+  }
+  .provost-student-card {
+    height: 200px;
+    padding: 15px;
+  }
+  .provost-student-card img {
+    width: 90px !important;
+    height: 90px !important;
+  }
+  .provost-student-card .provost-card-title {
+    font-size: 1.2rem;
+  }
+  .provost-student-card .card-subtitle {
+    font-size: 0.85rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .provost-main-content {
+    padding: 90px 15px 20px 15px;
+  }
+  .provost-section-title {
+    font-size: 2rem;
+    margin-bottom: 30px;
+  }
+  .semester-accordion-header .accordion-button {
+    font-size: 1.2rem;
+  }
+  .department-accordion-header .accordion-button {
+    font-size: 1rem;
+  }
+  .provost-card-grid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 10px;
+  }
+  .provost-student-card {
+    height: 180px;
+    padding: 10px;
+  }
+  .provost-student-card img {
+    width: 80px !important;
+    height: 80px !important;
+  }
+  .provost-student-card .provost-card-title {
+    font-size: 1.1rem;
+  }
+  .provost-student-card .card-subtitle {
+    font-size: 0.8rem;
+  }
+  .no-students-message {
+    font-size: 1.1rem;
+    padding: 30px 15px;
+  }
+  .modal-title-custom {
+    font-size: 1.4rem;
+  }
+  .modal-body-custom {
+    padding: 1.5rem;
+  }
+  .details-section-title {
+    font-size: 1.3rem;
+  }
+  .student-details-section p,
+  .roommate-table td,
+  .roommate-table th {
+    font-size: 0.95rem;
+    padding: 10px;
+  }
+  .modal-footer .btn {
+    padding: 8px 18px;
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .provost-section-title {
+    font-size: 1.8rem;
+    margin-bottom: 25px;
+  }
+  .semester-accordion-header .accordion-button {
+    font-size: 1rem;
+    padding: 0.8rem 1rem;
+  }
+  .department-accordion-header .accordion-button {
+    font-size: 0.9rem;
+    padding: 0.7rem 0.9rem;
+  }
+  .provost-card-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  .provost-student-card {
+    height: auto;
+    padding: 15px;
+  }
+  .provost-student-card img {
+    width: 80px !important;
+    height: 80px !important;
+    margin-bottom: 10px;
+  }
+  .provost-student-card .provost-card-title {
+    font-size: 1.1rem;
+  }
+  .modal-title-custom {
+    font-size: 1.2rem;
+  }
+  .modal-body-custom {
+    padding: 1rem;
+  }
+  .details-section-title {
+    font-size: 1.1rem;
+    margin-bottom: 15px;
+  }
+  .student-details-section p,
+  .roommate-table td,
+  .roommate-table th {
+    font-size: 0.85rem;
+    padding: 8px;
+  }
 }

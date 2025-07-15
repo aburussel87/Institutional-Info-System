@@ -1,11 +1,25 @@
 const client = require('./db');
-const { generateRoutine, formatGradeSheet, formatSemesterRoutine, formatFee, formatExamData } = require('../utils');
+const { generateRoutine, formatGradeSheet, formatSemesterRoutine, formatFee, formatExamData, formatStudentWithRoommates } = require('../utils');
 
 
 
 
 
+async function get_student_hall_details(studentId) {
+  const query = `
+    SELECT * FROM get_student_hall_details($1);
+  `;
+  const res = await client.query(query, [studentId]);
+  return formatStudentWithRoommates(res.rows);
+}
 
+async function get_students_by_provost(studentId) {
+  const query = `
+    SELECT * FROM get_students_by_provost($1);
+  `;
+  const res = await client.query(query, [studentId]);
+  return res.rows;
+}
 
 async function get_scheduled_exam_by_teacher(teacherId, session = '2025-26') {
   const query = `SELECT * FROM get_exams_by_teacher_and_session($1,$2)`;
@@ -52,8 +66,6 @@ async function getSessionInfo(uid) {
   }
   return res.rows;
 }
-
-
 async function getTeacherInfo(teacherId) {
   const query = `SELECT get_teacher_info($1);`;
   const res = await client.query(query, [teacherId]);
@@ -64,8 +76,6 @@ async function getTeacherInfo(teacherId) {
 
   return res.rows[0] || null;
 }
-
-
 
 async function get_teached_Course(teacherId) {
   const query = `
@@ -81,7 +91,6 @@ async function get_allstudent_info_under_ateacher(teacherId) {  //change by prov
     SELECT * FROM get_students_by_advisor($1);
 
   `;
-
   const res = await client.query(query, [teacherId]);
   return res.rows;
 }
@@ -97,15 +106,8 @@ SELECT * FROM get_hall_info_by_provost($1);
   return res.rows;
 }
 
-
-
 async function get_exam_info_by_teacher(teacherId) {
-  const query = `
-   
-
-SELECT * FROM get_all_exams_by_teacher($1);
-
-  `;
+  const query = `SELECT * FROM get_all_exams_by_teacher($1);`;
 
   const res = await client.query(query, [teacherId]);
   return res.rows;
@@ -113,12 +115,7 @@ SELECT * FROM get_all_exams_by_teacher($1);
 
 
 async function get_course_info_by_teacher(teacherId, academic_session = '2025-26') {
-  const query = `
-   
-
-SELECT * FROM get_courses_by_teacher_id($1, $2);
-
-  `;
+  const query = `SELECT * FROM get_courses_by_teacher_id($1, $2);`;
 
   const res = await client.query(query, [teacherId, academic_session]);
   return res.rows;
@@ -133,27 +130,21 @@ async function getStudent_exam_Routine(studentId, session = '2025-26') {
 }
 
 async function getUserNotifications(uid, role) {
-  const query = `
-    SELECT * FROM get_user_notifications($1,$2);
-  `;
+  const query = `SELECT * FROM get_user_notifications($1,$2);`;
   const res = await client.query(query, [uid, role]);
   return res.rows;
 }
 
 
 async function pay_student_fee(feeId) {
-  const query = `
-    SELECT * FROM pay_student_fee($1,CURRENT_DATE)
-  `;
+  const query = `SELECT * FROM pay_student_fee($1,CURRENT_DATE)`;
   const res = await client.query(query, [feeId]);
   return res.rows;
 }
 
 
 async function get_all_payments_ordered_by_type(sid) {
-  const query = `
-    SELECT * FROM get_all_payments_ordered_by_type($1)
-  `;
+  const query = `SELECT * FROM get_all_payments_ordered_by_type($1)`;
   const res = await client.query(query, [sid]);
   return formatFee(res.rows);
 }
@@ -383,23 +374,6 @@ async function updateLogin(uid) {
 }
 
 
-async function get_student_hall_details(studentId) {
-  const query = `
-    SELECT * FROM get_student_hall_details($1);
-  `;
-  const res = await client.query(query, [studentId]);
-  return res.rows;
-}
-
-
-async function get_students_by_provost(studentId) {
-  const query = `
-    SELECT * FROM get_students_by_provost($1);
-  `;
-  const res = await client.query(query, [studentId]);
-  return res.rows;
-}
-
 
 module.exports = {
   getUserInfo,
@@ -432,5 +406,4 @@ module.exports = {
   get_students_by_provost,
   get_student_hall_details
 
-  
 };

@@ -22,6 +22,7 @@ const router = express.Router();
 //   }
 // });
 
+
 router.get('/:studentId', authenticateToken, async (req, res) => {
   const studentId = parseInt(req.params.studentId);
   const info = await get_student_hall_details(studentId);
@@ -29,7 +30,6 @@ router.get('/:studentId', authenticateToken, async (req, res) => {
     return res.status(404).json({ success: false, error: 'Student not found' });
   }
   console.log("Hall details requested for student ID:", studentId);
-  console.log("Hall details response:", info);
   res.json({ success: true, info });
 });
 

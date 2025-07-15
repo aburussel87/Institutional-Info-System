@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import Header from './header';
 import API_BASE_URL from '../config/config';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import '../styles/studentInfo.css'; // Your beautiful new styles!
+import '../styles/studentInfo.css'; 
 
 const StudentInfo = () => {
     const [userInfo, setUserInfo] = useState(null);
@@ -120,11 +120,11 @@ const StudentInfo = () => {
                             <div className="card-body p-4">
                                 <div className="d-flex align-items-center mb-4 border-bottom pb-3">
                                     <img
-                                        src={`${API_BASE_URL}/user/photo/${userInfo.user_id}`} // Direct API call for photo
+                                        src={`${API_BASE_URL}/user/photo/${userInfo.user_id}`} 
                                         alt="User"
                                         className="rounded-circle shadow-sm"
                                         style={{ width: '110px', height: '110px', objectFit: 'cover', border: '4px solid white' }}
-                                        onError={(e) => { // Fallback if image fails to load
+                                        onError={(e) => { 
                                             e.target.onerror = null;
                                             e.target.src = `https://ui-avatars.com/api/?name=${userInfo.username}&background=007bff&color=fff&bold=true&size=128`;
                                         }}
