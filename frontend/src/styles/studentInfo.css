@@ -286,14 +286,14 @@
   }
 
   .student-info-container .list-group-item {
-    flex-direction: column;
+    flex-direction: row;
     align-items: flex-start;
   }
 
   .student-info-container .list-group-item span {
     margin-top: 0.4rem;
     align-self: flex-end;
-    text-align: right;
+    text-align: left;
   }
 
   .student-info-container .alert {
@@ -337,5 +337,12 @@
   .student-info-container .badge {
     font-size: 0.8rem;
     padding: 0.5em 0.8em;
+  }
+  .list-group-item{
+    align-items: left;
+    justify-content: left;
+    text-align: left;
+    padding-left: 0;
+    margin-left: 0;
   }
 }

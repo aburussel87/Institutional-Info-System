@@ -8,9 +8,15 @@ const StudentFee = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [expandedFeeType, setExpandedFeeType] = useState(null);
+  const [showAllPaid, setShowAllPaid] = useState({});
 
   const toggleExpand = (feeType) => {
     setExpandedFeeType(expandedFeeType === feeType ? null : feeType);
+    setShowAllPaid((prev) => ({ ...prev, [feeType]: false })); // Reset "See All" when collapsing
+  };
+
+  const toggleShowAllPaid = (feeType) => {
+    setShowAllPaid((prev) => ({ ...prev, [feeType]: !prev[feeType] }));
   };
 
   const formatDate = (dateString) => {
@@ -33,7 +39,7 @@ const StudentFee = () => {
       });
 
       if (!res.ok) throw new Error('Payment failed.');
-      else{
+      else {
         const data = await res.json();
         alert(data.payment[0].msg || 'Payment successful!');
       }
@@ -126,7 +132,7 @@ const StudentFee = () => {
     <div className="student-fee-container">
       <Header />
       <div className="content-area">
-        <h1 className="student-fee-title">Student Fee Dashboard</h1> {/* Removed 💳 */}
+        <h1 className="student-fee-title">Student Fee Dashboard</h1>
 
         {allFeeTypes.length > 0 ? (
           allFeeTypes.map((feeType) => (
@@ -151,7 +157,7 @@ const StudentFee = () => {
                         <button
                           className="student-fee-pay-btn"
                           onClick={(e) => {
-                            e.stopPropagation(); 
+                            e.stopPropagation();
                             handlePay(fee.student_fee_id);
                           }}
                         >
@@ -169,18 +175,29 @@ const StudentFee = () => {
                 <div className="student-fee-section student-fee-paid-section">
                   <h3 className="student-fee-paid-title">Paid History:</h3>
                   {feeData.paid[feeType] && feeData.paid[feeType].length > 0 ? (
-                    <ul className="student-fee-list student-fee-paid-list">
-                      {feeData.paid[feeType]
-                        .sort((a, b) => new Date(b.paid_on) - new Date(a.paid_on))
-                        .map((fee) => (
-                          <li key={fee.student_fee_id} className="student-fee-item student-fee-paid-item">
-                            <div className="fee-info">
-                              <span>Amount: <strong className="amount-paid">৳{fee.amount}</strong></span>
-                              <span>Paid On: <strong className="date-paid">{formatDate(fee.paid_on)}</strong></span>
-                            </div>
-                          </li>
-                        ))}
-                    </ul>
+                    <>
+                      <ul className="student-fee-list student-fee-paid-list">
+                        {feeData.paid[feeType]
+                          .sort((a, b) => new Date(b.paid_on) - new Date(a.paid_on))
+                          .slice(0, showAllPaid[feeType] ? feeData.paid[feeType].length : 5)
+                          .map((fee) => (
+                            <li key={fee.student_fee_id} className="student-fee-item student-fee-paid-item">
+                              <div className="fee-info">
+                                <span>Amount: <strong className="amount-paid">৳{fee.amount}</strong></span>
+                                <span>Paid On: <strong className="date-paid">{formatDate(fee.paid_on)}</strong></span>
+                              </div>
+                            </li>
+                          ))}
+                      </ul>
+                      {feeData.paid[feeType].length > 5 && (
+                        <button
+                          className="student-fee-see-all-btn"
+                          onClick={() => toggleShowAllPaid(feeType)}
+                        >
+                          {showAllPaid[feeType] ? 'Show Less' : 'See All'}
+                        </button>
+                      )}
+                    </>
                   ) : (
                     <p className="student-fee-none student-fee-no-history">No paid history for {feeType} yet.</p>
                   )}

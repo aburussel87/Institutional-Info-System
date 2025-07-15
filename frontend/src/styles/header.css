@@ -1,26 +1,21 @@
-.main-header {
+.app-header {
   background: rgba(169, 161, 205, 0.7);
   backdrop-filter: blur(12px);
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  position: fixed;
-}
-
-header {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 8vh;
-  background-color: #004080;
   color: white;
   display: flex;
   align-items: center;
-  padding: 0 20px;
+  padding: 0 15px;
   box-sizing: border-box;
   z-index: 1000;
 }
 
-.header-logo {
+.app-header-logo {
   height: 100%;
   display: flex;
   align-items: center;
@@ -28,182 +23,196 @@ header {
   flex: 0 0 auto;
 }
 
-.header-logo img {
+.app-header-logo img {
   height: 100%;
-  max-height: 8vh;
+  max-height: 5vh;
   width: auto;
   object-fit: contain;
 }
 
-.header-info {
+.app-header-info {
   flex: 1;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  margin-left: 20px;
+  margin-left: 15px;
 }
 
-.institution-name {
-  font-size: 1.1em;
+.app-institution-name {
+  font-size: 0.9em;
   font-weight: bold;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-
-.institution-location {
-  font-size: 0.9em;
+.app-institution-location {
+  font-size: 0.7em;
   opacity: 0.85;
 }
 
-.header-notification {
-  flex: 0 0 auto;
-  margin-left: 20px;
-  font-size: 1.2em;
+.app-hamburger-btn {
+  font-size: 1.2rem;
+}
+
+.app-notification-bell {
   cursor: pointer;
 }
 
-.header-search {
-  flex: 0 0 auto;
-  margin-left: 20px;
-  margin-right: 10px;
-}
-
-.header-search input {
-  padding: 5px 10px;
-  font-size: 0.9em;
-  border: none;
-  border-radius: 4px;
-}
-
-.header-logo img {
-  height: 40px;
-}
-
-.header-info .institution-name {
-  font-size: 1.1rem;
-}
-
-.header-info .institution-location {
-  font-size: 0.85rem;
-  color: #555;
-}
-
-#notificationPopup {
-  width: 450px;
-  max-height: 600px;
+#appNotificationPopup {
+  width: 300px;
+  max-height: 400px;
   padding: 1rem;
   border: 1px solid #ddd;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  top: 40px;
+  right: 0;
+  overflow-y: auto;
+  z-index: 1050;
+  color: black;
 }
 
-
-.notification-item {
+.app-notification-item {
   border-bottom: 1px solid #eee;
-  padding-bottom: 0.75rem;
+  padding: 0.75rem;
   margin-bottom: 0.75rem;
   background-color: #f8f9fa;
   border-radius: 5px;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
   transition: background-color 0.2s ease, transform 0.1s ease;
+  cursor: pointer;
 }
 
-.notification-item:last-child {
+.app-notification-item:last-child {
   border-bottom: none;
   margin-bottom: 0;
   padding-bottom: 0;
 }
 
-.notification-item:hover {
+.app-notification-item:hover {
   background-color: #e9ecef;
   transform: translateY(-2px);
 }
 
-
-.notification-date-heading {
-  font-size: 0.9rem;
+.app-notification-date-heading {
+  font-size: 0.8rem;
   color: #020218;
   background-color: #b9cbde;
   border-radius: 3px;
   margin-bottom: 0.75rem;
   border-bottom: 1px solid #eceeef;
-  padding-bottom: 0.5rem;
+  padding: 0.5rem;
   text-align: right;
 }
 
-.notification-category {
+.app-notification-category {
   font-weight: bold;
   color: #007bff;
 }
 
-.notification-title {
+.app-notification-title {
   color: #343a40;
   font-weight: 500;
 }
 
-.notification-separator {
+.app-notification-separator {
   color: #6c757d;
   margin: 0 3px;
 }
 
-.notification-message {
-  font-size: 0.8rem;
-  color: #495057;
-  line-height: 1.4;
-}
-
-#notificationList {
+#appNotificationList {
   padding-top: 5px;
 }
 
-.hamburger-btn {
-  font-size: 1.5rem;
-}
-
-.notification-detail-header {
+.app-notification-detail-header {
   background-color: #e9f7fe;
   border-bottom: 1px solid #cceeff;
 }
 
-.notification-detail-title {
-  font-size: 1.5rem;
+.app-notification-detail-title {
+  font-size: 1.2rem;
   font-weight: bold;
   color: #004080;
 }
 
-.notification-category-detail {
+.app-notification-category-detail {
   color: #007bff;
   margin-right: 5px;
 }
 
-.notification-separator-detail {
+.app-notification-separator-detail {
   color: #6c757d;
 }
 
-.notification-detail-body {
-  padding: 2rem;
-  line-height: 1.6;
-  font-size: 1.1rem;
+.app-notification-detail-body {
+  padding: 1.5rem;
+  line-height: 1.5;
+  font-size: 1rem;
   color: #333;
 }
 
-.notification-detail-message {
+.app-notification-detail-message {
   background-color: #f0f8ff;
   border-left: 5px solid #007bff;
   padding: 1rem;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
   border-radius: 4px;
   font-style: italic;
   color: #222;
 }
 
-.notification-detail-meta p {
-  margin-bottom: 0.5rem;
-  font-size: 0.95rem;
+.app-notification-detail-meta p {
+  margin-bottom: 0.4rem;
+  font-size: 0.9rem;
   color: #555;
 }
 
-.notification-detail-meta strong {
+.app-notification-detail-meta strong {
   color: #004080;
+}
+
+@media (max-width: 767.98px) {
+  .app-header {
+    height: 7vh;
+    padding: 0 10px;
+  }
+
+  .app-header-logo img {
+    max-height: 4.5vh;
+  }
+
+  .app-institution-name {
+    font-size: 0.8em;
+  }
+
+  .app-institution-location {
+    font-size: 0.65em;
+  }
+
+  .app-hamburger-btn {
+    font-size: 1.1rem;
+  }
+
+  #appNotificationPopup {
+    width: 90vw;
+    right: 5px;
+    left: auto;
+  }
+
+  .app-header-search {
+    display: none !important;
+  }
+
+  .app-notification-detail-title {
+    font-size: 1rem;
+  }
+
+  .app-notification-detail-body {
+    padding: 1rem;
+    font-size: 0.9rem;
+  }
+
+  .app-notification-detail-message {
+    padding: 0.8rem;
+  }
 }
