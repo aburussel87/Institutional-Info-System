@@ -1,0 +1,97 @@
+.provost-container-light {
+ 
+  background-color: #f8f9fa;
+  padding: 30px;
+  font-family: 'Segoe UI', sans-serif;
+  min-height: 100vh;
+}
+
+.provost-content-card {
+  background-color: #ffffff;
+  padding: 25px;
+  border-radius: 15px;
+  box-shadow: 0px 4px 12px rgba(0,0,0,0.1);
+  max-width: 1000px;
+  margin: auto ;
+}
+
+.provost-title {
+  font-size: 26px;
+  font-weight: bold;
+  color: #333;
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.provost-student-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 30px;
+}
+
+.provost-student-item {
+  padding: 12px 18px;
+  border-radius: 10px;
+  background-color: #e9ecef;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.provost-student-item:hover {
+  background-color: #dee2e6;
+}
+
+.provost-student-item.selected {
+  background-color: #ced4da;
+  font-weight: bold;
+}
+
+.provost-student-name {
+  color: #007bff;
+}
+
+.provost-hall-details {
+  margin-top: 20px;
+}
+
+.provost-details-title {
+  font-size: 20px;
+  margin-bottom: 15px;
+  color: #495057;
+}
+
+.provost-details-table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: #fff;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.provost-details-table th,
+.provost-details-table td {
+  border: 1px solid #dee2e6;
+  padding: 10px 12px;
+  text-align: center;
+  font-size: 14px;
+}
+
+.provost-details-table th {
+  background-color: #f1f3f5;
+  color: #495057;
+}
+
+.provost-details-table tbody tr:nth-child(even) {
+  background-color: #f8f9fa;
+}
+
+.provost-student-info {
+  line-height: 1.4;
+  font-size: 16px;
+}
+
+.provost-student-item.selected {
+  background-color: #4e97ca;
+  border-left: 4px solid #2196f3;
+}

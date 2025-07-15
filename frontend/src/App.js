@@ -15,6 +15,7 @@ import TeacherInfo from './pages/teacher_info';
 import CourseRegistration from './pages/registration';
 import PasswordReset from './pages/passwordReset';
 import AddExam from './pages/add_exam_page';
+import ProvostStd from './pages/provost_page';
 
 
 
@@ -57,6 +58,7 @@ export default function App() {
         <Route path='/registration' element = {<CourseRegistration/>} />
         <Route path='/passwordReset' element={<PasswordReset />} />
         <Route path='/add_exam_page' element = {<AddExam/>} />  
+        <Route path='/provost_page' element = {<ProvostStd/>} />
 
       </Routes>
     </Router>

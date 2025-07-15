@@ -141,7 +141,7 @@ const Header = () => {
             </a>
           )}
           {isProvost && (
-            <a className="btn btn-outline-primary w-100 mb-2" href="/provost">
+            <a className="btn btn-outline-primary w-100 mb-2" href="/provost_page">
               Provost Panel
             </a>
           )}

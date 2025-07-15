@@ -21,6 +21,8 @@ const registrationRoutes = require('./routes/registrationRoutes');
 const resetPassRoutes = require('./routes/resetPassRoutes');
 const courseinfoRoutes = require('./routes/getcourseRoutes');
 const addExamRoutes = require('./routes/add_examRoutes');
+const get_students_by_provostRoutes = require('./routes/getstudentbyProvostRoutes');
+const get_student_hall_detailsRoutes = require('./routes/studenthalldetailsRoutes');
 
 
 const jwt = require('jsonwebtoken');
@@ -47,6 +49,10 @@ app.use('/api/registration', registrationRoutes);
 app.use('/api/password', resetPassRoutes);
 app.use('/api/teacherCourses', courseinfoRoutes);
 app.use('/api/add_exam', addExamRoutes);
+app.use('/api/get_course_info', coureinfoRoutes);//change by provat
+app.use('/api/getstudentbyProvost', get_students_by_provostRoutes); // Provost's students route
+app.use('/api/getStudenthalldetails', get_student_hall_detailsRoutes); // Provost's student hall details route
+
 
 
 

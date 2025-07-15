@@ -409,5 +409,10 @@ module.exports = {
   get_exam_info_by_teacher,
   getRegistrationCourse,
   get_course_info_by_teacher,
-  get_scheduled_exam_by_teacher
+  get_scheduled_exam_by_teacher,
+  get_students_by_provost,
+  add_exam,
+  get_student_hall_details
+
+  
 };
