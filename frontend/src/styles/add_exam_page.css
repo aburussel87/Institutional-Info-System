@@ -1,54 +1,280 @@
-/* Container setup */
 .addexam-container {
-  background: #f9fbfd;
+  display: flex;
+  flex-direction: column;
   min-height: 100vh;
-  padding: 20px;
-  font-family: 'Segoe UI', sans-serif;
+  background: linear-gradient(to bottom right, #e0f2f7, #c6e7f2);
 }
 
-/* Page title */
-.addexam-title {
+.addexam-content {
+  flex-grow: 1;
+  padding: 100px 20px 20px 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.addexam-title, .scheduled-exams-title {
+  color: #2c3e50;
   text-align: center;
-  color: #2a2a72;
+  margin-bottom: 25px;
+  font-size: 2.5rem;
   font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.addexam-instruction {
+  text-align: center;
+  color: #34495e;
+  font-size: 1.1rem;
   margin-bottom: 30px;
+  font-style: italic;
 }
 
-/* Course grid */
-.addexam-card-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 20px;
-  padding: 0 5%;
-}
-
-/* Individual course card */
-.addexam-card {
-  cursor: pointer;
-  border: none;
-  border-radius: 16px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-  transition: transform 0.2s, box-shadow 0.2s;
-}
-
-.addexam-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 6px 20px rgba(0,0,0,0.1);
-}
-
-/* Spinner */
 .addexam-spinner {
   display: flex;
   justify-content: center;
-  margin-top: 40px;
+  align-items: center;
+  height: 200px;
 }
 
-/* Alert */
+.addexam-card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 25px;
+  padding: 20px 0;
+}
+
+.addexam-card {
+  background: white;
+  border: none;
+  border-radius: 12px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  cursor: pointer;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.addexam-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+}
+
+.addexam-card .card-body {
+  padding: 25px;
+}
+
+.addexam-card .card-title {
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: #3498db;
+  margin-bottom: 10px;
+}
+
+.addexam-card .card-subtitle {
+  font-size: 0.95rem;
+  color: #7f8c8d;
+  margin-bottom: 15px;
+}
+
+.addexam-card .card-text {
+  font-size: 0.95rem;
+  color: #555;
+  line-height: 1.6;
+}
+
+.modal-header {
+  background-color: #3498db;
+  color: white;
+  border-bottom: none;
+  padding: 1.5rem;
+}
+
+.modal-title {
+  font-weight: 600;
+  font-size: 1.5rem;
+}
+
+.modal-header .btn-close {
+  filter: invert(1);
+}
+
+.modal-body {
+  padding: 2rem;
+}
+
+.modal-footer {
+  padding: 1.5rem 2rem;
+  border-top: none;
+  background-color: #f8f9fa;
+}
+
+.form-group label {
+  font-weight: 600;
+  color: #34495e;
+  margin-bottom: 8px;
+}
+
+.form-control, .form-select {
+  border-radius: 8px;
+  border: 1px solid #ced4da;
+  padding: 10px 15px;
+  font-size: 1rem;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.form-control:focus, .form-select:focus {
+  border-color: #3498db;
+  box-shadow: 0 0 0 0.25rem rgba(52, 152, 219, 0.25);
+}
+
+.btn-primary {
+  background-color: #3498db;
+  border-color: #3498db;
+  font-weight: 500;
+  padding: 10px 20px;
+  border-radius: 8px;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.btn-primary:hover {
+  background-color: #2980b9;
+  border-color: #2980b9;
+}
+
+.btn-secondary {
+  background-color: #7f8c8d;
+  border-color: #7f8c8d;
+  font-weight: 500;
+  padding: 10px 20px;
+  border-radius: 8px;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.btn-secondary:hover {
+  background-color: #6a7677;
+  border-color: #6a7677;
+}
+
 .addexam-alert {
   position: fixed;
-  bottom: 30px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 300px;
+  bottom: 20px;
+  right: 20px;
+  z-index: 1060;
+  width: auto;
+  max-width: 400px;
+  padding: 15px 25px;
+  border-radius: 8px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.scheduled-exams-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-top: 20px;
+}
+
+.scheduled-exam-card {
+  background: #fdfdfd;
+  border: 1px solid #e0e0e0;
+  border-left: 5px solid #28a745; /* A nice green accent */
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.scheduled-exam-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+}
+
+.scheduled-exam-card .card-body {
+  padding: 20px;
+}
+
+.scheduled-exam-card .exam-card-title {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #28a745; /* Match accent color */
+  margin-bottom: 5px;
+}
+
+.scheduled-exam-card .text-muted {
+  font-size: 0.9rem;
+}
+
+.scheduled-exam-card .card-text strong {
+  color: #34495e;
+}
+
+.no-exams-message {
   text-align: center;
+  font-size: 1.2rem;
+  color: #7f8c8d;
+  padding: 40px 20px;
+  background-color: #f0f0f0;
+  border-radius: 8px;
+  margin-top: 30px;
+}
+
+@media (max-width: 768px) {
+  .addexam-content {
+    padding: 80px 15px 15px 15px;
+  }
+
+  .addexam-title, .scheduled-exams-title {
+    font-size: 2rem;
+  }
+
+  .addexam-instruction {
+    font-size: 1rem;
+  }
+
+  .addexam-card-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .addexam-card .card-body {
+    padding: 20px;
+  }
+
+  .addexam-card .card-title {
+    font-size: 1.2rem;
+  }
+
+  .addexam-card .card-subtitle,
+  .addexam-card .card-text {
+    font-size: 0.9rem;
+  }
+
+  .modal-title {
+    font-size: 1.2rem;
+  }
+
+  .modal-body {
+    padding: 1.5rem;
+  }
+
+  .modal-footer {
+    padding: 1rem 1.5rem;
+  }
+
+  .addexam-alert {
+    bottom: 15px;
+    right: 15px;
+    max-width: 90%;
+  }
+
+  .scheduled-exam-card .exam-card-title {
+    font-size: 1.1rem;
+  }
+
+  .scheduled-exam-card .text-muted,
+  .scheduled-exam-card .card-text {
+    font-size: 0.85rem;
+  }
 }

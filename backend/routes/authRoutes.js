@@ -46,6 +46,7 @@ async function authenticateUser(username, password) {
     role = 'Student';
   } 
   else if (user.role === 'Teacher') {
+    role = 'Teacher';
     const r = await pool.query(
       'SELECT * FROM get_teacher_info($1)', 
       [user.user_id]

@@ -1,7 +1,18 @@
 const client = require('./db');
 const { generateRoutine, formatGradeSheet, formatSemesterRoutine, formatFee, formatExamData } = require('../utils');
-const { get } = require('../routes/dashboardRoutes');
 
+
+
+
+
+
+
+async function get_scheduled_exam_by_teacher(teacherId, session = '2025-26') {
+  const query = `SELECT * FROM get_exams_by_teacher_and_session($1,$2)`;
+
+  const res = await client.query(query, [teacherId, session]);
+  return res.rows;
+}
 
 async function getRegistrationCourse(sid) {
   const query = `SELECT * from get_registration_course($1);`;
@@ -101,68 +112,23 @@ SELECT * FROM get_all_exams_by_teacher($1);
 }
 
 
-async function get_course_info_by_teacher(teacherId) {
+async function get_course_info_by_teacher(teacherId, academic_session = '2025-26') {
   const query = `
    
 
-SELECT * FROM get_course_by_teacher_id($1);
+SELECT * FROM get_courses_by_teacher_id($1, $2);
 
   `;
 
-  const res = await client.query(query, [teacherId]);
+  const res = await client.query(query, [teacherId, academic_session]);
   return res.rows;
 }
 
-async function add_exam({
-  course_id,
-  teacher_id,
-  title,
-  exam_type,
-  total_marks,
-  date_of_exam,
-  semester,
-  academic_session
-}) {
+async function getStudent_exam_Routine(studentId, session = '2025-26') {
   const query = `
-    SELECT * FROM add_exam_by_teacher(
-      $1::VARCHAR,
-      $2::INT,
-      $3::VARCHAR,
-      $4::ExamType,
-      $5::INT,
-      $6::TIMESTAMP,
-      $7::Semester,
-      $8::VARCHAR
-    );
+    SELECT * FROM get_student_exams($1,$2);
   `;
-
-  const values = [
-    course_id,
-    teacher_id,
-    title,
-    exam_type,
-    total_marks,
-    date_of_exam,
-    semester,
-    academic_session
-  ];
-
-  const res = await client.query(query, values);
-  return res.rows;
-}
-
-
-
-
-
-
-
-
-async function getStudent_exam_Routine(studentId) {
-  const query = `
-    SELECT * FROM get_student_exams($1);
-  `;
-  const res = await client.query(query, [studentId]);
+  const res = await client.query(query, [studentId, session]);
   return (formatExamData(res.rows));
 }
 
@@ -182,8 +148,6 @@ async function pay_student_fee(feeId) {
   const res = await client.query(query, [feeId]);
   return res.rows;
 }
-
-
 
 
 async function get_all_payments_ordered_by_type(sid) {
@@ -444,6 +408,6 @@ module.exports = {
   get_hall_info_by_provost,
   get_exam_info_by_teacher,
   getRegistrationCourse,
-  get_course_info_by_teacher
-  
+  get_course_info_by_teacher,
+  get_scheduled_exam_by_teacher
 };

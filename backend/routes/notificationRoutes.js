@@ -9,7 +9,16 @@ router.get('/', authenticateToken, async (req, res) => {
   try {
     const uid = req.user.userId;
     let role = req.user.role;
+    console.log('User ID:', uid, 'Role:', role);
     if (role === 'Advisor' || role === 'Provost') {
+      role = 'Teacher'; 
+    }else if (role === 'Student') {
+      role = 'Student';
+    } else if (role === 'Admin') {
+      role = 'Admin';
+    } else if (role === 'HOD') {
+      role = 'HOD';
+    }  else {
       role = 'Teacher'; 
     }
     const notifications = await getUserNotifications(uid,role); 

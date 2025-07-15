@@ -1,12 +1,12 @@
 const express = require('express');
-const { add_exam } = require('../config/query');  // Your DB function for inserting exam
 const { authenticateToken } = require('../utils');
 const router = express.Router();
+const client = require('../config/db');
 
 router.post('/', authenticateToken, async (req, res) => {
   try {
-    const teacherId = req.user.userId;  // Make sure your token has this property
-
+    const teacherId = req.user.userId;
+    console.log("ADD EXAM REQUEST BY: "+ teacherId);
     const {
       course_id,
       title,
@@ -14,26 +14,30 @@ router.post('/', authenticateToken, async (req, res) => {
       total_marks,
       date_of_exam,
       semester,
-      academic_session
+      academic_session,
+      section
     } = req.body;
-
-    // Basic validation (you can extend this)
-    if (!course_id || !title || !exam_type || !total_marks || !date_of_exam || !semester || !academic_session) {
+    console.log(req.body);
+    if (!course_id || !title || !exam_type || !total_marks || !date_of_exam || !semester || !academic_session || !section) {
       return res.status(400).json({ success: false, error: 'Missing required fields' });
     }
 
-    // Call your DB function to insert the exam
-    // Assuming your function signature matches these params
-    await add_exam({
-      course_id,
-      teacher_id: teacherId,
-      title,
-      exam_type,
-      total_marks,
-      date_of_exam,
-      semester,
-      academic_session
-    });
+    await client.query(
+      `SELECT add_exam_by_teacher(
+        $1, $2, $3, $4::examtype, $5, $6::timestamp, $7::semester, $8, $9
+      )`,
+      [
+        course_id,
+        teacherId,
+        title,
+        exam_type,
+        total_marks,
+        date_of_exam,
+        semester,
+        academic_session,
+        section
+      ]
+    );
 
     res.json({ success: true, message: 'Exam added successfully' });
   } catch (err) {
