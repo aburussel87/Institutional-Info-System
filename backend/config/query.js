@@ -382,6 +382,25 @@ async function updateLogin(uid) {
   }
 }
 
+
+async function get_student_hall_details(studentId) {
+  const query = `
+    SELECT * FROM get_student_hall_details($1);
+  `;
+  const res = await client.query(query, [studentId]);
+  return res.rows;
+}
+
+
+async function get_students_by_provost(studentId) {
+  const query = `
+    SELECT * FROM get_students_by_provost($1);
+  `;
+  const res = await client.query(query, [studentId]);
+  return res.rows;
+}
+
+
 module.exports = {
   getUserInfo,
   getRoleInfo,
@@ -411,7 +430,6 @@ module.exports = {
   get_course_info_by_teacher,
   get_scheduled_exam_by_teacher,
   get_students_by_provost,
-  add_exam,
   get_student_hall_details
 
   
