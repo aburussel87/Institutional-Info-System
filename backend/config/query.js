@@ -104,7 +104,7 @@ SELECT * FROM get_all_exams_by_teacher($1);
 
 async function getStudent_exam_Routine(studentId) {
   const query = `
-    SELECT * FROM get_exam_routine($1);
+    SELECT * FROM get_student_exams($1);
   `;
   const res = await client.query(query, [studentId]);
   return (formatExamData(res.rows));

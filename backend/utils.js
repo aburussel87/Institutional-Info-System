@@ -236,8 +236,8 @@ function formatExamData(rows) {
   return rows.map(row => {
     const {
       student_id,
-      teacher_id,
-      section,
+      teacher_name,
+      section_type,
       course_id,
       course_title,
       exam_title,
@@ -250,8 +250,8 @@ function formatExamData(rows) {
 
     return {
       student_id,
-      teacher_id,
-      section,
+      teacher_name,
+      section_type,
       course_id,
       title: course_title,
       exam_title,

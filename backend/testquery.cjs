@@ -1,16 +1,33 @@
-const client = require('../backend/config/db'); 
+// const client = require('../backend/config/db'); 
+// require('dotenv').config();
+const { Pool } = require('pg');
+const  { formatExamData }  = require('./utils');
+
+// const client = require('./config/db');
+const client = new Pool({
+  host: 'aws-0-ap-south-1.pooler.supabase.com',
+  port: 5432,
+  user: 'postgres.cqvkwvnvjtmlvxssjars',
+  password: 'hrePMrmh0oyHY9qS',
+  database: 'postgres'
+});
+
+
 
 async function getRegistrationCourse(studentId) {
-  const pending = await client.query('SELECT course_id, approved_by FROM enrollment WHERE student_id = $1 AND semester = (SELECT current_semester FROM student WHERE student_id = $2) and approved_by IS not NULL', [studentId, studentId]);
+  const student = await client.query(
+      'Select * from get_student_exams($1)',
+      [studentId]
+    );
 
-  return pending.rows;
+  return formatExamData(student.rows);
 }
 
 
 (async () => {
   try {
     const result = await getRegistrationCourse(2204032);
-    console.log("Registration courses:", result);
+    console.log(result);
   } catch (error) {
     console.error(' Error:', error);
   } finally {
