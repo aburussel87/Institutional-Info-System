@@ -5,6 +5,16 @@ const { generateRoutine, formatGradeSheet, formatSemesterRoutine, formatFee, for
 
 
 
+
+
+async function get_basic_hall_info_for_provost(teacher_id) {
+  const query = `
+    SELECT * FROM get_basic_hall_info_for_provost($1);
+  `;
+  const res = await client.query(query, [teacher_id]);
+  return res.rows[0];
+}
+
 async function get_student_hall_details(studentId) {
   const query = `
     SELECT * FROM get_student_hall_details($1);
@@ -404,6 +414,7 @@ module.exports = {
   get_course_info_by_teacher,
   get_scheduled_exam_by_teacher,
   get_students_by_provost,
-  get_student_hall_details
+  get_student_hall_details,
+  get_basic_hall_info_for_provost
 
 };

@@ -1,428 +1,544 @@
-.provost-container-overall {
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-  background: linear-gradient(to bottom right, #f8f9fa, #e9ecef);
-  font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+/* General Body and Container Styles */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f0f2f5;
+    color: #333;
+    line-height: 1.6;
 }
 
+.provost-container-overall {
+    max-width: 1200px;
+    margin: 20px auto;
+    background-color: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+}
+
+/* Main Content Area */
 .provost-main-content {
-  flex-grow: 1;
-  padding: 100px 25px 30px 25px;
-  max-width: 1200px;
-  margin: 0 auto;
-  width: 100%;
+    padding: 30px;
 }
 
 .provost-section-title {
-  color: #2c3e50;
-  text-align: center;
-  margin-bottom: 40px;
-  font-size: 2.8rem;
-  font-weight: 700;
-  letter-spacing: 0.5px;
-  position: relative;
-  padding-bottom: 15px;
+    color: #2c3e50;
+    font-size: 2.2em;
+    font-weight: 600;
+    margin-bottom: 30px;
+    position: relative;
+    padding-bottom: 10px;
 }
 
 .provost-section-title::after {
-  content: '';
-  position: absolute;
-  left: 50%;
-  bottom: 0;
-  transform: translateX(-50%);
-  width: 80px;
-  height: 4px;
-  background-color: #007bff;
-  border-radius: 2px;
+    content: '';
+    position: absolute;
+    left: 50%;
+    bottom: 0;
+    transform: translateX(-50%);
+    width: 80px;
+    height: 4px;
+    background-color: #007bff;
+    border-radius: 2px;
 }
 
+/* Hall Info Section */
+.provost-hall-info-section {
+    margin-bottom: 40px;
+    padding: 25px;
+    background: linear-gradient(135deg, #e3f2fd 0%, #c5e1fd 100%);
+    border-radius: 10px;
+    border: 1px solid #bbdefb;
+    box-shadow: 0 4px 15px rgba(0, 123, 255, 0.1);
+}
+
+.provost-hall-info-card {
+    background: none;
+    border: none;
+}
+
+.provost-hall-info-card .card-title {
+    color: #0056b3;
+    font-size: 1.8em;
+    font-weight: 700;
+    margin-bottom: 25px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.provost-hall-info-card .card-title i {
+    font-size: 1.2em;
+    margin-right: 10px;
+    color: #007bff;
+}
+
+.hall-overview-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 8px; /* Space between rows */
+}
+
+.hall-overview-table td {
+    padding: 12px 15px;
+    vertical-align: middle;
+    border: none; /* Remove default table borders */
+}
+
+.hall-overview-table tr:nth-child(odd) {
+    background-color: #e9f5ff; /* Light blue for odd rows */
+}
+
+.hall-overview-table tr:nth-child(even) {
+    background-color: #f7fcff; /* Lighter blue for even rows */
+}
+
+.hall-overview-table tr:first-child td {
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+}
+
+.hall-overview-table tr:last-child td {
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
+}
+
+.hall-overview-table td strong {
+    color: #4a69bd;
+    font-weight: 600;
+}
+
+.hall-overview-table .badge {
+    padding: 0.5em 0.8em;
+    font-size: 0.9em;
+    font-weight: 700;
+    border-radius: 5px;
+}
+
+/* Categorized Students Section */
 .categorized-students-section {
-  margin-top: 30px;
+    margin-top: 30px;
 }
 
 .semester-accordion-item {
-  border: none;
-  margin-bottom: 15px;
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    border: none !important;
+    margin-bottom: 20px;
 }
 
 .semester-accordion-header .accordion-button {
-  background-color: #007bff;
-  color: white;
-  font-size: 1.5rem;
-  font-weight: 600;
-  padding: 1.2rem 1.5rem;
-  border-radius: 12px 12px 0 0;
-  transition: background-color 0.3s ease;
+    background-color: #007bff !important;
+    color: white !important;
+    font-size: 1.5em;
+    font-weight: 600;
+    padding: 18px 25px;
+    border-radius: 10px !important;
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: 0 4px 10px rgba(0, 123, 255, 0.2);
 }
 
 .semester-accordion-header .accordion-button:not(.collapsed) {
-  background-color: #0056b3;
-  box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+    background-color: #0056b3 !important;
+    box-shadow: 0 6px 15px rgba(0, 123, 255, 0.3);
 }
 
 .semester-accordion-header .accordion-button:focus {
-  box-shadow: none;
-  border-color: transparent;
+    box-shadow: 0 0 0 0.25rem rgba(0, 123, 255, 0.45);
 }
 
-.semester-accordion-header .accordion-button::after {
-  filter: brightness(0) invert(1);
+.semester-accordion-header .accordion-button h4 {
+    color: white;
+    margin-bottom: 0;
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+.semester-accordion-header .accordion-button .text-warning {
+    background-color: rgba(255, 193, 7, 0.8);
+    color: #333;
+    padding: 4px 10px;
+    border-radius: 5px;
+    margin-left: auto;
+    font-size: 0.9em;
+    font-weight: 700;
 }
 
 .semester-accordion-body {
-  background-color: #ffffff;
-  padding: 20px;
-  border-bottom-left-radius: 12px;
-  border-bottom-right-radius: 12px;
-  border: 1px solid #dee2e6;
-  border-top: none;
+    background-color: #fdfdfd !important;
+    border: 1px solid #e0e0e0;
+    border-top: none;
+    border-radius: 0 0 10px 10px;
+    padding: 25px !important;
 }
 
-.department-accordion-item {
-  border: 1px solid #e9ecef;
-  margin-bottom: 10px;
-  border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+.nested-department-accordion .department-accordion-item {
+    border-color: #e9ecef !important;
+    border-radius: 8px !important;
+    margin-bottom: 15px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
 .department-accordion-header .accordion-button {
-  background-color: #f0f8ff;
-  color: #34495e;
-  font-size: 1.15rem;
-  font-weight: 500;
-  padding: 1rem 1.2rem;
-  border-radius: 8px 8px 0 0;
-  transition: background-color 0.2s ease;
+    background-color: #e9ecef !important;
+    color: #495057 !important;
+    font-size: 1.2em;
+    font-weight: 500;
+    padding: 15px 20px;
+    border-radius: 8px !important;
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 .department-accordion-header .accordion-button:not(.collapsed) {
-  background-color: #e2f2ff;
+    background-color: #dee2e6 !important;
+    color: #212529 !important;
 }
 
-.department-accordion-header .accordion-button:focus {
-  box-shadow: none;
-  border-color: transparent;
+.department-accordion-header .accordion-button h5 {
+    color: #4a69bd;
+    margin-bottom: 0;
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+.department-accordion-header .accordion-button .text-primary {
+    background-color: rgba(0, 123, 255, 0.2);
+    color: #0056b3;
+    padding: 3px 8px;
+    border-radius: 4px;
+    margin-left: auto;
+    font-size: 0.85em;
+    font-weight: 600;
 }
 
 .department-accordion-body {
-  background-color: #fcfdff;
-  padding: 15px;
-  border-top: 1px solid #e9ecef;
-  border-bottom-left-radius: 8px;
-  border-bottom-right-radius: 8px;
+    background-color: #ffffff !important;
+    padding: 20px !important;
 }
 
 .provost-card-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 20px;
-  padding: 10px 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 25px;
+    padding: 10px;
 }
 
 .provost-student-card {
-  background: white;
-  border: 1px solid #dee2e6;
-  border-radius: 12px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
-  transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
-  cursor: pointer;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
-  padding: 15px;
-  height: 220px;
+    border: 1px solid #e0e0e0;
+    border-radius: 12px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out, border-color 0.2s ease-in-out;
+    background-color: #ffffff;
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
 }
 
 .provost-student-card:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
-  background-color: #f0f8ff;
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+    border-color: #007bff;
 }
 
 .provost-student-card .card-body {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
+    padding: 0 !important; /* Resetting padding from react-bootstrap */
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
 }
 
-.provost-student-card img {
-  margin-bottom: 10px;
-  border: 4px solid #ffffff;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+.student-avatar {
+    width: 100px !important;
+    height: 100px !important;
+    border: 4px solid #007bff !important;
+    box-shadow: 0 2px 8px rgba(0, 123, 255, 0.2);
+    object-fit: cover;
 }
 
-.provost-student-card .provost-card-title {
-  font-size: 1.3rem;
-  font-weight: 600;
-  color: #0056b3;
-  margin-bottom: 5px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  width: 100%;
+.provost-card-title {
+    font-size: 1.1em;
+    font-weight: 600;
+    color: #34495e;
+    margin-top: 15px;
+    margin-bottom: 5px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100%; /* Ensure text truncation works */
 }
 
 .provost-student-card .card-subtitle {
-  font-size: 0.9rem;
-  color: #6c757d;
+    font-size: 0.85em;
+    color: #6c757d;
 }
 
 .no-students-message {
-  grid-column: 1 / -1;
-  text-align: center;
-  font-size: 1.3rem;
-  color: #7f8c8d;
-  padding: 50px 20px;
-  background-color: #f8f9fa;
-  border-radius: 10px;
-  border: 1px dashed #ced4da;
-  margin-top: 30px;
+    text-align: center;
+    color: #6c757d;
+    padding: 30px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+    font-size: 1.1em;
 }
 
+/* Modal Styles */
 .modal-header-custom {
-  background-color: #007bff;
-  color: white;
-  border-bottom: none;
-  padding: 1.5rem;
-  border-top-left-radius: 12px;
-  border-top-right-radius: 12px;
+    background-color: #007bff;
+    color: white;
+    border-bottom: none;
+    padding: 20px 30px;
+    border-radius: 8px 8px 0 0;
 }
 
 .modal-title-custom {
-  font-weight: 600;
-  font-size: 1.8rem;
-}
-
-.modal-header-custom .btn-close {
-  filter: invert(1);
-  color: white;
+    font-weight: 600;
+    font-size: 1.6em;
 }
 
 .modal-body-custom {
-  padding: 2.5rem;
-  background-color: #fdfdfd;
+    padding: 30px;
+    background-color: #f8f9fa;
 }
 
 .student-details-section {
-  background-color: #e6f7ff;
-  border: 1px solid #b3e0ff;
-  padding: 20px;
-  border-radius: 8px;
+    background-color: #ffffff;
+    border: 1px solid #e0e0e0;
+    border-radius: 10px;
+    padding: 25px !important;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
 }
 
-.details-section-title {
-  font-size: 1.6rem;
-  font-weight: 600;
-  color: #0056b3;
-  margin-bottom: 20px;
-  padding-bottom: 10px;
-  border-bottom: 2px solid #a3d9ff;
+.student-details-section .details-section-title {
+    color: #007bff;
+    font-size: 1.5em;
+    font-weight: 600;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
 }
 
-.details-section-title i {
-  color: #007bff;
+.student-details-section .details-section-title i {
+    font-size: 1.1em;
+    margin-right: 10px;
 }
 
 .student-details-section p {
-  font-size: 1.1rem;
-  margin-bottom: 10px;
-  color: #34495e;
-}
-
-.student-details-section p strong {
-  color: #2c3e50;
-  margin-right: 5px;
+    font-size: 1.05em;
+    margin-bottom: 8px;
 }
 
 .roommate-table {
-  margin-top: 20px;
-  border-radius: 8px;
-  overflow: hidden;
-  border: 1px solid #e0e0e0;
+    margin-top: 20px;
+    border-radius: 8px;
+    overflow: hidden;
 }
 
-.roommate-table thead.table-header-custom {
-  background-color: #007bff;
-  color: white;
+.roommate-table thead {
+    background-color: #6c757d;
+    color: white;
 }
 
 .roommate-table th {
-  padding: 15px;
-  font-weight: 600;
-  font-size: 1rem;
-  border-color: #0060cb;
+    padding: 12px 15px;
+    font-weight: 600;
+    border-bottom: 2px solid #5a6268;
 }
 
-.roommate-table td {
-  padding: 12px 15px;
-  font-size: 1rem;
-  color: #34495e;
-  vertical-align: middle;
+.roommate-table tbody tr td {
+    padding: 10px 15px;
+    vertical-align: middle;
 }
 
-.roommate-table tbody tr:nth-of-type(even) {
-  background-color: #f8f9fa;
+.roommate-table tbody tr:nth-of-type(odd) {
+    background-color: #f3f4f6;
 }
 
-.roommate-table tbody tr:hover {
-  background-color: #e9f5ff;
+.roommate-table .badge {
+    padding: 0.4em 0.7em;
+    font-size: 0.85em;
+    font-weight: 600;
+    border-radius: 4px;
 }
 
-.text-muted.text-center {
-  padding: 20px;
-  font-style: italic;
-  font-size: 1.1rem;
-  color: #6c757d !important;
+.modal-footer-custom {
+    background-color: #e9ecef;
+    border-top: none;
+    padding: 15px 30px;
+    border-radius: 0 0 8px 8px;
 }
 
-.modal-footer .btn {
-  padding: 10px 25px;
-  font-size: 1.1rem;
-  border-radius: 8px;
+.modal-footer-custom .btn {
+    min-width: 100px;
+    font-weight: 500;
 }
 
-@media (max-width: 992px) {
-  .provost-section-title {
-    font-size: 2.2rem;
-  }
-  .semester-accordion-header .accordion-button {
-    font-size: 1.3rem;
-    padding: 1rem 1.2rem;
-  }
-  .department-accordion-header .accordion-button {
-    font-size: 1.05rem;
-    padding: 0.8rem 1rem;
-  }
-  .provost-card-grid {
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-    gap: 15px;
-  }
-  .provost-student-card {
-    height: 200px;
-    padding: 15px;
-  }
-  .provost-student-card img {
-    width: 90px !important;
-    height: 90px !important;
-  }
-  .provost-student-card .provost-card-title {
-    font-size: 1.2rem;
-  }
-  .provost-student-card .card-subtitle {
-    font-size: 0.85rem;
-  }
+/* Spinner and Alert styles */
+.spinner-border {
+    color: #007bff;
 }
 
+.alert {
+    border-radius: 8px;
+    font-weight: 500;
+}
+
+.alert-danger {
+    background-color: #f8d7da;
+    color: #721c24;
+    border-color: #f5c6cb;
+}
+
+.alert-info {
+    background-color: #d1ecf1;
+    color: #0c5460;
+    border-color: #bee5eb;
+}
+
+.alert-secondary {
+    background-color: #e2e3e5;
+    color: #383d41;
+    border-color: #d6d8db;
+}
+
+/* Transitions for hover effects */
+.transition-all-ease {
+    transition: all 0.3s ease-in-out;
+}
+
+/* Responsive Adjustments */
 @media (max-width: 768px) {
-  .provost-main-content {
-    padding: 90px 15px 20px 15px;
-  }
-  .provost-section-title {
-    font-size: 2rem;
-    margin-bottom: 30px;
-  }
-  .semester-accordion-header .accordion-button {
-    font-size: 1.2rem;
-  }
-  .department-accordion-header .accordion-button {
-    font-size: 1rem;
-  }
-  .provost-card-grid {
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-    gap: 10px;
-  }
-  .provost-student-card {
-    height: 180px;
-    padding: 10px;
-  }
-  .provost-student-card img {
-    width: 80px !important;
-    height: 80px !important;
-  }
-  .provost-student-card .provost-card-title {
-    font-size: 1.1rem;
-  }
-  .provost-student-card .card-subtitle {
-    font-size: 0.8rem;
-  }
-  .no-students-message {
-    font-size: 1.1rem;
-    padding: 30px 15px;
-  }
-  .modal-title-custom {
-    font-size: 1.4rem;
-  }
-  .modal-body-custom {
-    padding: 1.5rem;
-  }
-  .details-section-title {
-    font-size: 1.3rem;
-  }
-  .student-details-section p,
-  .roommate-table td,
-  .roommate-table th {
-    font-size: 0.95rem;
-    padding: 10px;
-  }
-  .modal-footer .btn {
-    padding: 8px 18px;
-    font-size: 1rem;
-  }
+    .provost-main-content {
+        padding: 20px;
+    }
+
+    .provost-section-title {
+        font-size: 1.8em;
+    }
+
+    .provost-hall-info-section {
+        padding: 15px;
+    }
+
+    .provost-hall-info-card .card-title {
+        font-size: 1.5em;
+    }
+
+    .semester-accordion-header .accordion-button {
+        font-size: 1.2em;
+        padding: 15px 20px;
+    }
+
+    .department-accordion-header .accordion-button {
+        font-size: 1em;
+        padding: 12px 15px;
+    }
+
+    .provost-card-grid {
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        gap: 15px;
+    }
+
+    .student-avatar {
+        width: 80px !important;
+        height: 80px !important;
+    }
+
+    .provost-card-title {
+        font-size: 1em;
+    }
+
+    .modal-body-custom {
+        padding: 20px;
+    }
+
+    .student-details-section {
+        padding: 15px !important;
+    }
+
+    .student-details-section .details-section-title {
+        font-size: 1.3em;
+    }
 }
 
 @media (max-width: 576px) {
-  .provost-section-title {
-    font-size: 1.8rem;
-    margin-bottom: 25px;
-  }
-  .semester-accordion-header .accordion-button {
-    font-size: 1rem;
-    padding: 0.8rem 1rem;
-  }
-  .department-accordion-header .accordion-button {
-    font-size: 0.9rem;
-    padding: 0.7rem 0.9rem;
-  }
-  .provost-card-grid {
-    grid-template-columns: 1fr;
-    gap: 10px;
-  }
-  .provost-student-card {
-    height: auto;
-    padding: 15px;
-  }
-  .provost-student-card img {
-    width: 80px !important;
-    height: 80px !important;
-    margin-bottom: 10px;
-  }
-  .provost-student-card .provost-card-title {
-    font-size: 1.1rem;
-  }
-  .modal-title-custom {
-    font-size: 1.2rem;
-  }
-  .modal-body-custom {
-    padding: 1rem;
-  }
-  .details-section-title {
-    font-size: 1.1rem;
-    margin-bottom: 15px;
-  }
-  .student-details-section p,
-  .roommate-table td,
-  .roommate-table th {
-    font-size: 0.85rem;
-    padding: 8px;
-  }
+    .provost-container-overall {
+        margin: 10px auto;
+        border-radius: 0;
+        box-shadow: none;
+    }
+
+    .provost-main-content {
+        padding: 15px;
+    }
+
+    .provost-section-title {
+        font-size: 1.6em;
+    }
+
+    .provost-hall-info-section {
+        padding: 10px;
+    }
+
+    .provost-hall-info-card .card-title {
+        font-size: 1.3em;
+    }
+
+    .hall-overview-table td {
+        font-size: 0.9em;
+        padding: 10px;
+    }
+
+    .semester-accordion-header .accordion-button {
+        font-size: 1.1em;
+        padding: 12px 15px;
+    }
+
+    .department-accordion-header .accordion-button {
+        font-size: 0.95em;
+        padding: 10px 12px;
+    }
+
+    .provost-card-grid {
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        gap: 10px;
+    }
+
+    .student-avatar {
+        width: 70px !important;
+        height: 70px !important;
+    }
+
+    .provost-card-title {
+        font-size: 0.9em;
+    }
+
+    .modal-header-custom, .modal-footer-custom {
+        padding: 15px 20px;
+    }
+
+    .modal-title-custom {
+        font-size: 1.4em;
+    }
+
+    .modal-body-custom {
+        padding: 15px;
+    }
+
+    .student-details-section {
+        padding: 10px !important;
+    }
+
+    .student-details-section .details-section-title {
+        font-size: 1.1em;
+    }
+
+    .student-details-section p {
+        font-size: 0.95em;
+    }
 }
