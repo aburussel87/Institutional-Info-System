@@ -5,7 +5,12 @@ const { generateRoutine, formatGradeSheet, formatSemesterRoutine, formatFee, for
 
 
 
-
+async function get_teacher_context_for_notification(teacher_id, session = '2025-26'){
+  const query =`SELECT get_teacher_context($1,$2);
+`
+const result =  (await client.query(query,[teacher_id,session]));
+return result.rows[0];
+}
 
 async function get_basic_hall_info_for_provost(teacher_id) {
   const query = `
@@ -415,6 +420,6 @@ module.exports = {
   get_scheduled_exam_by_teacher,
   get_students_by_provost,
   get_student_hall_details,
-  get_basic_hall_info_for_provost
-
+  get_basic_hall_info_for_provost,
+  get_teacher_context_for_notification
 };

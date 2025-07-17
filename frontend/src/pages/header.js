@@ -88,6 +88,29 @@ const Header = () => {
     return 'System';
   };
 
+
+  const handleDownloadPdf = (pdfData, filename = "notification.pdf") => {
+    if (!pdfData || !pdfData.data) {
+      alert("No PDF data available.");
+      return;
+    }
+
+    try {
+      const byteArray = new Uint8Array(pdfData.data);
+      const blob = new Blob([byteArray], { type: "application/pdf" });
+      const blobUrl = URL.createObjectURL(blob);
+
+      const link = document.createElement("a");
+      link.href = blobUrl;
+      link.download = filename;
+      link.click();
+
+      URL.revokeObjectURL(blobUrl);
+    } catch (err) {
+      console.error("Failed to process PDF:", err);
+      alert("Failed to download PDF: Invalid data.");
+    }
+  };
   const handleNotificationItemClick = (notification) => {
     setSelectedNotification(notification);
     setShowDetailPopup(true);
@@ -244,16 +267,41 @@ const Header = () => {
           </Modal.Header>
           <Modal.Body className="app-notification-detail-body">
             <p className="app-notification-detail-message">{selectedNotification.message}</p>
-            <div className="app-notification-detail-meta">
-              {selectedNotification.student_id && <p><strong>Student ID:</strong> {selectedNotification.student_id}</p>}
-              {selectedNotification.teacher_id && <p><strong>Teacher ID:</strong> {selectedNotification.teacher_id}</p>}
-              {selectedNotification.department_id && <p><strong>Department ID:</strong> {selectedNotification.department_id}</p>}
-              {selectedNotification.course_id && <p><strong>Course ID:</strong> {selectedNotification.course_id}</p>}
-              {selectedNotification.hall_id && <p><strong>Hall ID:</strong> {selectedNotification.hall_id}</p>}
-              {selectedNotification.semester_id && <p><strong>Semester ID:</strong> {selectedNotification.semester_id}</p>}
-              <p><strong>Created By:</strong> {selectedNotification.created_by}</p>
-              <p><strong>Created At:</strong> {new Date(selectedNotification.created_at).toLocaleString()}</p>
-            </div>
+            {selectedNotification.student_id && (
+              <p><strong>Student ID:</strong> {selectedNotification.student_id}</p>
+            )}
+            {selectedNotification.teacher_id && (
+              <p><strong>Teacher ID:</strong> {selectedNotification.teacher_id}</p>
+            )}
+            {selectedNotification.department_id && (
+              <p><strong>Department ID:</strong> {selectedNotification.department_id}</p>
+            )}
+            {selectedNotification.course_id && (
+              <p><strong>Course ID:</strong> {selectedNotification.course_id}</p>
+            )}
+            {selectedNotification.hall_id && (
+              <p><strong>Hall ID:</strong> {selectedNotification.hall_id}</p>
+            )}
+            {selectedNotification.semester_id && (
+              <p><strong>Semester ID:</strong> {selectedNotification.semester_id}</p>
+            )}
+
+            <p><strong>Created By:</strong> {selectedNotification.created_by}</p>
+            <p><strong>Created At:</strong> {new Date(selectedNotification.created_at).toLocaleString()}</p>
+
+            {selectedNotification.pdf && (
+              <p>
+                <strong>PDF:</strong>{' '}
+                <Button
+                  size="sm"
+                  variant="link"
+                  onClick={() => handleDownloadPdf(selectedNotification.pdf)}
+                >
+                  Download PDF
+                </Button>
+              </p>
+            )}
+
           </Modal.Body>
           <Modal.Footer>
             <Button variant="secondary" onClick={handleCloseDetailPopup}>

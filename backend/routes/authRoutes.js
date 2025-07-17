@@ -46,6 +46,8 @@ async function authenticateUser(username, password) {
     role = 'Student';
   } 
   else if (user.role === 'Teacher') {
+    let hall_id = null;
+    let dept_id = null;
     role = 'Teacher';
     const r = await pool.query(
       'SELECT * FROM get_teacher_info($1)', 
@@ -59,11 +61,20 @@ async function authenticateUser(username, password) {
       'SELECT * FROM provost WHERE teacher_id = $1 AND resigned_on is null',
       [user.user_id]
     );
+    const hod = await pool.query(
+      'SELECT * FROM head_of_department WHERE teacher_id = $1 AND resigned_on is null',
+      [user.user_id]
+    );
     if (advisor.rows.length > 0) {
       role = 'Advisor';
+
     }
     else if (provost.rows.length > 0) {
       role = 'Provost';
+      hall_id = provost.rows[0].hall_id;
+    }else if(hod.rows.length >0){
+      role = 'HOD';
+      dept_id =  hod.rows[0].department_id;
     } 
     teacher = r.rows[0];
   }

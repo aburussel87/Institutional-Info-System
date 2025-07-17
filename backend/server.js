@@ -1,5 +1,6 @@
 require('dotenv').config();
 const express = require('express');
+const bodyParser = require('body-parser');
 const cors = require('cors');
 
 
@@ -23,12 +24,15 @@ const courseinfoRoutes = require('./routes/getcourseRoutes');
 const addExamRoutes = require('./routes/add_examRoutes');
 const get_students_by_provostRoutes = require('./routes/getstudentbyProvostRoutes');
 const get_student_hall_detailsRoutes = require('./routes/studenthalldetailsRoutes');
+const add_notificationRoute = require('./routes/add_notificationRoutes');
 
 
 const jwt = require('jsonwebtoken');
 const app = express();
 app.use(cors());
-app.use(express.json());
+app.use(bodyParser.json({ limit: '10mb' }));
+app.use(bodyParser.urlencoded({ extended: true, limit: '10mb' }));
+
 
 
 app.use('/api/auth', authRoutes);
@@ -52,6 +56,7 @@ app.use('/api/add_exam', addExamRoutes);
 app.use('/api/get_course_info', courseinfoRoutes);//change by provat
 app.use('/api/getstudentbyProvost', get_students_by_provostRoutes); // Provost's students route
 app.use('/api/getStudenthalldetails', get_student_hall_detailsRoutes); // Provost's student hall details route
+app.use('/api/notification',add_notificationRoute);
 
 
 

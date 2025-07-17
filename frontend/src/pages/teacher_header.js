@@ -108,6 +108,32 @@ const Header = () => {
     return 'System';
   };
 
+const handleDownloadPdf = (pdfData, filename = "notification.pdf") => {
+  if (!pdfData || !pdfData.data) {
+    alert("No PDF data available.");
+    return;
+  }
+
+  try {
+    const byteArray = new Uint8Array(pdfData.data);
+    const blob = new Blob([byteArray], { type: "application/pdf" });
+    const blobUrl = URL.createObjectURL(blob);
+
+    const link = document.createElement("a");
+    link.href = blobUrl;
+    link.download = filename;
+    link.click();
+
+    URL.revokeObjectURL(blobUrl);
+  } catch (err) {
+    console.error("Failed to process PDF:", err);
+    alert("Failed to download PDF: Invalid data.");
+  }
+};
+
+
+
+
   const handleNotificationItemClick = (notification) => {
     setSelectedNotification(notification);
     setShowDetailPopup(true);
@@ -135,6 +161,7 @@ const Header = () => {
           <a className="btn btn-outline-primary w-100 mb-2" href="/teacher_dash">Dashboard</a>
           <a className="btn btn-outline-primary w-100 mb-2" href="/teacher_info">Profile</a>
           <a className="btn btn-outline-primary w-100 mb-2" href="/add_exam_page">Schedule Exam</a>
+          <a className="btn btn-outline-primary w-100 mb-2" href="/addNotice">Add Notice</a>
           {isAdvisor && (
             <a className="btn btn-outline-primary w-100 mb-2" href="/advisor">
               Advisor Panel
@@ -225,6 +252,19 @@ const Header = () => {
               {selectedNotification.course_id && <p><strong>Course ID:</strong> {selectedNotification.course_id}</p>}
               {selectedNotification.hall_id && <p><strong>Hall ID:</strong> {selectedNotification.hall_id}</p>}
               {selectedNotification.semester_id && <p><strong>Semester ID:</strong> {selectedNotification.semester_id}</p>}
+              {selectedNotification.pdf && (
+                <p>
+                  <strong>PDF:</strong>{' '}
+                  <Button
+                    size="sm"
+                    variant="link"
+                    onClick={() => handleDownloadPdf(selectedNotification.pdf)}
+                  >
+                    Download PDF
+                  </Button>
+                </p>
+              )}
+
               <p><strong>Created By:</strong> {selectedNotification.created_by}</p>
               <p><strong>Created At:</strong> {new Date(selectedNotification.created_at).toLocaleString()}</p>
             </div>

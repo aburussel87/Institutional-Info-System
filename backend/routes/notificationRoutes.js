@@ -10,14 +10,12 @@ router.get('/', authenticateToken, async (req, res) => {
     const uid = req.user.userId;
     let role = req.user.role;
     console.log('User ID:', uid, 'Role:', role);
-    if (role === 'Advisor' || role === 'Provost') {
+    if (role === 'Advisor' || role === 'Provost' || role === 'HOD') {
       role = 'Teacher'; 
     }else if (role === 'Student') {
       role = 'Student';
     } else if (role === 'Admin') {
       role = 'Admin';
-    } else if (role === 'HOD') {
-      role = 'HOD';
     }  else {
       role = 'Teacher'; 
     }
@@ -25,7 +23,7 @@ router.get('/', authenticateToken, async (req, res) => {
     if (!notifications) {
       return res.status(404).json({ success: false, error: 'User not found' });
     }
-
+    const pdfBuffer = notifications
     res.json({ success: true, notifications });
   } catch (err) {
     console.error('Dashboard error:', err);
