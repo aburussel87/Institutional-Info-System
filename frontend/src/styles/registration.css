@@ -175,6 +175,7 @@
     box-sizing: border-box;
     transition: border-color 0.3s ease, box-shadow 0.3s ease;
     background-color: #fdfdfd;
+    min-width: 200px;
 }
 
 .course-reg-input-approved-by:focus {

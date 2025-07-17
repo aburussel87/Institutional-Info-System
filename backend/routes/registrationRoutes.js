@@ -17,7 +17,7 @@ router.get('/',authenticateToken,async (req, res) => {
     if (!registrationCourses || registrationCourses.length === 0) {
       return res.status(404).json({ success: false, msg: 'No courses found for the given semester and department' });
     }
-    const approved = await client.query('SELECT course_id, approved_by FROM enrollment WHERE student_id = $1 AND semester = (SELECT current_semester FROM student WHERE student_id = $2) and approved_by IS not NULL', [id, id]);
+    const approved = await client.query('SELECT e.course_id,u.username as approved_by FROM enrollment e JOIN "User" u ON u.user_id = e.approved_by::integer WHERE e.student_id = $1 AND e.semester = (SELECT current_semester FROM student WHERE student_id = $2) and approved_by IS not NULL', [id, id]);
     const pending = await client.query('SELECT course_id FROM enrollment WHERE student_id = $1 AND semester = (SELECT current_semester FROM student WHERE student_id = $2) and approved_by IS NULL', [id, id]);
     res.json({ success: true, courses: registrationCourses, approved: approved.rows, pending: pending.rows });
   } catch (err) {
