@@ -142,9 +142,24 @@ const AddNotification = () => {
             hall_id: null,
             created_by: uid,
         };
-        if (recipient === 'student_id' && recipientValue) {
-            payload.student_id = recipientValue;
-        } else if (recipient === 'teacher_id' && recipientValue) {
+        if (recipient === 'student_id') {
+            if (recipientValue) {
+                payload.student_id = recipientValue;
+            } else {
+                if(context.deptstudent){
+                    payload.department_id = context.deptstudent[0].department_id;
+                }else if(context.hallstudent){
+                    payload.hall_id = context.hallstudent[0].hall_id;
+                }
+                if(dept){
+                    payload.department_id = dept;
+                }
+                if(sem){
+                    payload.semester_id = sem;
+                }
+            }
+        }
+        else if (recipient === 'teacher_id' && recipientValue) {
             payload.teacher_id = recipientValue;
         } else if (recipient === 'dept_course_id' && recipientValue) {
             payload.course_id = recipientValue;
@@ -156,14 +171,10 @@ const AddNotification = () => {
             } else if (context.deptstudent?.some(d => String(d.department_id) === String(recipient))) {
                 payload.department_id = recipient;
             }
-        } else if (recipient === 'student_id' && dept) {
-            payload.department_id = dept;
-            if (sem) {
-                payload.semester_id = sem;
-            }
         } else if (dept) {
             payload.department_id = dept;
         }
+
 
 
         setLoading(true);
