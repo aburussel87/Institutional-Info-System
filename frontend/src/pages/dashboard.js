@@ -30,6 +30,8 @@ const Dashboard = () => {
   const [courseDetails, setCourseDetails] = useState(null);
   const [sessionInfo, setSessionInfo] = useState([]);
   const [loadingChart, setLoadingChart] = useState(true);
+  const [showCourseMaterials, setShowCourseMaterials] = useState(false);
+  const [courseMaterials, setCourseMaterials] = useState([]);
 
   const navigate = useNavigate();
 
@@ -86,6 +88,165 @@ const Dashboard = () => {
 
     fetchDashboardData();
   }, [navigate]);
+
+
+
+  useEffect(() => {
+    if (!showCourseMaterials) return;
+
+    const fetchCourseMaterials = async () => {
+      if (!courseDetails) return;
+      const token = localStorage.getItem('token');
+      try {
+        const res = await fetch(`${API_BASE_URL}/courseMaterials/student/get`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            course_id: courseDetails.course_id
+          })
+        });
+        if (!res.ok) throw new Error("Failed to fetch course materials");
+        const data = await res.json();
+        setCourseMaterials(Array.isArray(data.materials) ? data.materials : []);
+        console.log(data.materials);
+      } catch (err) {
+        alert(err.message);
+      } finally {
+
+      }
+    };
+
+    fetchCourseMaterials();
+  }, [showCourseMaterials, courseDetails]);
+
+
+  const CourseMaterialsViewer = ({ materials, onDownload }) => {
+    const [index, setIndex] = useState(0);
+
+    if (!materials || materials.length === 0) {
+      return <p>No materials uploaded.</p>;
+    }
+
+    const current = materials[index];
+    const formattedDate = new Date(current.upload_date).toLocaleString();
+
+    const prev = () => setIndex((i) => (i > 0 ? i - 1 : 0));
+    const next = () => setIndex((i) => (i < materials.length - 1 ? i + 1 : materials.length - 1));
+
+    return (
+      <div
+        style={{
+          textAlign: "center",
+          padding: "1rem",
+          position: "relative",
+        }}
+      >
+        <div
+          style={{
+            position: "relative",
+            background: "#f9f9f9",
+            borderRadius: "5px",
+            padding: "1rem",
+            boxShadow: "0 4px 10px rgba(0,0,0,0.1)",
+            minHeight: "150px",
+            transition: "all 0.3s ease",
+            maxWidth: "90%",
+            margin: "0 auto",
+          }}
+        >
+          {/* Left arrow */}
+          <button
+            onClick={prev}
+            style={{
+              position: "absolute",
+              top: "50%",
+              left: "-60px",
+              transform: "translateY(-50%)",
+              background: "transparent",
+              border: "none",
+              fontSize: "2rem",
+              color: "rgba(0,0,0,0.3)",
+              cursor: "pointer",
+              transition: "color 0.3s ease",
+            }}
+            onMouseOver={(e) => (e.currentTarget.style.color = "rgba(0,0,0,0.7)")}
+            onMouseOut={(e) => (e.currentTarget.style.color = "rgba(0,0,0,0.3)")}
+          >
+            &#8592;
+          </button>
+          <div style={{ padding: "0 1rem" }}>
+            <h5 style={{ marginBottom: "1rem", color: "#333" }}>{current.description}</h5>
+            <p style={{ fontSize: "0.7rem", color: "#666" }}>
+              Uploaded on: <strong>{formattedDate}</strong>
+            </p>
+            <Button
+              size="sm"
+              variant="primary"
+              onClick={() => onDownload(current.pdf)}
+              style={{ marginTop: "0.3rem" }}
+            >
+              📄 Download PDF
+            </Button>
+          </div>
+
+          {/* Right arrow */}
+          <button
+            onClick={next}
+            style={{
+              position: "absolute",
+              top: "50%",
+              right: "-60px",
+              transform: "translateY(-50%)",
+              background: "transparent",
+              border: "none",
+              fontSize: "2rem",
+              color: "rgba(0,0,0,0.3)",
+              cursor: "pointer",
+              transition: "color 0.3s ease",
+            }}
+            onMouseOver={(e) => (e.currentTarget.style.color = "rgba(0,0,0,0.7)")}
+            onMouseOut={(e) => (e.currentTarget.style.color = "rgba(0,0,0,0.3)")}
+          >
+            &#8594;
+          </button>
+        </div>
+
+        <p style={{ marginTop: "1rem", fontSize: "0.85rem", color: "#888" }}>
+          Material {index + 1} of {materials.length}
+        </p>
+      </div>
+    );
+  };
+
+  //handling pdf download function- can be added anywhere we need
+  const handleDownloadPdf = (pdfData, filename = "notification.pdf") => {
+    if (!pdfData || !pdfData.data) {
+      alert("No PDF data available.");
+      return;
+    }
+
+    try {
+      const byteArray = new Uint8Array(pdfData.data);
+      const blob = new Blob([byteArray], { type: "application/pdf" });
+      const blobUrl = URL.createObjectURL(blob);
+
+      const link = document.createElement("a");
+      link.href = blobUrl;
+      link.download = filename;
+      link.click();
+
+      URL.revokeObjectURL(blobUrl);
+    } catch (err) {
+      console.error("Failed to process PDF:", err);
+      alert("Failed to download PDF: Invalid data.");
+    }
+  };
+
+
+
 
   const fetchCourseDetails = async (course) => {
     const token = localStorage.getItem('token');
@@ -171,8 +332,8 @@ const Dashboard = () => {
       'rgba(255, 206, 86, 0.8)', // Yellow
       'rgba(75, 192, 192, 0.8)', // Teal
       'rgba(153, 102, 255, 0.8)',// Purple
-      'rgba(255, 159, 64, 0.8)', 
-      'rgba(201, 203, 207, 0.8)' 
+      'rgba(255, 159, 64, 0.8)',
+      'rgba(201, 203, 207, 0.8)'
     ];
 
     const borderColorsSolid = [
@@ -234,7 +395,7 @@ const Dashboard = () => {
       },
       tooltip: {
         callbacks: {
-          label: function(context) {
+          label: function (context) {
             let label = context.dataset.label || '';
             if (label) {
               label += ': ';
@@ -411,17 +572,8 @@ const Dashboard = () => {
               <h3 className="classic-title mb-3">{courseDetails.course_id}: {courseDetails.course_title}</h3>
 
               <dl className="classic-definition-list">
-                <dt>Department:</dt>
-                <dd>{courseDetails.department_name}</dd>
-
-                <dt>Semester:</dt>
-                <dd>{courseDetails.semester}</dd>
-
                 <dt>Offered By:</dt>
                 <dd>{courseDetails.offered_by}</dd>
-
-                <dt>Total Enrolled Students:</dt>
-                <dd>{courseDetails.enrolled_students}</dd>
               </dl>
 
               <section>
@@ -434,6 +586,18 @@ const Dashboard = () => {
                   </ul>
                 ) : (
                   <p className="text-muted fst-italic">No teachers assigned.</p>
+                )}
+                <Button
+                  variant="outline-primary"
+                  size="sm"
+                  onClick={() => setShowCourseMaterials(!showCourseMaterials)}
+                  className="mb-2"
+                >
+                  {showCourseMaterials ? 'Hide Course Materials' : 'Show Course Materials'}
+                </Button>
+
+                {showCourseMaterials && (
+                  <CourseMaterialsViewer materials={courseMaterials} onDownload={handleDownloadPdf} />
                 )}
               </section>
             </div>

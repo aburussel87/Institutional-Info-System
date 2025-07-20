@@ -5,6 +5,19 @@ const { generateRoutine, formatGradeSheet, formatSemesterRoutine, formatFee, for
 
 
 
+async function getCourseMaterials_for_Student(cid){
+  const query = `SELECT * FROM coursematerial where course_id = $1;`
+  const result = await client.query(query,[cid]);
+  return result.rows;
+}
+
+async function getCourseMaterials_for_Teacher(cid,tid){
+  const query = `SELECT * FROM public.get_course_materials_by_teacher($1,$2);`
+  const result = await client.query(query,[cid,tid]);
+  return result.rows;
+}
+
+
 async function get_teacher_context_for_notification(teacher_id, session = '2025-26'){
   const query =`SELECT get_teacher_context($1,$2);
 `
@@ -145,7 +158,7 @@ async function getStudent_exam_Routine(studentId, session = '2025-26') {
 }
 
 async function getUserNotifications(uid, role) {
-  const query = `SELECT * FROM get_user_notifications($1,$2);`;
+  const query = `SELECT * FROM get_notifications($1,$2);`;
   const res = await client.query(query, [uid, role]);
   return res.rows;
 }
@@ -421,5 +434,7 @@ module.exports = {
   get_students_by_provost,
   get_student_hall_details,
   get_basic_hall_info_for_provost,
-  get_teacher_context_for_notification
+  get_teacher_context_for_notification,
+  getCourseMaterials_for_Teacher,
+  getCourseMaterials_for_Student
 };

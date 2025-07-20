@@ -25,6 +25,7 @@ const addExamRoutes = require('./routes/add_examRoutes');
 const get_students_by_provostRoutes = require('./routes/getstudentbyProvostRoutes');
 const get_student_hall_detailsRoutes = require('./routes/studenthalldetailsRoutes');
 const add_notificationRoute = require('./routes/add_notificationRoutes');
+const add_courseMaterials = require('./routes/add_CourseMaterialRoutes');
 
 
 const jwt = require('jsonwebtoken');
@@ -57,6 +58,7 @@ app.use('/api/get_course_info', courseinfoRoutes);//change by provat
 app.use('/api/getstudentbyProvost', get_students_by_provostRoutes); // Provost's students route
 app.use('/api/getStudenthalldetails', get_student_hall_detailsRoutes); // Provost's student hall details route
 app.use('/api/notification',add_notificationRoute);
+app.use('/api/courseMaterials',add_courseMaterials);
 
 
 
