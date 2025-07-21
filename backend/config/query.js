@@ -5,6 +5,14 @@ const { generateRoutine, formatGradeSheet, formatSemesterRoutine, formatFee, for
 
 
 
+async function delete_courseMaterials(mid){
+  const query = `delete FROM coursematerial where material_id = $1;`
+  const result = await client.query(query,[mid]);
+  return result.rowCount;
+}
+
+
+
 async function getCourseMaterials_for_Student(cid){
   const query = `SELECT * FROM coursematerial where course_id = $1;`
   const result = await client.query(query,[cid]);
@@ -436,5 +444,6 @@ module.exports = {
   get_basic_hall_info_for_provost,
   get_teacher_context_for_notification,
   getCourseMaterials_for_Teacher,
-  getCourseMaterials_for_Student
+  getCourseMaterials_for_Student,
+  delete_courseMaterials
 };

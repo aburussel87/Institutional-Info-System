@@ -114,7 +114,6 @@ const TeacherDashboard = () => {
         if (!res.ok) throw new Error("Failed to fetch course materials");
         const data = await res.json();
         setCourseMaterials(Array.isArray(data.materials) ? data.materials : []);
-        console.log(data.materials);
       } catch (err) {
         alert(err.message);
       } finally {
@@ -126,6 +125,34 @@ const TeacherDashboard = () => {
   }, [showCourseMaterials, courseDetails, teacher]);
 
 
+const handleDelete = async (material) => {
+  if (!material) return;
+
+  if (!window.confirm("Are you sure you want to delete this material?")) {
+    return;
+  }
+  const token = localStorage.getItem('token');
+  try {
+    const response = await fetch(`${API_BASE_URL}/courseMaterials/delete`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ material: material }), // optional, if backend needs it
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to delete material.");
+    }
+
+    alert("Material deleted successfully.");
+    setCourseMaterials(prev => prev.filter(m => m.material_id !== material.material_id));
+  } catch (err) {
+    console.error(err);
+    alert("An error occurred while deleting.");
+  }
+};
 
 
   //handling pdf download function- can be added anywhere we need
@@ -245,7 +272,9 @@ const TeacherDashboard = () => {
     }
   };
 
-const CourseMaterialsViewer = ({ materials, onDownload }) => {
+
+
+const CourseMaterialsViewer = ({ materials, onDownload, onDelete }) => {
   const [index, setIndex] = useState(0);
 
   if (!materials || materials.length === 0) {
@@ -299,19 +328,29 @@ const CourseMaterialsViewer = ({ materials, onDownload }) => {
         >
           &#8592;
         </button>
+
         <div style={{ padding: "0 1rem" }}>
           <h5 style={{ marginBottom: "1rem", color: "#333" }}>{current.description}</h5>
           <p style={{ fontSize: "0.7rem", color: "#666" }}>
             Uploaded on: <strong>{formattedDate}</strong>
           </p>
-          <Button
-            size="sm"
-            variant="primary"
-            onClick={() => onDownload(current.pdf)}
-            style={{ marginTop: "0.3rem" }}
-          >
-            📄 Download PDF
-          </Button>
+
+          <div style={{ marginTop: "0.3rem", display: "flex", gap: "0.5rem", justifyContent: "center" }}>
+            <Button
+              size="sm"
+              variant="primary"
+              onClick={() => onDownload(current.pdf)}
+            >
+              📄 Download PDF
+            </Button>
+            <Button
+              size="sm"
+              variant="danger"
+              onClick={() => onDelete(current)}
+            >
+              🗑️ Delete
+            </Button>
+          </div>
         </div>
 
         {/* Right arrow */}
@@ -342,6 +381,7 @@ const CourseMaterialsViewer = ({ materials, onDownload }) => {
     </div>
   );
 };
+
 
   return (
     <div className="tdash-container">
@@ -426,7 +466,7 @@ const CourseMaterialsViewer = ({ materials, onDownload }) => {
               </dl>
               <div className="mt-4">
                 <Button variant="outline-primary" size="sm" onClick={() => setShowAddMaterial(!showAddMaterial)} className="mb-2">{showAddMaterial ? 'Hide Add Course Material' : 'Add Course Material'}</Button>
-                {showAddMaterial && <div className="mt-4"><AddCourseMaterialForm courseId={courseDetails.course_id} teacherId={teacher.user_id} onSuccess={() => alert('Material uploaded')} /></div>}
+                {showAddMaterial && <div className="mt-4"><AddCourseMaterialForm courseId={courseDetails.course_id} teacherId={teacher.user_id} onSuccess={() => {alert('Material uploaded');;}} /></div>}
                 <span style={{ display: 'inline-block', width: '1rem' }}></span>
                 <Button
                   variant="outline-primary"
@@ -438,7 +478,7 @@ const CourseMaterialsViewer = ({ materials, onDownload }) => {
                 </Button>
 
                 {showCourseMaterials && (
-                  <CourseMaterialsViewer materials={courseMaterials} onDownload={handleDownloadPdf} />
+                  <CourseMaterialsViewer materials={courseMaterials} onDownload={handleDownloadPdf} onDelete={handleDelete}/>
                 )}
               </div>
             </div>

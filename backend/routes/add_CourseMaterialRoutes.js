@@ -2,7 +2,8 @@ const express = require('express');
 const router = express.Router();
 const client = require('../config/db');
 const { authenticateToken } = require('../utils');
-const { getCourseMaterials_for_Teacher, getCourseMaterials_for_Student } = require('../config/query');
+const { getCourseMaterials_for_Teacher, getCourseMaterials_for_Student, delete_courseMaterials } = require('../config/query');
+const { de } = require('@faker-js/faker');
 
 router.post('/add', authenticateToken, async (req, res) => {
     
@@ -95,6 +96,30 @@ router.post('/student/get', authenticateToken, async (req, res) => {
     res.status(500).json({ success: false, message: 'Database error.' });
   }
 });
+
+
+router.delete('/delete', authenticateToken, async (req, res) => {
+  console.log("materials delete called by:", req.user.userId);
+
+  try {
+    const { material } = req.body;
+    if (!material || !material.material_id) {
+      return res.status(400).json({ success: false, message: "Material ID is required." });
+    }
+
+    const result = await delete_courseMaterials(material.material_id);
+
+    if (result > 0) {
+      return res.json({ success: true, msg: "Course Material deleted successfully!" });
+    } else {
+      return res.status(404).json({ success: false, msg: "Material not found." });
+    }
+  } catch (err) {
+    console.error("Error deleting material:", err);
+    return res.status(500).json({ success: false, msg: "Server error while deleting material." });
+  }
+});
+
 
 
 module.exports = router;
