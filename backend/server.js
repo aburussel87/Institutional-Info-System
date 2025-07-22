@@ -4,6 +4,7 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 
 
+
 const dashboardRoutes = require('./routes/dashboardRoutes');
 const authRoutes = require('./routes/authRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
@@ -26,6 +27,7 @@ const get_students_by_provostRoutes = require('./routes/getstudentbyProvostRoute
 const get_student_hall_detailsRoutes = require('./routes/studenthalldetailsRoutes');
 const add_notificationRoute = require('./routes/add_notificationRoutes');
 const add_courseMaterials = require('./routes/add_CourseMaterialRoutes');
+const department_data_routes = require('./routes/department_dataRoutes');
 
 
 const jwt = require('jsonwebtoken');
@@ -59,6 +61,7 @@ app.use('/api/getstudentbyProvost', get_students_by_provostRoutes); // Provost's
 app.use('/api/getStudenthalldetails', get_student_hall_detailsRoutes); // Provost's student hall details route
 app.use('/api/notification',add_notificationRoute);
 app.use('/api/courseMaterials',add_courseMaterials);
+app.use('/api/department',department_data_routes);
 
 
 

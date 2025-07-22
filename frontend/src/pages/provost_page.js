@@ -7,16 +7,16 @@ import '../styles/provost_page.css';
 const DEPARTMENT_NAMES = {
   1: 'Computer Science & Engineering',
   2: 'Electrical & Electronic Engineering',
-  3: 'Civil Engineering',
-  4: 'Mechanical Engineering',
-  5: 'Chemical Engineering',
-  6: 'Industrial & Production Engineering',
-  7: 'Materials Science & Engineering',
-  8: 'Naval Architecture & Marine Engineering',
-  9: 'Urban & Regional Planning',
-  10: 'Architecture',
-  11: 'Physics',
-  12: 'Chemistry',
+  3: 'Biomedical Engineering',
+  4: 'Nano Materials and Ceramic Engineering',
+  5: 'Mathematics',
+  6: 'Physics',
+  7: 'Chemical Engineering',
+  8: 'Chemistry',
+  9: 'Materials & Metallurgical Engineering',
+  10: 'Civil Engineering',
+  11: 'Mechanical Engineering',
+  12: 'Architecture',
 };
 
 const ProvostStd = () => {

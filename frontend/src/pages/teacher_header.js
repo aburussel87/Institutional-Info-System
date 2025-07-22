@@ -13,6 +13,7 @@ const Header = () => {
   const [selectedNotification, setSelectedNotification] = useState(null);
   const [isAdvisor, setIsAdvisor] = useState(false);
   const [isProvost, setIsProvost] = useState(false);
+  const [isHOD, setIsHOD] = useState(false);
 
   const toggleSidebar = () => setShowSidebar(!showSidebar);
   const toggleNotifications = () => setShowNotifications(!showNotifications);
@@ -31,6 +32,9 @@ const Header = () => {
       }
       if (decoded.role === 'Provost' || decoded.isProvost === true || (decoded.roles && decoded.roles.includes('Provost'))) {
         setIsProvost(true);
+      }
+      if (decoded.role === 'HOD' || decoded.isHOD === true || (decoded.roles && decoded.roles.includes('HOD'))) {
+        setIsHOD(true);
       }
     } catch (err) {
       console.error("Invalid token", err);
@@ -108,28 +112,60 @@ const Header = () => {
     return 'System';
   };
 
-const handleDownloadPdf = (pdfData, filename = "notification.pdf") => {
-  if (!pdfData || !pdfData.data) {
-    alert("No PDF data available.");
-    return;
-  }
+  const handleDownloadPdf = (pdfData, filename = "notification.pdf") => {
+    if (!pdfData || !pdfData.data) {
+      alert("No PDF data available.");
+      return;
+    }
 
-  try {
-    const byteArray = new Uint8Array(pdfData.data);
-    const blob = new Blob([byteArray], { type: "application/pdf" });
-    const blobUrl = URL.createObjectURL(blob);
+    try {
+      const byteArray = new Uint8Array(pdfData.data);
+      const blob = new Blob([byteArray], { type: "application/pdf" });
+      const blobUrl = URL.createObjectURL(blob);
 
-    const link = document.createElement("a");
-    link.href = blobUrl;
-    link.download = filename;
-    link.click();
+      const link = document.createElement("a");
+      link.href = blobUrl;
+      link.download = filename;
+      link.click();
 
-    URL.revokeObjectURL(blobUrl);
-  } catch (err) {
-    console.error("Failed to process PDF:", err);
-    alert("Failed to download PDF: Invalid data.");
-  }
-};
+      URL.revokeObjectURL(blobUrl);
+    } catch (err) {
+      console.error("Failed to process PDF:", err);
+      alert("Failed to download PDF: Invalid data.");
+    }
+  };
+
+  const handleResetPassword = async () => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      alert('You are not logged in. Please login first.');
+      return;
+    }
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/password/reset/request`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        alert(data.message || 'Password reset email sent! Please check your email.');
+        localStorage.setItem('resetToken', data.token);
+        window.location.href = '/login';
+      } else {
+        alert(data.message || 'Failed to reset password.');
+      }
+    } catch (err) {
+      console.error('Reset password error:', err);
+      alert('Network error. Please try again.');
+    }
+  };
+
 
 
 
@@ -172,6 +208,17 @@ const handleDownloadPdf = (pdfData, filename = "notification.pdf") => {
               Provost Panel
             </a>
           )}
+          {isHOD && (
+            <a className="btn btn-outline-primary w-100 mb-2" href="/HOD_page">
+              HOD Panel
+            </a>
+          )}
+          <Button
+            className="btn btn-outline-primary w-100 mb-2"
+            onClick={handleResetPassword}
+          >
+            Reset Password
+          </Button>
           <a className="btn btn-outline-danger w-100 mb-2" href="/login">Logout</a>
         </Offcanvas.Body>
       </Offcanvas>

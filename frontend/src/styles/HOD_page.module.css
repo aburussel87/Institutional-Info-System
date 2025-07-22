@@ -1,0 +1,366 @@
+.hod-page-container {
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 20px;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.hod-page-container::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0) 70%);
+  animation: background-pulse 15s infinite alternate ease-in-out;
+}
+
+@keyframes background-pulse {
+  0% { transform: scale(1); opacity: 0.8; }
+  50% { transform: scale(1.1); opacity: 1; }
+  100% { transform: scale(1); opacity: 0.8; }
+}
+
+.glassmorphic-card {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  box-shadow: 0 10px 40px 0 rgba(31, 38, 135, 0.4);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  width: 100%;
+  overflow: hidden;
+  position: relative;
+  z-index: 1;
+  transition: all 0.5s ease;
+}
+
+.glassmorphic-card:hover {
+  box-shadow: 0 15px 50px 0 rgba(31, 38, 135, 0.5);
+  transform: translateY(-5px);
+}
+
+.card-header-custom {
+  background: linear-gradient(45deg, #4a90e2, #0056b3) !important;
+  border-bottom: none !important;
+  font-size: 2em;
+  font-weight: bold;
+  color: white !important;
+  padding: 30px !important;
+  border-top-left-radius: 20px;
+  border-top-right-radius: 20px;
+  position: relative;
+  overflow: hidden;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.card-header-custom::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.15);
+  transform: skewX(-25deg);
+  transform-origin: top left;
+  z-index: 0;
+}
+
+.card-header-custom h1 {
+  position: relative;
+  z-index: 1;
+  letter-spacing: 1px;
+}
+
+.card-body-custom {
+  padding: 35px !important;
+}
+
+.dropdown-container {
+  margin-bottom: 40px;
+}
+
+.dropdown-toggle-custom {
+  background: linear-gradient(45deg, #32cd32, #228b22) !important;
+  border: none !important;
+  font-weight: bold;
+  padding: 15px 35px !important;
+  border-radius: 10px !important;
+  box-shadow: 0 6px 15px rgba(50, 205, 50, 0.4);
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  letter-spacing: 0.5px;
+}
+
+.dropdown-toggle-custom:hover {
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 8px 20px rgba(50, 205, 50, 0.5);
+}
+
+.dropdown-menu-custom {
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 12px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+  padding: 10px 0;
+  animation: fadeInDown 0.3s ease-out;
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.dropdown-item-custom {
+  color: #444;
+  padding: 12px 25px;
+  transition: background-color 0.3s ease, color 0.3s ease, transform 0.2s ease;
+  font-weight: 500;
+}
+
+.dropdown-item-custom:hover {
+  background-color: rgba(0, 123, 255, 0.15);
+  color: #007bff;
+  transform: translateX(5px);
+}
+
+.section-title {
+  text-align: center;
+  margin-bottom: 35px;
+  color: #2c3e50;
+  font-weight: 700;
+  font-size: 2.5em;
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.15);
+  letter-spacing: 1px;
+}
+
+.custom-accordion {
+  margin-top: 25px;
+}
+
+.accordion-item {
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 15px !important;
+  margin-bottom: 20px;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+  transition: all 0.4s ease;
+}
+
+.accordion-item:hover {
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+  transform: translateY(-3px);
+}
+
+.accordion-header .accordion-button {
+  background: rgba(255, 255, 255, 0.25) !important;
+  color: #333 !important;
+  font-weight: 600;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 18px 25px;
+  border-radius: 15px !important;
+  transition: background-color 0.4s ease, color 0.4s ease;
+  font-size: 1.1em;
+  position: relative;
+  overflow: hidden;
+}
+
+.accordion-header .accordion-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 100%);
+  transform: translateX(-100%);
+  transition: transform 0.4s ease-out;
+}
+
+.accordion-header .accordion-button:hover::before {
+  transform: translateX(0);
+}
+
+.accordion-header .accordion-button:not(.collapsed) {
+  background: linear-gradient(45deg, #007bff, #0056b3) !important;
+  color: white !important;
+  border-bottom-left-radius: 0 !important;
+  border-bottom-right-radius: 0 !important;
+}
+
+.accordion-header .accordion-button::after {
+  filter: brightness(0.7) invert(0.5);
+  transition: transform 0.3s ease;
+}
+
+.accordion-header .accordion-button:not(.collapsed)::after {
+  filter: invert(1);
+  transform: rotate(180deg);
+}
+
+.accordion-body {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 25px !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.3);
+  border-bottom-left-radius: 15px;
+  border-bottom-right-radius: 15px;
+}
+
+.custom-table {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+.custom-table th,
+.custom-table td {
+  padding: 14px 18px;
+  vertical-align: middle;
+  border-color: rgba(255, 255, 255, 0.2) !important;
+  color: #333;
+}
+
+.custom-table thead th {
+  background-color: rgba(0, 123, 255, 0.15);
+  color: #007bff;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.custom-table tbody tr:nth-of-type(odd) {
+  background-color: rgba(255, 255, 255, 0.02);
+}
+
+.custom-table tbody tr:hover {
+  background-color: rgba(0, 123, 255, 0.1);
+  cursor: pointer;
+  transform: scale(1.01);
+  transition: all 0.2s ease-out;
+}
+
+.loading-spinner-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+}
+
+.custom-spinner {
+  color: #007bff !important;
+  width: 4rem;
+  height: 4rem;
+  border-width: 0.4em !important;
+}
+
+.custom-alert {
+  margin-top: 25px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  color: #333;
+  font-weight: 500;
+  text-align: center;
+  padding: 15px 20px;
+}
+
+.custom-alert.alert-danger {
+  color: #a00;
+  background-color: rgba(255, 200, 200, 0.7);
+  border-color: rgba(255, 150, 150, 0.7);
+}
+
+.custom-alert.alert-info {
+  color: #006064;
+  background-color: rgba(180, 230, 240, 0.7);
+  border-color: rgba(150, 220, 230, 0.7);
+}
+
+.custom-alert.alert-warning {
+  color: #8d6e00;
+  background-color: rgba(255, 245, 190, 0.7);
+  border-color: rgba(255, 230, 150, 0.7);
+}
+
+@media (max-width: 768px) {
+  .hod-page-container {
+    padding: 15px;
+  }
+  .glassmorphic-card {
+    border-radius: 15px;
+  }
+  .card-header-custom {
+    font-size: 1.8em;
+    padding: 20px !important;
+  }
+  .card-body-custom {
+    padding: 25px !important;
+  }
+  .dropdown-toggle-custom {
+    padding: 12px 25px !important;
+  }
+  .section-title {
+    font-size: 2em;
+  }
+  .accordion-header .accordion-button {
+    padding: 15px 20px;
+    font-size: 1em;
+  }
+  .custom-table th,
+  .custom-table td {
+    padding: 10px 12px;
+    font-size: 0.8em;
+  }
+}
+
+@media (max-width: 480px) {
+  .hod-page-container {
+    padding: 10px;
+  }
+  .glassmorphic-card {
+    border-radius: 10px;
+  }
+  .card-header-custom {
+    font-size: 1.4em;
+    padding: 15px !important;
+  }
+  .card-body-custom {
+    padding: 15px !important;
+  }
+  .dropdown-toggle-custom {
+    padding: 10px 18px !important;
+    font-size: 0.9em;
+  }
+  .section-title {
+    font-size: 1.8em;
+  }
+  .accordion-header .accordion-button {
+    padding: 10px 15px;
+    font-size: 0.9em;
+  }
+  .custom-table th,
+  .custom-table td {
+    padding: 8px 10px;
+    font-size: 0.75em;
+  }
+}

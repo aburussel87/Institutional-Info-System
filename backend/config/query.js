@@ -11,7 +11,11 @@ async function delete_courseMaterials(mid){
   return result.rowCount;
 }
 
-
+async function get_department_data(dept_id){
+  const query =`SELECT get_department_data($1);`
+const result =  (await client.query(query,[dept_id]));
+return result.rows[0].get_department_data;
+}
 
 async function getCourseMaterials_for_Student(cid){
   const query = `SELECT * FROM coursematerial where course_id = $1;`
@@ -398,6 +402,11 @@ async function getTeacherRoutine(teacherId) {
   return generateRoutine(res);
 }
 
+async function get_department_id(uid){
+  const query =`SELECT department_id from teacher where teacher_id = $1;`
+const result =  (await client.query(query,[uid]));
+return result.rows[0].department_id;
+}
 
 async function updateLogin(uid) {
   try {
@@ -445,5 +454,7 @@ module.exports = {
   get_teacher_context_for_notification,
   getCourseMaterials_for_Teacher,
   getCourseMaterials_for_Student,
-  delete_courseMaterials
+  delete_courseMaterials,
+  get_department_data,
+  get_department_id
 };

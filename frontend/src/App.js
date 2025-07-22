@@ -17,6 +17,7 @@ import PasswordReset from './pages/passwordReset';
 import AddExam from './pages/add_exam_page';
 import ProvostStd from './pages/provost_page';
 import AddNotice from './pages/addNotice';
+import HODStd from './pages/HOD_page';
 
 
 
@@ -61,7 +62,8 @@ export default function App() {
         <Route path='/add_exam_page' element = {<AddExam/>} />  
         <Route path='/provost_page' element = {<ProvostStd/>} />
         <Route path='/addNotice' element = {<AddNotice/>} />
-
+        <Route path='/HOD_page' element = {<HODStd/>} />
+        
       </Routes>
     </Router>
   );
