@@ -15,7 +15,7 @@ router.get('/', authenticateToken, async (req, res) => {
     if (!students || !basic_details) {
       return res.status(404).json({ success: false, error: 'User not found' });
     }
-    console.log("All Users Requested by :" + uid);
+    console.log("All hall students Requested by :" + uid);
     console.log(basic_details);
     res.json({ success: true, students , basic_details });
   } catch (err) {

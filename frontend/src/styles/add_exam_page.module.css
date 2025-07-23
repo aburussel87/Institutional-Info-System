@@ -1,0 +1,392 @@
+.addexam-container {
+  min-height: 100vh;
+  background: linear-gradient(to bottom right, #e0f2f7, #c6e7f2);
+  padding: 30px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.addexam-content {
+  width: 100%;
+  max-width: 1200px;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 20px;
+  box-shadow: 0 10px 40px 0 rgba(31, 38, 135, 0.3);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  margin-top: 20px;
+  margin-bottom: 50px;
+}
+
+.addexam-title, .scheduled-exams-title {
+  text-align: center;
+  color: #2c3e50;
+  margin-bottom: 30px;
+  font-size: 2.5em;
+  font-weight: 700;
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.1);
+  letter-spacing: 1px;
+}
+
+.addexam-instruction, .no-exams-message {
+  text-align: center;
+  color: #555;
+  font-size: 1.1em;
+  margin-bottom: 30px;
+}
+
+.addexam-spinner {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 150px;
+}
+
+.custom-spinner {
+  color: #007bff !important;
+  width: 3.5rem;
+  height: 3.5rem;
+  border-width: 0.35em !important;
+}
+
+.addexam-card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 25px;
+  padding: 20px 0;
+}
+
+.addexam-card, .scheduled-exam-card {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 15px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.addexam-card:hover, .scheduled-exam-card:hover {
+  transform: translateY(-5px) scale(1.02);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.addexam-card .card-body, .scheduled-exam-card .card-body {
+  padding: 25px;
+  flex-grow: 1;
+}
+
+.addexam-card .card-title, .exam-card-title {
+  font-size: 1.4em;
+  font-weight: 600;
+  color: #72adec;
+  margin-bottom: 10px;
+}
+
+.addexam-card .card-subtitle {
+  font-size: 0.9em;
+  color: #666;
+  margin-bottom: 15px;
+}
+
+.addexam-card .card-text {
+  font-size: 0.95em;
+  color: #444;
+  line-height: 1.6;
+}
+
+.scheduled-exams-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 25px;
+  padding: 20px 0;
+}
+
+.scheduled-exam-card .exam-card-title {
+  color: #32cd32;
+}
+
+.scheduled-exam-card .card-text strong {
+  color: #0056b3;
+}
+
+.scheduled-exam-card-body {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start; /* Align content to the top */
+  flex-wrap: nowrap; /* Prevent wrapping on larger screens */
+  padding: 25px; /* Ensure consistent padding */
+}
+
+.scheduled-exam-card-body > div:first-child {
+  flex-grow: 1; /* Allow content to take available space */
+  flex-shrink: 1; /* Allow content to shrink if needed */
+  min-width: 0; /* Important for flex items with long content */
+  padding-right: 15px; /* Add space between content and buttons */
+}
+
+.exam-actions-right {
+  display: flex;
+  flex-direction: column; /* Stack buttons vertically */
+  gap: 10px;
+  flex-shrink: 0; /* Prevent actions from shrinking */
+  margin-left: auto; /* Push to the right */
+  align-items: flex-end; /* Align buttons to the right within their container */
+}
+
+.action-button {
+  font-weight: 500;
+  padding: 8px 18px;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  white-space: nowrap;
+}
+
+.action-button.btn-info {
+  background: linear-gradient(45deg, #17a2b8, #117a8b) !important;
+  border: none !important;
+  color: white !important;
+}
+
+.action-button.btn-info:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(23, 162, 184, 0.3);
+}
+
+.action-button.btn-secondary {
+  background: linear-gradient(45deg, #6c757d, #5a6268) !important;
+  border: none !important;
+  color: white !important;
+}
+
+.action-button.btn-secondary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(108, 117, 125, 0.3);
+}
+
+.action-button.btn-danger {
+  background: linear-gradient(45deg, #dc3545, #b02a37) !important;
+  border: none !important;
+  color: white !important;
+}
+
+.action-button.btn-danger:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3);
+}
+
+.custom-modal .modal-content {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 20px;
+  box-shadow: 0 10px 40px 0 rgba(31, 38, 135, 0.3);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  color: #333;
+}
+
+.modal-header-custom {
+  background: linear-gradient(45deg, #007bff, #0056b3) !important;
+  border-bottom: none !important;
+  border-top-left-radius: 20px !important;
+  border-top-right-radius: 20px !important;
+  color: white !important;
+  padding: 20px 25px;
+}
+
+.modal-header-custom .btn-close {
+  filter: invert(1);
+}
+
+.modal-header-custom-danger {
+  background: linear-gradient(45deg, #dc3545, #b02a37) !important;
+  border-bottom: none !important;
+  border-top-left-radius: 20px !important;
+  border-top-right-radius: 20px !important;
+  color: white !important;
+  padding: 20px 25px;
+}
+
+.modal-header-custom-danger .btn-close {
+  filter: invert(1);
+}
+
+.modal-body-custom {
+  padding: 30px !important;
+}
+
+.form-control-custom, .form-select-custom {
+  background: rgba(255, 255, 255, 0.4) !important;
+  border: 1px solid rgba(255, 255, 255, 0.6) !important;
+  border-radius: 10px !important;
+  color: #333 !important;
+  padding: 12px 15px;
+  transition: all 0.3s ease;
+}
+
+.form-control-custom::placeholder, .form-select-custom option {
+  color: #666;
+}
+
+.form-control-custom:focus, .form-select-custom:focus {
+  box-shadow: 0 0 0 0.25rem rgba(0, 123, 255, 0.25) !important;
+  border-color: #007bff !important;
+  background: rgba(255, 255, 255, 0.6) !important;
+}
+
+.modal-footer-custom {
+  border-top: none !important;
+  padding: 20px 25px !important;
+  background: rgba(255, 255, 255, 0.1);
+  border-bottom-left-radius: 20px !important;
+  border-bottom-right-radius: 20px !important;
+}
+
+.modal-button-primary {
+  background: linear-gradient(45deg, #007bff, #0056b3) !important;
+  border: none !important;
+  font-weight: bold;
+  padding: 10px 25px;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0, 123, 255, 0.3);
+  transition: all 0.3s ease;
+}
+
+.modal-button-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(0, 123, 255, 0.4);
+}
+
+.modal-button-secondary {
+  background: linear-gradient(45deg, #6c757d, #5a6268) !important;
+  border: none !important;
+  font-weight: bold;
+  padding: 10px 25px;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(108, 117, 125, 0.3);
+  transition: all 0.3s ease;
+}
+
+.modal-button-secondary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(108, 117, 125, 0.4);
+}
+
+.modal-button-danger {
+  background: linear-gradient(45deg, #dc3545, #b02a37) !important;
+  border: none !important;
+  font-weight: bold;
+  padding: 10px 25px;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(220, 53, 69, 0.3);
+  transition: all 0.3s ease;
+}
+
+.modal-button-danger:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(220, 53, 69, 0.4);
+}
+
+@media (max-width: 768px) {
+  .addexam-content {
+    padding: 15px;
+    border-radius: 15px;
+  }
+  .addexam-title, .scheduled-exams-title {
+    font-size: 2em;
+    margin-bottom: 20px;
+  }
+  .addexam-instruction, .no-exams-message {
+    font-size: 1em;
+    margin-bottom: 20px;
+  }
+  .addexam-card-grid, .scheduled-exams-list {
+    gap: 15px;
+    padding: 10px 0;
+  }
+  .addexam-card .card-body, .scheduled-exam-card .card-body {
+    padding: 20px;
+  }
+  .addexam-card .card-title, .exam-card-title {
+    font-size: 1.2em;
+  }
+  .addexam-card .card-subtitle, .addexam-card .card-text {
+    font-size: 0.85em;
+  }
+  .exam-actions-right {
+    margin-left: 0;
+    margin-top: 15px;
+    width: 100%;
+    flex-direction: row;
+    justify-content: center;
+  }
+  .action-button {
+    padding: 6px 15px;
+    font-size: 0.9em;
+  }
+  .custom-modal .modal-content {
+    border-radius: 15px;
+  }
+  .modal-header-custom, .modal-header-custom-danger {
+    padding: 15px 20px;
+  }
+  .modal-body-custom {
+    padding: 20px !important;
+  }
+  .form-control-custom, .form-select-custom {
+    padding: 10px 12px;
+  }
+  .modal-footer-custom {
+    padding: 15px 20px !important;
+  }
+  .modal-button-primary, .modal-button-secondary, .modal-button-danger {
+    padding: 8px 20px;
+    font-size: 0.9em;
+  }
+}
+
+@media (max-width: 480px) {
+  .addexam-content {
+    padding: 10px;
+    border-radius: 10px;
+  }
+  .addexam-title, .scheduled-exams-title {
+    font-size: 1.8em;
+  }
+  .addexam-card-grid, .scheduled-exams-list {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  .addexam-card .card-body, .scheduled-exam-card .card-body {
+    padding: 15px;
+  }
+  .addexam-card .card-title, .exam-card-title {
+    font-size: 1.1em;
+  }
+  .action-button {
+    padding: 5px 12px;
+    font-size: 0.8em;
+  }
+  .custom-modal .modal-content {
+    border-radius: 10px;
+  }
+  .modal-header-custom, .modal-header-custom-danger {
+    padding: 12px 15px;
+  }
+  .modal-body-custom {
+    padding: 15px !important;
+  }
+  .modal-button-primary, .modal-button-secondary, .modal-button-danger {
+    padding: 6px 15px;
+    font-size: 0.8em;
+  }
+}

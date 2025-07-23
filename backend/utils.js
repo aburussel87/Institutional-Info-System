@@ -245,7 +245,8 @@ function formatExamData(rows) {
       total_marks,
       date_of_exam,
       semester,
-      academic_session
+      academic_session,
+      marks_obtained
     } = row;
 
     return {
@@ -259,7 +260,8 @@ function formatExamData(rows) {
       total_marks: Number(total_marks),
       date_of_exam: parseDateString(date_of_exam),
       semester,
-      academic_session
+      academic_session,
+      marks_obtained
     };
   });
 }

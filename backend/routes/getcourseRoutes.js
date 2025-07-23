@@ -14,7 +14,7 @@ router.get('/', authenticateToken, async (req, res) => {
     if (!courses) {
       return res.status(404).json({ success: false, error: 'User not found' });
     }
-    console.log("All Users Requested by :" + uid);
+    console.log("Course info requested by teacher :" + uid);
     const scheduledExams = await get_scheduled_exam_by_teacher(uid);
     res.json({ success: true, courses , scheduledExams, teacher_id: uid });
 

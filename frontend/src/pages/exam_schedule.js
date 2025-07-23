@@ -155,6 +155,9 @@ const ExamSchedule = () => {
                 <strong>Total Marks:</strong> {selectedExam.total_marks}
               </p>
               <p>
+                <strong>Obtained Marks:</strong> {selectedExam.marks_obtained != null ? selectedExam.marks_obtained : 'Not Uploaded Yet'}
+              </p>
+              <p>
                 <strong>Date & Time:</strong>{' '}
                 {new Date(selectedExam.date_of_exam).toLocaleString()}
               </p>
