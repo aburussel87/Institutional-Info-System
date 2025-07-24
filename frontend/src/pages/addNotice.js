@@ -165,6 +165,7 @@ const AddNotification = () => {
             payload.course_id = recipientValue;
         } else if (recipient === 'course_id' && recipientValue) {
             payload.course_id = recipientValue;
+            payload.teacher_id = uid;
         } else if (!isNaN(recipient)) {
             if (context.hallstudent?.some(h => String(h.hall_id) === String(recipient))) {
                 payload.hall_id = recipient;
