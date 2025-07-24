@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import {useNavigate } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
 import Header from "../pages/header";
 import API_BASE_URL from "../config/config";
@@ -15,6 +15,8 @@ export default function CourseRegistration() {
     const [approvedBy, setApprovedBy] = useState({});
     const [pendingCourses, setPendingCourses] = useState([]);
     const [approvedCourses, setApprovedCourses] = useState([]);
+    const [failedPrerequisites, setFailedPrerequisites] = useState([]);
+    const [eligibleMissedCourses, setEligibleMissedCourses] = useState([]);
 
     useEffect(() => {
         let token = localStorage.getItem("token");
@@ -52,7 +54,6 @@ export default function CourseRegistration() {
 
                 const data = await response.json();
                 if (!data.success) {
-                    //setMsg(data.msg || "Failed to load courses");
                     setInfo(data.msg);
                     return;
                 }
@@ -60,6 +61,8 @@ export default function CourseRegistration() {
                 setOutlines(data.courses || []);
                 setPendingCourses(data.pending || []);
                 setApprovedCourses(data.approved || []);
+                setFailedPrerequisites(data.failed || []);
+                setEligibleMissedCourses(data.missed || []);
 
                 const approvedMap = {};
                 (data.approved || []).forEach(c => {
@@ -67,7 +70,7 @@ export default function CourseRegistration() {
                 });
                 setApprovedBy(approvedMap);
 
-                if ((data.courses && data.courses.length === 0) && (data.pending && data.pending.length === 0) && (data.approved && data.approved.length === 0)) {
+                if ((data.courses && data.courses.length === 0) && (data.pending && data.pending.length === 0) && (data.approved && data.approved.length === 0) && (data.missed && data.missed.length === 0)) {
                     setInfo("No courses available for registration at this time.");
                     setMsg("");
                 } else if (data.pending && data.pending.length > 0) {
@@ -104,7 +107,7 @@ export default function CourseRegistration() {
 
     const handleSubmitRegistration = async () => {
         setMsg("Submitting registration...");
-        setInfo(null); // Clear info message when submitting
+        setInfo(null);
         let token = localStorage.getItem("token");
         if (!token) {
             setMsg("Authentication error. Please log in again.");
@@ -119,7 +122,23 @@ export default function CourseRegistration() {
                 title: c.c_title,
             }));
 
-        if (registrationData.length === 0) {
+        const failedCourseRegistrationData = failedPrerequisites.filter(c => selectedCourses[c.course_id])
+            .map(c => ({
+                course_id: c.course_id,
+                approved_by: approvedBy[c.course_id] || "",
+                title: c.title,
+            }));
+
+        const missedCourseRegistrationData = eligibleMissedCourses.filter(c => selectedCourses[c.course_id])
+            .map(c => ({
+                course_id: c.course_id,
+                approved_by: approvedBy[c.course_id] || "",
+                title: c.title,
+            }));
+        
+        const combinedRegistrationData = [...registrationData, ...failedCourseRegistrationData, ...missedCourseRegistrationData];
+
+        if (combinedRegistrationData.length === 0) {
             setMsg("Please select at least one course to submit.");
             return;
         }
@@ -131,7 +150,7 @@ export default function CourseRegistration() {
                     "Content-Type": "application/json",
                     Authorization: `Bearer ${token}`,
                 },
-                body: JSON.stringify({ courses: registrationData }),
+                body: JSON.stringify({ courses: combinedRegistrationData }),
             });
 
             if (!response.ok) {
@@ -155,6 +174,8 @@ export default function CourseRegistration() {
                         setOutlines(updatedData.courses || []);
                         setPendingCourses(updatedData.pending || []);
                         setApprovedCourses(updatedData.approved || []);
+                        setFailedPrerequisites(updatedData.failed || []);
+                        setEligibleMissedCourses(updatedData.missed || []);
                         const updatedApprovedMap = {};
                         (updatedData.approved || []).forEach(c => {
                             updatedApprovedMap[c.course_id] = c.approved_by;
@@ -187,13 +208,18 @@ export default function CourseRegistration() {
         return approvedCourses.some(c => c.course_id === courseId);
     };
 
-    // if (!outlines.length && !msg.includes("Loading") && !info) {
-    //     return (
-    //         <main className="course-reg-container">
-    //             <Header />
-    //         </main>
-    //     );
-    // }
+    const hasFailedPrerequisite = (course) => {
+        if (!course.c_did) return false;
+        return failedPrerequisites.some(failed => failed.course_id === course.c_did);
+    };
+
+    const isFailedCourse = (courseId) => {
+        return failedPrerequisites.some(failed => failed.course_id === courseId);
+    };
+
+    const isMissedCourse = (courseId) => {
+        return eligibleMissedCourses.some(missed => missed.course_id === courseId);
+    };
 
     return (
         <main className="course-reg-container">
@@ -217,6 +243,7 @@ export default function CourseRegistration() {
             )}
 
             <div className="course-reg-table-wrapper">
+                <strong><h3>Courses offered for your current semester: </h3></strong>
                 <table className="course-reg-table">
                     <thead>
                         <tr>
@@ -234,9 +261,11 @@ export default function CourseRegistration() {
                         {outlines.map((course, index) => {
                             const pending = isPending(course.c_id);
                             const approved = isApproved(course.c_id);
+                            const failedPrereq = hasFailedPrerequisite(course);
+                            const rowClassName = failedPrereq ? "course-reg-failed-prereq-row" : "";
 
                             return (
-                                <tr key={course.c_id}>
+                                <tr key={course.c_id} className={rowClassName} style={failedPrereq ? { backgroundColor: '#ffe6e6' } : {}}>
                                     <td>{index + 1}</td>
                                     <td>{course.c_id}</td>
                                     <td>{course.c_title}</td>
@@ -254,6 +283,7 @@ export default function CourseRegistration() {
                                                 className="course-reg-checkbox"
                                                 checked={!!selectedCourses[course.c_id]}
                                                 onChange={(e) => handleSelectCourse(course.c_id, e.target.checked)}
+                                                disabled={failedPrereq}
                                             />
                                         )}
                                     </td>
@@ -264,7 +294,7 @@ export default function CourseRegistration() {
                                             value={approvedBy[course.c_id] || ""}
                                             onChange={(e) => handleApprovedByChange(course.c_id, e.target.value)}
                                             placeholder="Approver's Name/ID"
-                                            disabled={pending || approved}
+                                            disabled={pending || approved || failedPrereq}
                                         />
                                     </td>
                                 </tr>
@@ -272,6 +302,130 @@ export default function CourseRegistration() {
                         })}
                     </tbody>
                 </table>
+            </div>
+
+            {failedPrerequisites.length > 0 && (
+                <div className="course-reg-table-wrapper">
+                   <strong><h3>Failed Courses (Re-registration):</h3> </strong> 
+                    <table className="course-reg-table">
+                        <thead>
+                            <tr>
+                                <th>No.</th>
+                                <th>Course ID</th>
+                                <th>Course Title</th>
+                                <th>Credit Hours</th>
+                                <th>Semester</th>
+                                <th>Offered by</th>
+                                <th>Status</th>
+                                <th>Approved By</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {failedPrerequisites.map((course, index) => {
+                                const pending = isPending(course.course_id);
+                                const approved = isApproved(course.course_id);
+                                const rowClassName = isFailedCourse(course.course_id) ? "course-reg-failed-prereq-row" : "";
+                                return (
+                                    <tr key={course.course_id} className={rowClassName}>
+                                        <td>{index + 1}</td>
+                                        <td>{course.course_id}</td>
+                                        <td>{course.title}</td>
+                                        <td>{course.credit_hours}</td>
+                                        <td>{course.semester}</td>
+                                        <td>{course.offered_by}</td>
+                                        <td>
+                                            {pending ? (
+                                                <span className="course-reg-status-pending">Pending</span>
+                                            ) : approved ? (
+                                                <span className="course-reg-status-approved">Approved</span>
+                                            ) : (
+                                                <input
+                                                    type="checkbox"
+                                                    className="course-reg-checkbox"
+                                                    checked={!!selectedCourses[course.course_id]}
+                                                    onChange={(e) => handleSelectCourse(course.course_id, e.target.checked)}
+                                                />
+                                            )}
+                                        </td>
+                                        <td>
+                                            <input
+                                                type="text"
+                                                className="course-reg-input-approved-by"
+                                                value={approvedBy[course.course_id] || ""}
+                                                onChange={(e) => handleApprovedByChange(course.course_id, e.target.value)}
+                                                placeholder="Approver's Name/ID"
+                                                disabled={pending || approved}
+                                            />
+                                        </td>
+                                    </tr>
+                                );
+                            })}
+                        </tbody>
+                    </table>
+                </div>
+            )}
+
+            <div className="course-reg-table-wrapper">
+                <strong><h3>Eligible Missed Courses:</h3></strong>
+                {eligibleMissedCourses.length > 0 ? (
+                    <table className="course-reg-table">
+                        <thead>
+                            <tr>
+                                <th>No.</th>
+                                <th>Course ID</th>
+                                <th>Course Title</th>
+                                <th>Credit Hours</th>
+                                <th>Semester</th>
+                                <th>Offered by</th>
+                                <th>Status</th>
+                                <th>Approved By</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {eligibleMissedCourses.map((course, index) => {
+                                const pending = isPending(course.course_id);
+                                const approved = isApproved(course.course_id);
+                                const rowClassName = isMissedCourse(course.course_id) ? "course-reg-missed-course-row" : "";
+                                return (
+                                    <tr key={course.course_id} className={rowClassName}>
+                                        <td>{index + 1}</td>
+                                        <td>{course.course_id}</td>
+                                        <td>{course.title}</td>
+                                        <td>{course.credits}</td>
+                                        <td>{course.semester}</td>
+                                        <td>{course.offered_by}</td>
+                                        <td>
+                                            {pending ? (
+                                                <span className="course-reg-status-pending">Pending</span>
+                                            ) : approved ? (
+                                                <span className="course-reg-status-approved">Approved</span>
+                                            ) : (
+                                                <input
+                                                    type="checkbox"
+                                                    className="course-reg-checkbox"
+                                                    checked={!!selectedCourses[course.course_id]}
+                                                    onChange={(e) => handleSelectCourse(course.course_id, e.target.checked)}
+                                                />
+                                            )}
+                                        </td>
+                                        <td>
+                                            <input
+                                                type="text"
+                                                className="course-reg-input-approved-by"
+                                                value={approvedBy[course.course_id] || ""}
+                                                onChange={(e) => handleApprovedByChange(course.course_id, e.target.value)}
+                                                placeholder="Approver's Name/ID"
+                                                disabled={pending || approved}
+                                            />
+                                        </td>
+                                    </tr>
+                                );
+                            })}
+                        </tbody>
+                    </table>
+                ) : (
+                    <p>You have no missed courses or you are not eligible for the missed courses yet.</p>
+                )}
             </div>
 
             <div className="course-reg-actions">

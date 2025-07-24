@@ -15,7 +15,21 @@
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
     margin-bottom: 30px;
 }
+/* In ../styles/registration.css */
 
+.course-reg-table-wrapper {
+    margin-bottom: 20px; /* Add some space below the first table */
+}
+
+/* Add this to create a gap above the second table */
+.course-reg-table-wrapper + .course-reg-table-wrapper {
+    margin-top: 30px; /* Adjust as needed for the desired gap */
+}
+
+/* You might also want to add some margin to the h4 above the second table */
+.course-reg-failed-prerequisites-section h4 {
+    margin-bottom: 15px;
+}
 .course-reg-main-title {
     font-size: 2.5em;
     color: #2c3e50;

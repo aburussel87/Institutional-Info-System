@@ -2,8 +2,25 @@ const client = require('./db');
 const { generateRoutine, formatGradeSheet, formatSemesterRoutine, formatFee, formatExamData, formatStudentWithRoommates } = require('../utils');
 
 
+async function get_eligible_missed_courses(student_id) {
+  const query = `SELECT * FROM get_eligible_missed_courses($1)`;
+  const res = await client.query(query, [student_id]);
+  return res.rows;
+}
 
+async function get_failed_prerequisites(student_id) {
+  const query = `SELECT * FROM get_failed_prerequisites($1)`;
 
+  const res = await client.query(query, [student_id]);
+  return res.rows;
+}
+
+async function get_all_failed_courses(student_id){
+  const query = `SELECT * FROM get_all_failed_courses($1)`;
+
+  const res = await client.query(query, [student_id]);
+  return res.rows;
+}
 
 async function delete_courseMaterials(mid){
   const query = `delete FROM coursematerial where material_id = $1;`
@@ -456,5 +473,8 @@ module.exports = {
   getCourseMaterials_for_Student,
   delete_courseMaterials,
   get_department_data,
-  get_department_id
+  get_department_id,
+  get_failed_prerequisites,
+  get_all_failed_courses,
+  get_eligible_missed_courses
 };
