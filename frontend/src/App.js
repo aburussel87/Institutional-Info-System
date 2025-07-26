@@ -18,6 +18,7 @@ import AddExam from './pages/add_exam_page';
 import ProvostStd from './pages/provost_page';
 import AddNotice from './pages/addNotice';
 import HODStd from './pages/HOD_page';
+import AllocateSubject from './pages/allocateSubject';
 
 
 
@@ -63,6 +64,7 @@ export default function App() {
         <Route path='/provost_page' element = {<ProvostStd/>} />
         <Route path='/addNotice' element = {<AddNotice/>} />
         <Route path='/HOD_page' element = {<HODStd/>} />
+        <Route path='/allocateSubject' element = {<AllocateSubject/>} />
         
       </Routes>
     </Router>

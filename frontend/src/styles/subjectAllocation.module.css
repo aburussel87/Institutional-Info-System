@@ -1,0 +1,178 @@
+/* Container for the entire page to apply consistent styling */
+.allocate-subject-container {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Glassmorphic card styling */
+.glassmorphic-card {
+    margin-top: 50px;
+  background: rgba(255, 255, 255, 0.15); /* Slightly transparent white */
+  border-radius: 15px;
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37); /* Stronger shadow for depth */
+  backdrop-filter: blur(10px); /* Glassmorphic blur effect */
+  -webkit-backdrop-filter: blur(10px); /* For Safari support */
+  border: 1px solid rgba(255, 255, 255, 0.18); /* Subtle border */
+  color: #333; /* Default text color for the card */
+  margin-bottom: 30px; /* Add some space below the card if needed */
+}
+
+/* Custom header for the card */
+.card-header-custom {
+  
+  background: linear-gradient(135deg, #007bff, #0056b3) !important; /* Gradient blue */
+  border-top-left-radius: 15px;
+  border-top-right-radius: 15px;
+  padding: 20px;
+  color: #fff !important; /* Ensure text is white */
+  font-size: 1.8rem;
+  font-weight: bold;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.card-header-custom h1 {
+  margin: 0;
+  font-size: 1.8rem; /* Adjust font size for header */
+}
+
+/* Custom body for the card */
+.card-body-custom {
+  padding: 30px;
+  color: #333; /* Text color inside the body */
+}
+
+/* Section titles */
+.section-title {
+  font-size: 1.6rem;
+  margin-bottom: 20px;
+  color: #007bff; /* Primary color for titles */
+  text-align: center;
+  font-weight: bold;
+}
+
+/* Loading spinner container */
+.loading-spinner-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 200px; /* Ensure spinner is centered vertically */
+}
+
+/* Custom spinner color */
+.custom-spinner {
+  color: #007bff !important; /* Blue spinner */
+}
+
+/* Custom alert styling */
+.custom-alert {
+  margin-top: 20px;
+  text-align: center;
+  font-weight: 500;
+}
+
+/* Custom Accordion styling */
+.custom-accordion .accordion-item {
+  margin-bottom: 10px;
+  border: 1px solid rgba(0, 123, 255, 0.2); /* Light blue border */
+  border-radius: 8px;
+  overflow: hidden; /* Ensures border-radius applies to children */
+}
+
+.custom-accordion .accordion-header {
+  background-color: #e9f5ff; /* Light blue background for header */
+  padding: 15px 20px;
+  border-bottom: none;
+  font-weight: bold;
+  color: #0056b3; /* Darker blue text for header */
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.custom-accordion .accordion-header:hover {
+  background-color: #d0e9ff; /* Slightly darker on hover */
+}
+
+.custom-accordion .accordion-button:not(.collapsed) {
+  background-color: #007bff; /* Blue for expanded header */
+  color: white;
+}
+
+.custom-accordion .accordion-button:focus {
+  box-shadow: none; /* Remove default focus outline */
+}
+
+.custom-accordion .accordion-body {
+  padding: 20px;
+  background-color: #f8fcff; /* Very light blue for body */
+  border-top: 1px solid rgba(0, 123, 255, 0.1);
+}
+
+/* Custom Table styling */
+.custom-table {
+  width: 100%;
+  margin-top: 15px;
+  border-collapse: collapse;
+}
+
+.custom-table thead th {
+  background-color: #007bff; /* Blue header for table */
+  color: white;
+  padding: 12px 15px;
+  text-align: left;
+  border: 1px solid #0056b3;
+  font-weight: 600;
+}
+
+.custom-table tbody td {
+  padding: 10px 15px;
+  border: 1px solid #dee2e6; /* Light gray border for cells */
+  vertical-align: middle;
+}
+
+.custom-table tbody tr:nth-child(even) {
+  background-color: #f2f7fc; /* Light striped background */
+}
+
+.custom-table tbody tr:hover {
+  background-color: #e6f0fa; /* Hover effect for rows */
+}
+/* Add this to your existing subjectAllocation.module.css if you wish */
+.select-input {
+  width: 80px; /* Adjust as needed */
+  padding: 5px;
+  border-radius: 5px;
+  border: 1px solid #ced4da;
+  background-color: #fff;
+  font-size: 0.9rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .card-header-custom h1 {
+    font-size: 1.5rem;
+  }
+  .section-title {
+    font-size: 1.4rem;
+  }
+  .custom-table thead th,
+  .custom-table tbody td {
+    padding: 8px 10px;
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .allocate-subject-container {
+    padding: 10px;
+  }
+  .card-body-custom {
+    padding: 15px;
+  }
+  .card-header-custom h1 {
+    font-size: 1.3rem;
+  }
+  .section-title {
+    font-size: 1.2rem;
+  }
+}

@@ -27,33 +27,33 @@ const HODStd = () => {
   const [department_id, setDepartmentId] = useState(null);
 
   useEffect(() => {
-  const fetchDepartmentData = async () => {
-    try {
-      const res = await fetch(`${API_BASE_URL}/department/getData`, {
-        method: 'GET',
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-      });
-      const data = await res.json();
-      if (data.success) {
-        setDepartmentData(data.data);
-        if (data.data.teachers && data.data.teachers.length > 0) {
-          setDepartmentId(data.data.teachers[0].department_id);
+    const fetchDepartmentData = async () => {
+      try {
+        const res = await fetch(`${API_BASE_URL}/department/getData`, {
+          method: 'GET',
+          headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        });
+        const data = await res.json();
+        if (data.success) {
+          setDepartmentData(data.data);
+          if (data.data.teachers && data.data.teachers.length > 0) {
+            setDepartmentId(data.data.teachers[0].department_id);
+          }
+          setError(null);
+        } else {
+          setError('Failed to load department data. Please try again later.');
+          setDepartmentData(null);
         }
-        setError(null);
-      } else {
-        setError('Failed to load department data. Please try again later.');
+      } catch (err) {
+        console.error('Error fetching department data:', err);
+        setError('Network error: Could not fetch department data.');
         setDepartmentData(null);
+      } finally {
+        setLoading(false);
       }
-    } catch (err) {
-      console.error('Error fetching department data:', err);
-      setError('Network error: Could not fetch department data.');
-      setDepartmentData(null);
-    } finally {
-      setLoading(false);
-    }
-  };
-  fetchDepartmentData();
-}, []);
+    };
+    fetchDepartmentData();
+  }, []);
 
   const renderContent = () => {
     if (loading) {
@@ -99,6 +99,8 @@ const HODStd = () => {
                           <tr>
                             <th>ID</th>
                             <th>Name</th>
+                            <th>CGPA</th>
+                            <th>Credit HOURS</th>
                             <th>Email</th>
                           </tr>
                         </thead>
@@ -107,6 +109,8 @@ const HODStd = () => {
                             <tr key={student.student_id}>
                               <td>{student.student_id}</td>
                               <td>{student.username}</td>
+                              <td>{Math.round(student.cgpa * 100) / 100}</td>
+                              <td>{student.credits}</td>
                               <td>{student.email}</td>
                             </tr>
                           ))}
@@ -281,6 +285,61 @@ const HODStd = () => {
             )}
           </>
         );
+      case 'subjectAllocations':
+        const subjectAllocationsBySemester = departmentData.subject_allocations.reduce((acc, allocation) => {
+          const semester = allocation.semester || 'Unspecified Semester';
+          if (!acc[semester]) {
+            acc[semester] = [];
+          }
+          acc[semester].push(allocation);
+          return acc;
+        }, {});
+        const sortedSemesters = Object.keys(subjectAllocationsBySemester).sort((a, b) => {
+          const numA = parseInt(a.replace(/\D/g, ''), 10);
+          const numB = parseInt(b.replace(/\D/g, ''), 10);
+          return numA - numB;
+        });
+
+        return (
+          <>
+            <h2 className={styles['section-title']}>Semester-wise Subject Allocations</h2>
+            {Object.keys(subjectAllocationsBySemester).length > 0 ? (
+              <Accordion defaultActiveKey="0" className={styles['custom-accordion']}>
+                {sortedSemesters.map((semester, index) => (
+                  <Accordion.Item eventKey={String(index)} key={semester} className={styles['accordion-item']}>
+                    <Accordion.Header className={styles['accordion-header']}>Semester: {semester} ({subjectAllocationsBySemester[semester].length} Allocations)</Accordion.Header>
+                    <Accordion.Body className={styles['accordion-body']}>
+                      <Table striped bordered hover responsive className={styles['custom-table']}>
+                        <thead>
+                          <tr>
+                            <th>Course ID</th>
+                            <th>Semester</th>
+                            <th>Section</th>
+                            <th>Allocated Teacher</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {subjectAllocationsBySemester[semester]
+                            .sort((a, b) => (a.course_id || '').localeCompare(b.course_id || '')) 
+                            .map((allocation) => (
+                              <tr key={`${allocation.course_id}-${allocation.teacher_id}`}>
+                                <td>{allocation.course_id}</td>
+                                <td>{allocation.semester}</td>
+                                <td>{allocation.section_type}</td>
+                                <td>{allocation.teacher_name}</td>
+                              </tr>
+                            ))}
+                        </tbody>
+                      </Table>
+                    </Accordion.Body>
+                  </Accordion.Item>
+                ))}
+              </Accordion>
+            ) : (
+              <Alert variant="info" className={styles['custom-alert']}>No subject allocations available.</Alert>
+            )}
+          </>
+        );
       default:
         return <Alert variant="warning" className={styles['custom-alert']}>Please select an option from the dropdown.</Alert>;
     }
@@ -292,12 +351,12 @@ const HODStd = () => {
       <div className={`${styles['hod-page-container']} container mt-5`}>
         <Card className={`${styles['glassmorphic-card']} shadow-lg`}>
           <Card.Header className={`${styles['card-header-custom']} bg-primary text-white text-center py-3`}>
-  <h1>
-    {department_id && DEPARTMENT_NAMES[department_id]
-      ? DEPARTMENT_NAMES[department_id]
-      : 'Department Overview'}
-  </h1>
-</Card.Header>
+            <h1>
+              {department_id && DEPARTMENT_NAMES[department_id]
+                ? DEPARTMENT_NAMES[department_id]
+                : 'Department Overview'}
+            </h1>
+          </Card.Header>
 
           <Card.Body className={styles['card-body-custom']}>
             <div className={`${styles['dropdown-container']} d-flex justify-content-center mb-4`}>
@@ -309,6 +368,7 @@ const HODStd = () => {
                   <Dropdown.Item eventKey="students" className={styles['dropdown-item-custom']}>Students</Dropdown.Item>
                   <Dropdown.Item eventKey="teachers" className={styles['dropdown-item-custom']}>Teachers</Dropdown.Item>
                   <Dropdown.Item eventKey="courses" className={styles['dropdown-item-custom']}>Courses</Dropdown.Item>
+                  <Dropdown.Item eventKey="subjectAllocations" className={styles['dropdown-item-custom']}>Subject Allocations</Dropdown.Item>
                 </Dropdown.Menu>
               </Dropdown>
             </div>

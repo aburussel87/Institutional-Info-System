@@ -21,13 +21,14 @@ const exam_scheduleRoutes = require('./routes/exam_scheduleRoutes');
 const teacherInfoRoutes = require('./routes/teacherInfoRoutes');
 const registrationRoutes = require('./routes/registrationRoutes');
 const resetPassRoutes = require('./routes/resetPassRoutes');
-const courseinfoRoutes = require('./routes/getcourseRoutes');
+const teacher_courseinfoRoutes = require('./routes/getcourseRoutes');
 const addExamRoutes = require('./routes/add_examRoutes');
 const get_students_by_provostRoutes = require('./routes/getstudentbyProvostRoutes');
 const get_student_hall_detailsRoutes = require('./routes/studenthalldetailsRoutes');
 const add_notificationRoute = require('./routes/add_notificationRoutes');
 const add_courseMaterials = require('./routes/add_CourseMaterialRoutes');
 const department_data_routes = require('./routes/department_dataRoutes');
+const AllocateSubject = require('./routes/allocate_subjectRoutes');
 
 
 const jwt = require('jsonwebtoken');
@@ -54,14 +55,15 @@ app.use('/api/exam_schedule', exam_scheduleRoutes);
 app.use('/api/teacher-profile', teacherInfoRoutes);
 app.use('/api/registration', registrationRoutes);
 app.use('/api/password', resetPassRoutes);
-app.use('/api/teacherCourses', courseinfoRoutes);
+app.use('/api/teacherCourses', teacher_courseinfoRoutes);
 app.use('/api/add_exam', addExamRoutes);
-app.use('/api/get_course_info', courseinfoRoutes);//change by provat
+app.use('/api/get_course_info', teacher_courseinfoRoutes);//change by provat
 app.use('/api/getstudentbyProvost', get_students_by_provostRoutes); // Provost's students route
 app.use('/api/getStudenthalldetails', get_student_hall_detailsRoutes); // Provost's student hall details route
 app.use('/api/notification',add_notificationRoute);
 app.use('/api/courseMaterials',add_courseMaterials);
 app.use('/api/department',department_data_routes);
+app.use('/api/subjectAllocation',AllocateSubject);
 
 
 

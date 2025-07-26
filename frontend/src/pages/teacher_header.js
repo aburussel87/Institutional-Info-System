@@ -212,6 +212,13 @@ const Header = () => {
             <a className="btn btn-outline-primary w-100 mb-2" href="/HOD_page">
               HOD Panel
             </a>
+            
+          )}
+          {isHOD && (
+            <a className="btn btn-outline-primary w-100 mb-2" href="/allocateSubject">
+              Allocate Subject
+            </a>
+            
           )}
           <Button
             className="btn btn-outline-primary w-100 mb-2"
