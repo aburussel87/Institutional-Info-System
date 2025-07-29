@@ -46,7 +46,10 @@ const Login = () => {
         setTimeout(() => navigate('/dashboard'), 1000);
       } else if (userRole === 'Teacher' || userRole === 'Advisor' || userRole === 'Provost') {
         setTimeout(() => navigate('/teacher_dash'), 1000);
-      }
+       } 
+         else {
+         setTimeout(() => navigate('/admin_dash'), 1000); // fallback
+       }
     } catch (error) {
       setMsg('An error occurred. Please try again later.');
     }

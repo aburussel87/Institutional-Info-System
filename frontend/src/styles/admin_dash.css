@@ -1,0 +1,333 @@
+/* Import Google Font - Inter for a modern look */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap'); /* Added font weight 800 */
+
+/* CSS Variables for easy theme management */
+:root {
+    --primary-color: #6a0dad; /* Deep Purple */
+    --secondary-color: #8a2be2; /* Blue Violet */
+    --accent-color: #ff69b4; /* Hot Pink for highlights */
+    --text-dark: #2c3e50; /* Darker text for better contrast */
+    --text-light: #f8f9fa;
+    --bg-light: #f0f2f5; /* Light grey background */
+    --card-bg: #ffffff;
+    --border-color: #e0e0e0;
+    --shadow-light: rgba(0, 0, 0, 0.08);
+    --shadow-medium: rgba(0, 0, 0, 0.15);
+    --shadow-strong: rgba(0, 0, 0, 0.25); /* Added stronger shadow */
+    --border-radius-sm: 8px;
+    --border-radius-md: 12px;
+    --border-radius-lg: 16px;
+    --transition-speed: 0.4s; /* Defined transition speed */
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: var(--bg-light);
+    color: var(--text-dark);
+    margin: 0;
+    padding: 0;
+    line-height: 1.6;
+    overflow-x: hidden; /* Prevent horizontal scroll */
+}
+
+/* Overall Dashboard Wrapper */
+.dashboard-wrapper {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: linear-gradient(135deg, var(--bg-light) 0%, #e9ebee 100%);
+    padding-bottom: 30px; /* Add some padding at the bottom */
+}
+
+/* Main Container for Dashboard Content */
+.dashboard-container {
+    max-width: 1200px;
+    margin: 40px auto;
+    padding: 25px; /* Slightly more padding */
+    background-color: rgba(255, 255, 255, 0.98); /* Less transparent white */
+    border-radius: var(--border-radius-lg);
+    box-shadow: 0 12px 40px var(--shadow-strong); /* Stronger initial shadow */
+    animation: fadeIn 0.8s ease-out;
+    border: 1px solid rgba(255, 255, 255, 0.5); /* Subtle border for depth */
+}
+
+/* Fade-in animation for the dashboard */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(30px); } /* Increased translateY */
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Dashboard Title */
+.dashboard-title {
+    text-align: center;
+    color: var(--primary-color);
+    margin-bottom: 45px; /* Increased margin */
+    font-weight: 800; /* Bolder title */
+    font-size: 2.8rem; /* Slightly larger title */
+    letter-spacing: -0.8px; /* Tighter letter spacing */
+    text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.15); /* Stronger text shadow */
+    position: relative;
+    padding-bottom: 15px;
+}
+
+.dashboard-title::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80px;
+    height: 4px;
+    background: linear-gradient(90deg, var(--accent-color), var(--secondary-color));
+    border-radius: 2px;
+}
+
+/* Dashboard Cards */
+.dashboard-card {
+    background-color: var(--card-bg);
+    border-radius: var(--border-radius-md);
+    box-shadow: 0 5px 15px var(--shadow-light);
+    padding: 25px;
+    transition: transform var(--transition-speed) ease, box-shadow var(--transition-speed) ease, border-color var(--transition-speed) ease;
+    border: 1px solid var(--border-color);
+    overflow: hidden; /* Ensures content stays within rounded corners */
+}
+
+.dashboard-card:hover {
+    transform: translateY(-8px); /* More pronounced lift */
+    box-shadow: 0 12px 25px var(--shadow-medium); /* Stronger hover shadow */
+    border-color: var(--secondary-color); /* Border color change on hover */
+}
+
+.card-title {
+    color: var(--secondary-color);
+    font-size: 1.9rem; /* Slightly larger card titles */
+    font-weight: 700; /* Bolder card titles */
+    margin-bottom: 25px; /* Increased margin */
+    border-bottom: 3px solid var(--accent-color); /* Thicker border */
+    padding-bottom: 12px; /* Increased padding */
+    display: inline-block;
+    position: relative;
+    z-index: 1;
+}
+
+/* Specific styling for Total Students Card */
+.total-students-card {
+    background: linear-gradient(60deg, var(--primary-color) 0%, var(--secondary-color) 100%); /* Slightly different gradient angle */
+    color: var(--text-light);
+    padding: 35px; /* More padding */
+    border-radius: var(--border-radius-lg);
+    box-shadow: 0 15px 35px rgba(106, 13, 173, 0.5); /* Stronger shadow matching gradient */
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    animation: pulse 2s infinite ease-in-out; /* Added pulse animation */
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); box-shadow: 0 15px 35px rgba(106, 13, 173, 0.5); }
+    50% { transform: scale(1.01); box-shadow: 0 20px 45px rgba(106, 13, 173, 0.6); }
+    100% { transform: scale(1); box-shadow: 0 15px 35px rgba(106, 13, 173, 0.5); }
+}
+
+.total-students-card::before {
+    content: '';
+    position: absolute;
+    top: -60%; /* Adjusted position */
+    left: -60%; /* Adjusted position */
+    width: 220%; /* Larger effect */
+    height: 220%; /* Larger effect */
+    background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 75%); /* Stronger radial gradient */
+    transform: rotate(60deg); /* Different rotation */
+    opacity: 0.4; /* Increased opacity */
+    transition: opacity var(--transition-speed) ease;
+}
+
+.total-students-card:hover::before {
+    opacity: 0.6; /* More visible on hover */
+}
+
+.total-students-card .card-title {
+    color: var(--text-light);
+    border-bottom-color: rgba(255, 255, 255, 0.6); /* Slightly more opaque border */
+    font-size: 2.2rem; /* Larger title */
+    font-weight: 700; /* Consistent font weight */
+}
+
+.total-students-count {
+    font-size: 5rem; /* Even larger count */
+    font-weight: 800; /* Bolder count */
+    margin-top: 20px; /* More margin */
+    text-shadow: 3px 3px 7px rgba(0, 0, 0, 0.4); /* Stronger text shadow */
+}
+
+/* Table Styling */
+.summary-table {
+    width: 100%;
+    margin-bottom: 0;
+    border-collapse: separate;
+    border-spacing: 0;
+    border-radius: var(--border-radius-md); /* Apply border-radius directly to table */
+    overflow: hidden; /* Ensures rounded corners are visible */
+}
+
+.summary-table thead th {
+    background-color: var(--primary-color);
+    color: var(--text-light);
+    padding: 14px 18px; /* More padding */
+    text-align: left;
+    font-weight: 600;
+    font-size: 1rem; /* Slightly larger font size */
+    border-bottom: none;
+    position: sticky; /* Make headers sticky for scrollable tables */
+    top: 0;
+    z-index: 10;
+}
+
+.summary-table tbody tr {
+    transition: background-color 0.2s ease, transform 0.1s ease; /* Added transform for subtle pop */
+}
+
+.summary-table tbody tr:nth-child(even) {
+    background-color: #f8f9fa;
+}
+
+.summary-table tbody tr:hover {
+    background-color: #e3e6e9; /* Darker hover effect */
+    transform: translateX(5px); /* Subtle slide effect on hover */
+    cursor: pointer;
+}
+
+.summary-table tbody td {
+    padding: 12px 18px; /* More padding */
+    border-top: 1px solid var(--border-color);
+    font-size: 0.95rem; /* Slightly larger font size */
+}
+
+/* Responsive Table */
+.table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border-radius: var(--border-radius-md);
+    border: 1px solid var(--border-color);
+    box-shadow: inset 0 0 5px rgba(0,0,0,0.05); /* Inner shadow for depth */
+}
+
+/* Loading and Error States */
+.loading-state, .error-state {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: 80vh;
+    font-size: 1.3rem; /* Slightly larger text */
+    color: var(--primary-color);
+    text-align: center;
+}
+
+.loading-state .spinner-border {
+    width: 3.5rem; /* Larger spinner */
+    height: 3.5rem; /* Larger spinner */
+    margin-bottom: 20px; /* More margin */
+    color: var(--primary-color);
+    border-width: 0.3em; /* Thicker spinner */
+    animation: spin 1s linear infinite; /* Added spin animation */
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.error-state .alert {
+    max-width: 550px; /* Wider alert */
+    text-align: center;
+    font-size: 1.2rem; /* Larger alert text */
+    padding: 20px;
+    border-radius: var(--border-radius-md);
+    background-color: #f8d7da; /* Bootstrap danger background */
+    color: #721c24; /* Bootstrap danger text */
+    border-color: #f5c6cb; /* Bootstrap danger border */
+    box-shadow: 0 5px 15px rgba(220, 53, 69, 0.2); /* Shadow for alert */
+}
+
+/* Media Queries for Responsiveness */
+@media (max-width: 992px) {
+    .dashboard-container {
+        margin: 25px auto;
+        padding: 20px;
+    }
+
+    .dashboard-title {
+        font-size: 2.4rem;
+        margin-bottom: 35px;
+    }
+
+    .total-students-count {
+        font-size: 4rem;
+    }
+
+    .card-title {
+        font-size: 1.7rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .dashboard-container {
+        margin: 20px;
+        padding: 15px;
+    }
+
+    .dashboard-title {
+        font-size: 2rem;
+        margin-bottom: 30px;
+    }
+
+    .total-students-count {
+        font-size: 3.5rem;
+    }
+
+    .card-title {
+        font-size: 1.5rem;
+    }
+
+    .summary-table thead th,
+    .summary-table tbody td {
+        padding: 12px 15px;
+        font-size: 0.9rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .dashboard-container {
+        margin: 15px;
+        padding: 10px;
+    }
+
+    .dashboard-title {
+        font-size: 1.7rem;
+        margin-bottom: 25px;
+    }
+
+    .total-students-card {
+        padding: 25px;
+    }
+
+    .total-students-card .card-title {
+        font-size: 1.8rem;
+    }
+
+    .total-students-count {
+        font-size: 3rem;
+    }
+
+    .card-title {
+        font-size: 1.3rem;
+    }
+
+    .summary-table thead th,
+    .summary-table tbody td {
+        padding: 10px 12px;
+        font-size: 0.85rem;
+    }
+}

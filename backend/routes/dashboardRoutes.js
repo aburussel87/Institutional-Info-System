@@ -1,7 +1,7 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
-const { getUserInfo,getStudentRoutine,getTeacherRoutine ,getEnrolledCourse, getTeacherInfo,getSessionInfo} = require('../config/query');
+const { getUserInfo,getStudentRoutine,getTeacherRoutine ,getEnrolledCourse, getTeacherInfo,getSessionInfo, get_all_stdcount_dept,get_all_stdcount_hall,get_all_stdcount_advisor,get_all_student_count} = require('../config/query');
 const {authenticateToken} = require ('../utils');
 const router = express.Router();
 
@@ -65,5 +65,33 @@ router.get('/teacher', authenticateToken, async (req, res) => {
     res.status(500).json({ success: false, error: 'Internal Server Error' });
   }
 });
+
+
+router.get('/admin', authenticateToken, async (req, res) => {
+    try {
+       
+        const totalStudents = await get_all_student_count();
+        const departmentSummary = await get_all_stdcount_dept();
+        const hallSummary = await get_all_stdcount_hall();
+        const advisorSummary = await get_all_stdcount_advisor();
+      console.log(totalStudents);
+       console.log("Admin Dashboard Info Request");
+        res.json({
+            success: true,
+            totalStudents: totalStudents, // This will be a number (e.g., 123 or 0)
+            departmentSummary: departmentSummary, // This will be an array (e.g., [...] or [])
+            hallSummary: hallSummary,           // This will be an array
+            advisorSummary: advisorSummary      // This will be an array
+            // Remove the commented out 'user', 'routine', 'courses', 'session_info'
+            // unless they are explicitly fetched and relevant to THIS admin dashboard route.
+        });
+
+    } catch (err) {
+        console.error('Dashboard error:', err);
+        // Send a 500 Internal Server Error response if any error occurs during data fetching
+        res.status(500).json({ success: false, error: 'Internal Server Error', details: err.message });
+    }
+});
+
 
 module.exports = router;

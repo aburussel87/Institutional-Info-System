@@ -1,5 +1,6 @@
 const client = require('./db');
 const { generateRoutine, formatGradeSheet, formatSemesterRoutine, formatFee, formatExamData, formatStudentWithRoommates } = require('../utils');
+const { get } = require('../routes/dashboardRoutes');
 
 
 
@@ -251,6 +252,43 @@ async function getStudentInfo(studentId) {
   return res.rows;
 }
 
+
+async function get_all_student_count() {
+  const query = `SELECT * FROM get_total_students();`;
+  const res = await client.query(query);
+  return res.rows[0].total_students;
+}
+async function get_all_stdcount_dept() {
+  const query = `
+   SELECT * FROM get_departmentwise_student_summary();
+  `;
+
+  const res = await client.query(query);
+  return res.rows;
+}
+
+async function get_all_stdcount_hall() {
+  const query = `
+   SELECT * FROM get_hallwise_student_summary();
+  `;
+
+  const res = await client.query(query);
+  return res.rows;
+}
+
+async function get_all_stdcount_advisor() {
+  const query = `
+   SELECT * FROM get_advisor_summary();
+  `;
+
+  const res = await client.query(query);
+  return res.rows;
+}
+
+
+
+
+
 // all are function above this 
 
 async function getCourseInfo(studentId) {
@@ -492,5 +530,9 @@ module.exports = {
   get_all_failed_courses,
   get_eligible_missed_courses,
   get_dept_wise_subject_allocation,
-  get_advisor_data
+  get_advisor_data,
+  get_all_stdcount_dept,
+  get_all_stdcount_hall,
+  get_all_stdcount_advisor,
+  get_all_student_count
 };

@@ -1,0 +1,218 @@
+.app-header {
+  background: rgba(169, 161, 205, 0.7);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 8vh;
+  color: white;
+  display: flex;
+  align-items: center;
+  padding: 0 15px;
+  box-sizing: border-box;
+  z-index: 1000;
+}
+
+.app-header-logo {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+}
+
+.app-header-logo img {
+  height: 100%;
+  max-height: 5vh;
+  width: auto;
+  object-fit: contain;
+}
+
+.app-header-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  margin-left: 15px;
+}
+
+.app-institution-name {
+  font-size: 0.9em;
+  font-weight: bold;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.app-institution-location {
+  font-size: 0.7em;
+  opacity: 0.85;
+}
+
+.app-hamburger-btn {
+  font-size: 1.2rem;
+}
+
+.app-notification-bell {
+  cursor: pointer;
+}
+
+#appNotificationPopup {
+  width: 300px;
+  max-height: 400px;
+  padding: 1rem;
+  border: 1px solid #ddd;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  top: 40px;
+  right: 0;
+  overflow-y: auto;
+  z-index: 1050;
+  color: black;
+}
+
+.app-notification-item {
+  border-bottom: 1px solid #eee;
+  padding: 0.75rem;
+  margin-bottom: 0.75rem;
+  background-color: #f8f9fa;
+  border-radius: 5px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+  transition: background-color 0.2s ease, transform 0.1s ease;
+  cursor: pointer;
+}
+
+.app-notification-item:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.app-notification-item:hover {
+  background-color: #e9ecef;
+  transform: translateY(-2px);
+}
+
+.app-notification-date-heading {
+  font-size: 0.8rem;
+  color: #020218;
+  background-color: #b9cbde;
+  border-radius: 3px;
+  margin-bottom: 0.75rem;
+  border-bottom: 1px solid #eceeef;
+  padding: 0.5rem;
+  text-align: right;
+}
+
+.app-notification-category {
+  font-weight: bold;
+  color: #007bff;
+}
+
+.app-notification-title {
+  color: #343a40;
+  font-weight: 500;
+}
+
+.app-notification-separator {
+  color: #6c757d;
+  margin: 0 3px;
+}
+
+#appNotificationList {
+  padding-top: 5px;
+}
+
+.app-notification-detail-header {
+  background-color: #e9f7fe;
+  border-bottom: 1px solid #cceeff;
+}
+
+.app-notification-detail-title {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #004080;
+}
+
+.app-notification-category-detail {
+  color: #007bff;
+  margin-right: 5px;
+}
+
+.app-notification-separator-detail {
+  color: #6c757d;
+}
+
+.app-notification-detail-body {
+  padding: 1.5rem;
+  line-height: 1.5;
+  font-size: 1rem;
+  color: #333;
+}
+
+.app-notification-detail-message {
+  background-color: #f0f8ff;
+  border-left: 5px solid #007bff;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  border-radius: 4px;
+  font-style: italic;
+  color: #222;
+}
+
+.app-notification-detail-meta p {
+  margin-bottom: 0.4rem;
+  font-size: 0.9rem;
+  color: #555;
+}
+
+.app-notification-detail-meta strong {
+  color: #004080;
+}
+
+@media (max-width: 767.98px) {
+  .app-header {
+    height: 7vh;
+    padding: 0 10px;
+  }
+
+  .app-header-logo img {
+    max-height: 4.5vh;
+  }
+
+  .app-institution-name {
+    font-size: 0.8em;
+  }
+
+  .app-institution-location {
+    font-size: 0.65em;
+  }
+
+  .app-hamburger-btn {
+    font-size: 1.1rem;
+  }
+
+  #appNotificationPopup {
+    width: 90vw;
+    right: 5px;
+    left: auto;
+  }
+
+  .app-header-search {
+    display: none !important;
+  }
+
+  .app-notification-detail-title {
+    font-size: 1rem;
+  }
+
+  .app-notification-detail-body {
+    padding: 1rem;
+    font-size: 0.9rem;
+  }
+
+  .app-notification-detail-message {
+    padding: 0.8rem;
+  }
+}
