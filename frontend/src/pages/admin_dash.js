@@ -5,7 +5,7 @@ import API_BASE_URL from '../config/config';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import '../styles/admin_dash.css';
 
-const Every_info = () => {
+const EveryInfo = () => {
     const navigate = useNavigate();
     const [totalStudents, setTotalStudents] = useState(0);
     const [advisorSummary, setAdvisorSummary] = useState([]);
@@ -202,4 +202,4 @@ const Every_info = () => {
     );
 };
 
-export default Every_info;
+export default EveryInfo;

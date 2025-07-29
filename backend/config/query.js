@@ -1,6 +1,6 @@
 const client = require('./db');
 const { generateRoutine, formatGradeSheet, formatSemesterRoutine, formatFee, formatExamData, formatStudentWithRoommates } = require('../utils');
-const { get } = require('../routes/dashboardRoutes');
+
 
 
 

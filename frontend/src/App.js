@@ -20,7 +20,7 @@ import AddNotice from './pages/addNotice';
 import HODStd from './pages/HOD_page';
 import AllocateSubject from './pages/allocateSubject';
 import AdvisorStd from './pages/advisor';
-import Every_info from './pages/admin_dash';
+import EveryInfo from './pages/admin_dash';
 
 
 
@@ -68,7 +68,7 @@ export default function App() {
         <Route path='/HOD_page' element = {<HODStd/>} />
         <Route path='/allocateSubject' element = {<AllocateSubject/>} />
         <Route path= '/advisor' element={<AdvisorStd/>} />
-        <Route path='/admin_dash' element={<Every_info/>} />
+        <Route path='/admin_dash' element={<EveryInfo/>} />
         {/* Add more routes as needed */}
         
       </Routes>
