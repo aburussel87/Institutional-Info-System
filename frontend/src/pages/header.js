@@ -274,7 +274,7 @@ const Header = () => {
           <a className="btn btn-outline-primary w-100 mb-2" href="/studentFee">Student Fee</a>
           <a className="btn btn-outline-primary w-100 mb-2" href="/exam_schedule">Exam Details</a>
           <Button
-            className="btn btn-outline-primary w-100 mb-2"
+            className="btn btn-outline-secodary w-100 mb-2"
             onClick={handleResetPassword}
           >
             Reset Password
@@ -300,9 +300,16 @@ const Header = () => {
             className="fas fa-bell fs-4 app-notification-bell"
             onClick={toggleNotifications}
           ></i>
-          <Badge pill bg="danger" className="position-absolute top-0 start-100 translate-middle">
+          <Badge
+            pill
+            bg="danger"
+            style={{ fontSize: '0.75rem', padding: '2px 4px' }}
+            className="position-absolute top-0 start-100 translate-middle"
+          >
             {unreadCount}
           </Badge>
+
+
 
           {showNotifications && (
             <div

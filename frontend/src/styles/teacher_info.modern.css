@@ -1,0 +1,144 @@
+.teacher-profile-wrapper {
+  padding: 2rem 1rem 3rem;
+  max-width: 1080px;
+  margin: 0 auto 3rem;
+  font-family: 'Poppins', 'Segoe UI', 'Roboto', sans-serif;
+  color: #2b2b2b;
+}
+
+.teacher-profile-header {
+    margin-top: 50px;
+  background: #f8faff;
+  border-radius: 1rem;
+  gap: 1.5rem;
+  box-shadow: 0 4px 20px rgba(33, 133, 208, 0.1);
+  transition: box-shadow 0.3s ease;
+}
+.teacher-profile-header:hover {
+  box-shadow: 0 8px 32px rgba(33, 133, 208, 0.22);
+}
+
+.teacher-avatar {
+  width: 110px;
+  height: 110px;
+  object-fit: cover;
+  border: 4px solid white;
+  box-shadow: 0 3px 14px rgb(33 133 208 / 0.3);
+  transition: box-shadow 0.2s ease;
+}
+.teacher-avatar:hover {
+  box-shadow: 0 6px 22px rgb(33 133 208 / 0.55);
+}
+
+.teacher-name {
+  font-weight: 700;
+  font-size: 2.2rem;
+  margin-bottom: 0.2rem;
+  color: #1454b9;
+  transition: color 0.3s ease;
+}
+.teacher-name:hover {
+  color: #0e3974;
+  cursor: default;
+}
+
+.teacher-designation {
+  font-weight: 500;
+  font-size: 1.1rem;
+  color: #556677;
+}
+
+.teacher-info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.8rem 2rem;
+  margin-top: 2rem;
+}
+
+.teacher-info-card {
+  background: #ffffff;
+  border-radius: 1.1rem;
+  padding: 1.7rem 2rem;
+  box-shadow: 0 4px 18px rgba(33, 133, 208, 0.07);
+  transition: box-shadow 0.3s ease, transform 0.35s ease;
+}
+
+.teacher-info-card:hover {
+  box-shadow: 0 10px 26px rgba(33, 133, 208, 0.18);
+  transform: translateY(-3px);
+}
+
+.card-title {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #1a3c6e;
+  border-bottom: 2px solid #a0c4f8;
+  padding-bottom: 0.3rem;
+  margin-bottom: 1.4rem;
+  user-select: none;
+}
+
+.info-desc {
+  display: flex;
+  justify-content: space-between;
+  font-size: 1rem;
+  margin-bottom: 0.7rem;
+  color: #42506a;
+}
+
+.info-desc span:first-child {
+  font-weight: 600;
+  color: #2a3c6e;
+}
+
+.courses-list {
+  list-style: disc inside;
+  margin: 0;
+  padding-inline-start: 1rem;
+  color: #375eab;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.course-item {
+  margin-bottom: 0.5rem;
+}
+
+.teacher-loader,
+.teacher-error {
+  font-size: 1.25rem;
+  margin-top: 4rem;
+  text-align: center;
+  color: #a33;
+}
+
+@media (max-width: 768px) {
+  .teacher-profile-wrapper {
+    padding: 1rem 0.8rem 2rem;
+  }
+  .teacher-profile-header {
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+  }
+  .teacher-name {
+    font-size: 1.8rem;
+  }
+  .card-title {
+    font-size: 1.2rem;
+  }
+  .info-desc {
+    font-size: 0.9rem;
+  }
+  .teacher-info-card {
+    padding: 1.3rem 1.5rem;
+  }
+  .teacher-avatar {
+    width: 90px;
+    height: 90px;
+  }
+  .teacher-info-grid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+}

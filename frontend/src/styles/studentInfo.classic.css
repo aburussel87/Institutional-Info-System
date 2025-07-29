@@ -1,0 +1,124 @@
+.student-info-page {
+  min-height: 100vh;
+  background: #f4f8fe;
+  font-family: 'Poppins', 'IBM Plex Sans', 'Segoe UI', Arial, sans-serif;
+}
+
+.classic-title-hover, .classic-section-title-hover {
+  cursor: pointer;
+  transition: color 0.16s, text-shadow 0.18s;
+  display: inline-block;
+}
+.classic-title-hover:hover, .classic-section-title-hover:hover,
+.classic-title-hover:focus, .classic-section-title-hover:focus {
+  color: #1454b9;
+  text-shadow: 0 2px 14px #b9daff99;
+  text-decoration: underline dotted;
+}
+
+
+.classic-card {
+  background: #fff;
+  border-radius: 24px;
+  box-shadow: 0 6px 30px 0 rgba(33,133,208,0.13), 0 1.5px 8px rgba(44,77,118,0.06);
+  padding: 2.5rem 2rem 2rem 2rem;
+  margin-bottom: 28px;
+  max-width: 850px;
+}
+
+.classic-avatar {
+  width: 116px;
+  height: 116px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 5px solid #f8fafc;
+  background: #e4eaf5;
+  margin-bottom: 2px;
+  box-shadow: 0 1.5px 12px rgba(30,61,160,.12);
+}
+
+.student-profile-title {
+    margin-top: 50px;
+  font-size: 2.25rem;
+  letter-spacing: -1.1px;
+  font-weight: 700;
+}
+
+.classic-section-title {
+  font-size: 1.14rem;
+  font-weight: 700;
+  margin-bottom: 0.7rem;
+  color: #3366bb;
+  letter-spacing: 0.025em;
+  text-shadow: 0 1px 6px #eaf3ff52;
+}
+
+.list-group-item {
+  font-size: 1.06rem;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid #e9edf4;
+  padding: 0.78rem 0.5rem;
+  transition: background 0.08s;
+}
+.list-group-item:last-child {
+  border-bottom: none;
+}
+.list-group-item span {
+  color: #465468;
+}
+
+.badge.bg-secondary {
+  background-color: #8ca8c0!important;
+  color: #f6fafd!important;
+}
+
+.badge.bg-success, .badge.bg-danger {
+  font-size: 1rem;
+  padding: 0.33em 1.05em;
+  border-radius: 999px;
+  font-weight: 600;
+}
+
+.classic-alert {
+  max-width: 420px;
+  margin: 0 auto;
+  font-weight: 600;
+  border-radius: 12px;
+  font-size: 1.03rem;
+}
+
+@media (max-width: 900px) {
+  .classic-card {
+    padding: 1.2rem 1.1rem 1.3rem 1.1rem;
+    max-width: 99vw;
+  }
+  .student-profile-title {
+    font-size: 1.35rem;
+  }
+  .classic-avatar {
+    width: 90px;
+    height: 90px;
+  }
+}
+
+@media (max-width: 600px) {
+  .classic-card {
+    padding: 1rem 0.25rem 0.8rem 0.25rem;
+    border-radius: 12px;
+  }
+  .list-group-item {
+    font-size: 0.97rem;
+    padding: 0.52rem 0.35rem;
+  }
+  .classic-section-title {
+    font-size: 1.03rem;
+  }
+  .student-profile-title {
+    font-size: 1.01rem;
+  }
+  .classic-avatar {
+    width: 64px;
+    height: 64px;
+  }
+}

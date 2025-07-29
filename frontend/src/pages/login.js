@@ -1,10 +1,10 @@
 import API_BASE_URL from '../config/config';
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import '../styles/login.css';
 
-import '../styles/login.css'
 const Login = () => {
-  const [username, setUsername] = useState(''); 
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [msg, setMsg] = useState('');
@@ -15,67 +15,63 @@ const Login = () => {
   const handleLogin = async (e) => {
     e.preventDefault();
     setMsg('');
-
     if (!username || !password) {
       setMsg('Please enter both username and password.');
       return;
     }
-
     try {
       const response = await fetch(`${API_BASE_URL}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password }),
       });
-
       if (!response.ok) {
         const errorText = await response.text();
         setMsg(`Login failed: ${errorText}`);
         return;
       }
-
       const data = await response.json();
       localStorage.setItem('token', data.token);
       setMsg('Login successful! Redirecting...');
-      // Check user role and redirect accordingly
-      let userRole = null;  //change from 
+      let userRole = null;
       if (data.user && data.user.role) {
         userRole = data.user.role;
       } else {
         try {
           const payload = JSON.parse(atob(data.token.split('.')[1]));
           userRole = payload.role;
-        } catch (e) {
-          userRole = null;
-        }
+        } catch (e) { userRole = null; }
       }
       if (userRole === 'Student') {
         setTimeout(() => navigate('/dashboard'), 1000);
       } else if (userRole === 'Teacher' || userRole === 'Advisor' || userRole === 'Provost') {
         setTimeout(() => navigate('/teacher_dash'), 1000);
-       } //  else {
-      //   setTimeout(() => navigate('/dashboard'), 1000); // fallback
-      // }
+      }
     } catch (error) {
-      console.error('Login error:', error);
       setMsg('An error occurred. Please try again later.');
     }
   };
 
   return (
     <div className="login-page d-flex justify-content-center align-items-center vh-100">
-      <div className="login-card p-4 rounded-4 shadow-lg">
+      <div className="login-bg-bubbles" aria-hidden="true">
+        {[...Array(15)].map((_, i) => (
+          <div key={i} className={`bubble bubble-${i + 1}`}></div>
+        ))}
+      </div>
+      <div className="login-card p-4 rounded-4 shadow-lg position-relative">
         <div className="text-center mb-4">
-          <img src="/images/logo.png" alt="Finguard Logo" className="logo img-fluid" />
-        </div>
+          <img src="/images/logo.png" alt="Institutional Info System" className="logo img-fluid" style={{ maxWidth: '130px' }} />
 
+          <h1 className="login-title mt-3 mb-1">Institutional Info System</h1>
+          <span className="login-subtitle">Please login to continue</span>
+        </div>
         {msg && (
-          <div className={`alert ${msg.toLowerCase().includes('success') ? 'alert-success' : 'alert-danger'}`} role="alert">
+          <div className={`alert ${msg.toLowerCase().includes('success') ? 'alert-success' : 'alert-danger'} fade-in`} role="alert">
             {msg}
           </div>
         )}
-
-        <form onSubmit={handleLogin}>
+        <form onSubmit={handleLogin} autoComplete="on">
           <div className="mb-3">
             <input
               type="text"
@@ -87,7 +83,6 @@ const Login = () => {
               required
             />
           </div>
-
           <div className="mb-3 position-relative">
             <input
               type={showPassword ? 'text' : 'password'}
@@ -102,13 +97,13 @@ const Login = () => {
               type="button"
               className="btn btn-outline-secondary btn-sm position-absolute top-50 end-0 translate-middle-y me-2"
               onClick={togglePassword}
+              tabIndex={-1}
               aria-label="Toggle Password Visibility"
             >
               {showPassword ? '🙈' : '👁️'}
             </button>
           </div>
-
-          <button type="submit" className="btn btn-primary w-100 btn-lg">Login</button>
+          <button type="submit" className="btn btn-primary w-100 btn-lg login-btn-anim">Login</button>
         </form>
       </div>
     </div>
