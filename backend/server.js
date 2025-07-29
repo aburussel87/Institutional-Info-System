@@ -29,6 +29,7 @@ const add_notificationRoute = require('./routes/add_notificationRoutes');
 const add_courseMaterials = require('./routes/add_CourseMaterialRoutes');
 const department_data_routes = require('./routes/department_dataRoutes');
 const AllocateSubject = require('./routes/allocate_subjectRoutes');
+const advisor = require('./routes/advisorRoutes');
 
 
 const jwt = require('jsonwebtoken');
@@ -64,6 +65,7 @@ app.use('/api/notification',add_notificationRoute);
 app.use('/api/courseMaterials',add_courseMaterials);
 app.use('/api/department',department_data_routes);
 app.use('/api/subjectAllocation',AllocateSubject);
+app.use('/api/advisor',advisor);
 
 
 

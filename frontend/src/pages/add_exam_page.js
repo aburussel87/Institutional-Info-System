@@ -1,10 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import { Modal, Button, Form, Card, Spinner, Alert } from 'react-bootstrap';
-import API_BASE_URL from '../config/config';
-import Header from './teacher_header';
+import React, { useState, useEffect } from "react";
+import {useNavigate } from "react-router-dom";
+import { jwtDecode } from "jwt-decode";
+import Header from "../pages/teacher_header";
+import API_BASE_URL from "../config/config";
 import styles from '../styles/add_exam_page.module.css';
+import { Modal, Button, Form, Card, Spinner, Alert } from 'react-bootstrap';
 
 const AddExam = () => {
+  const navigate = useNavigate();
   const [courses, setCourses] = useState([]);
   const [selectedCourse, setSelectedCourse] = useState(null);
   const [showExamModal, setShowExamModal] = useState(false);
@@ -62,8 +65,23 @@ const AddExam = () => {
   };
 
   useEffect(() => {
+    let token = localStorage.getItem("token");
+    if (!token) {
+      setMessage("You are not logged in!");
+      setTimeout(() => navigate("/login"), 1000);
+      return;
+    }
+
+    try {
+      jwtDecode(token);
+    } catch (e) {
+      setMessage("Invalid token. Please log in again.");
+      setTimeout(() => navigate("/login"), 1000);
+      return;
+    }
+
     fetchCoursesAndExams();
-  }, []);
+  }, [navigate]);
 
   const openAddExamModal = (course) => {
     setSelectedCourse(course);
@@ -263,17 +281,16 @@ const AddExam = () => {
   };
 
   const formatStudentIds = (students) => {
-  const rows = [];
-  for (let i = 0; i < students.length; i += 5) {
-    const row = students
-      .slice(i, i + 4)
-      .map(s => `${s.student_id}-${s.mark}`)
-      .join(' | ');
-    rows.push(row);
-  }
-  return rows;
-};
-
+    const rows = [];
+    for (let i = 0; i < students.length; i += 5) {
+      const row = students
+        .slice(i, i + 4)
+        .map(s => `${s.student_id}-${s.mark}`)
+        .join(' | ');
+      rows.push(row);
+    }
+    return rows;
+  };
 
   return (
     <div className={styles['addexam-container']}>
@@ -293,20 +310,29 @@ const AddExam = () => {
                 className={styles['addexam-card']}
                 onClick={() => openAddExamModal(course)}
               >
-                <Card.Body>
-                  <Card.Title>{course.course_title}</Card.Title>
-                  <Card.Subtitle className="mb-2 text-muted">
-                    {course.course_id} / Dept ID: {course.department}
-                  </Card.Subtitle>
-                  <Card.Text>
-                    Semester: {course.semester}
-                    <br />
-                    Section: {course.section_type}
-                    <br />
-                    Session: {course.session}
-                    <br />
-                    Total Enrolled Students: {course.total}
-                  </Card.Text>
+                <Card.Body className={styles['addexam-card-body-layout']}>
+                  <div className={styles['addexam-card-image-container']}>
+                    <img
+                      src={course.photo || `https://ui-avatars.com/api/?name=${course.course_title}&background=007bff&color=fff&bold=true&size=128`}
+                      alt={`${course.course_title} course`}
+                      className={styles['addexam-card-image']}
+                    />
+                  </div>
+                  <div className={styles['addexam-card-details']}>
+                    <Card.Title className={styles['addexam-card-title']}>{course.course_title}</Card.Title>
+                    <Card.Subtitle className={styles['addexam-card-subtitle']}>
+                      {course.course_id} / Dept ID: {course.department}
+                    </Card.Subtitle>
+                    <Card.Text className={styles['addexam-card-text']}>
+                      Semester: {course.semester}
+                      <br />
+                      Section: {course.section_type}
+                      <br />
+                      Session: {course.session}
+                      <br />
+                      Total Enrolled Students: {course.total}
+                    </Card.Text>
+                  </div>
                 </Card.Body>
               </Card>
             ))}

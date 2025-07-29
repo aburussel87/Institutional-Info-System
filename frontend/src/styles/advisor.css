@@ -1,0 +1,454 @@
+/* advisor.css */
+.advisor-page-container {
+  background-color: #f0f2f5;
+  min-height: 100vh;
+  font-family: 'Inter', sans-serif;
+  color: #343a40;
+  padding-bottom: 30px;
+}
+
+.advisor-content-wrapper {
+  padding-top: 40px;
+  padding-bottom: 40px;
+  max-width: 1000px;
+  margin: auto;
+}
+
+.advisor-page-title {
+  margin-top: 50px;
+  color: #2c3e50;
+  font-weight: 700;
+  margin-bottom: 40px;
+  position: relative;
+  padding-bottom: 15px;
+  font-size: 2.5rem;
+  letter-spacing: 1px;
+}
+
+.advisor-page-title::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  transform: translateX(-50%);
+  width: 100px;
+  height: 4px;
+  background-color: #007bff;
+  border-radius: 5px;
+}
+
+.advisor-accordion .accordion-item {
+  margin-bottom: 20px;
+  border: none;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  background: linear-gradient(145deg, #ffffff, #f0f0f0);
+}
+
+.advisor-accordion .accordion-item:hover {
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.15);
+  transform: translateY(-3px);
+}
+
+.advisor-accordion .accordion-header {
+  background: linear-gradient(90deg, #007bff, #0056b3);
+  border-bottom: none;
+  border-radius: 12px 12px 0 0;
+}
+
+.advisor-accordion .accordion-button {
+  font-weight: 600;
+  color: #ffffff;
+  padding: 18px 25px;
+  background-color: transparent;
+  border-radius: 12px 12px 0 0;
+  transition: background-color 0.3s ease, color 0.3s ease;
+  font-size: 1.2rem;
+}
+
+.advisor-accordion .accordion-button:not(.collapsed) {
+  background: linear-gradient(90deg, #0056b3, #007bff);
+  color: #ffffff;
+  box-shadow: inset 0 -3px 0 rgba(0, 0, 0, 0.2);
+}
+
+.advisor-accordion .accordion-button:focus {
+  box-shadow: none;
+  border-color: transparent;
+}
+
+.advisor-accordion .accordion-body {
+  padding: 25px;
+  background-color: #ffffff;
+  border-radius: 0 0 12px 12px;
+}
+
+.advisor-student-list {
+  display: grid;
+  gap: 20px;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+}
+
+.advisor-student-card {
+  cursor: pointer;
+  border: 1px solid #e0e0e0;
+  border-radius: 10px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  background-color: #ffffff;
+  position: relative;
+  overflow: hidden;
+}
+
+.advisor-student-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 5px;
+  background: linear-gradient(90deg, #007bff, #28a745);
+  transform: translateY(-100%);
+  transition: transform 0.3s ease-out;
+}
+
+.advisor-student-card:hover::before {
+  transform: translateY(0);
+}
+
+.advisor-student-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.advisor-student-card-body {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 20px;
+}
+
+.advisor-student-info {
+  flex-grow: 1;
+  margin-bottom: 15px;
+}
+
+.advisor-student-name {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #2c3e50;
+  margin-bottom: 8px;
+}
+
+.advisor-student-mobile,
+.advisor-student-semester {
+  font-size: 0.95rem;
+  color: #6c757d;
+  margin-bottom: 5px;
+}
+
+.advisor-view-details-btn {
+  white-space: nowrap;
+  border-radius: 25px;
+  padding: 10px 20px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  background-color: #007bff;
+  border-color: #007bff;
+  color: #ffffff;
+  transition: background-color 0.3s ease, border-color 0.3s ease, transform 0.2s ease;
+}
+
+.advisor-view-details-btn:hover {
+  background-color: #0056b3;
+  border-color: #0056b3;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+.advisor-details-modal .modal-content {
+  border-radius: 15px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+  border: none;
+  font-family: 'Inter', sans-serif;
+  overflow: hidden;
+}
+
+.advisor-modal-header {
+  background: linear-gradient(90deg, #007bff, #0056b3);
+  color: #ffffff;
+  border-bottom: none;
+  padding: 20px 30px;
+  border-radius: 15px 15px 0 0;
+  position: relative;
+}
+
+.advisor-modal-title {
+  font-weight: 700;
+  font-size: 1.8rem;
+  letter-spacing: 0.5px;
+}
+
+.advisor-modal-header .btn-close {
+  filter: invert(1);
+  font-size: 1.2rem;
+  opacity: 0.8;
+  transition: opacity 0.2s ease;
+}
+
+.advisor-modal-header .btn-close:hover {
+  opacity: 1;
+}
+
+.advisor-modal-body {
+  padding: 30px;
+  background-color: #fcfdff;
+}
+
+.advisor-modal-student-info {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 30px;
+  background-color: #ffffff;
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.advisor-student-photo {
+  width: 130px;
+  height: 130px;
+  object-fit: cover;
+  border: 5px solid #e0e0e0;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease;
+}
+
+.advisor-student-photo:hover {
+  transform: scale(1.05);
+}
+
+.advisor-modal-username {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #2c3e50;
+  margin-top: 15px;
+  margin-bottom: 5px;
+}
+
+.advisor-modal-id {
+  font-size: 1rem;
+  color: #6c757d;
+}
+
+.advisor-info-table {
+  width: 100%;
+  margin-bottom: 0;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid #e9ecef;
+}
+
+.advisor-info-table td {
+  padding: 10px 15px;
+  font-size: 0.98rem;
+  vertical-align: middle;
+  border-color: #f0f2f5;
+}
+
+.advisor-info-table tr:first-child td {
+  border-top: none;
+}
+
+.advisor-info-table strong {
+  color: #495057;
+  font-weight: 600;
+}
+
+.advisor-divider {
+  border-top: 2px dashed #ced4da;
+  margin: 40px 0;
+}
+
+.advisor-enrollment-title {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #2c3e50;
+  margin-bottom: 20px;
+  border-left: 5px solid #007bff;
+  padding-left: 15px;
+}
+
+.advisor-enrollment-table,
+.advisor-additional-table {
+  font-size: 0.9rem;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  background-color: #ffffff;
+}
+
+.advisor-enrollment-table th,
+.advisor-enrollment-table td,
+.advisor-additional-table th,
+.advisor-additional-table td {
+  padding: 10px 15px;
+  vertical-align: middle;
+  border-color: #e9ecef;
+}
+
+.advisor-enrollment-table thead th,
+.advisor-additional-table thead th {
+  background-color: #f0f2f5;
+  color: #495057;
+  font-weight: 600;
+  border-bottom: 2px solid #dee2e6;
+}
+
+.advisor-enrollment-table tbody tr:nth-of-type(odd),
+.advisor-additional-table tbody tr:nth-of-type(odd) {
+  background-color: #fcfdff;
+}
+
+.status-approved {
+  color: #28a745;
+  font-weight: 600;
+}
+
+.status-pending {
+  color: #ffc107;
+  font-weight: 600;
+}
+
+.status-not-enrolled {
+  color: #dc3545;
+  font-weight: 600;
+}
+
+.status-not-eligible {
+  color: #6c757d;
+  font-weight: 600;
+}
+
+.approve-btn {
+  border-radius: 20px;
+  padding: 5px 12px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  background-color: #28a745;
+  border-color: #28a745;
+  transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.approve-btn:hover {
+  background-color: #218838;
+  border-color: #1e7e34;
+  transform: translateY(-1px);
+}
+
+.advisor-modal-footer {
+  border-top: none;
+  padding: 20px 30px;
+  background-color: #f0f2f5;
+  border-radius: 0 0 15px 15px;
+}
+
+.advisor-close-btn {
+  padding: 10px 25px;
+  border-radius: 25px;
+  font-weight: 600;
+  background-color: #6c757d;
+  border-color: #6c757d;
+  color: #ffffff;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.advisor-close-btn:hover {
+  background-color: #5a6268;
+  border-color: #545b62;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+@media (max-width: 992px) {
+  .advisor-content-wrapper {
+    padding: 20px;
+  }
+  .advisor-page-title {
+    font-size: 2rem;
+  }
+  .advisor-student-list {
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .advisor-modal-student-info {
+    flex-direction: column;
+    text-align: center;
+    padding: 15px;
+  }
+  .advisor-student-photo {
+    margin-bottom: 15px;
+  }
+  .advisor-student-card-body {
+    align-items: center;
+  }
+  .advisor-student-info {
+    text-align: center;
+    margin-bottom: 15px;
+  }
+  .advisor-view-details-btn {
+    width: 100%;
+  }
+  .advisor-modal-title {
+    font-size: 1.5rem;
+  }
+  .advisor-modal-body {
+    padding: 20px;
+  }
+  .advisor-info-table td {
+    font-size: 0.9rem;
+    padding: 8px 10px;
+  }
+  .advisor-enrollment-title {
+    font-size: 1.2rem;
+    padding-left: 10px;
+  }
+  .advisor-enrollment-table th,
+  .advisor-enrollment-table td,
+  .advisor-additional-table th,
+  .advisor-additional-table td {
+    font-size: 0.85rem;
+    padding: 8px 10px;
+  }
+}
+
+@media (max-width: 576px) {
+  .advisor-page-title {
+    font-size: 1.8rem;
+  }
+  .advisor-accordion .accordion-button {
+    font-size: 1rem;
+    padding: 15px 20px;
+  }
+  .advisor-student-name {
+    font-size: 1.1rem;
+  }
+  .advisor-student-mobile,
+  .advisor-student-semester {
+    font-size: 0.85rem;
+  }
+  .advisor-modal-title {
+    font-size: 1.3rem;
+  }
+  .advisor-modal-header,
+  .advisor-modal-footer {
+    padding: 15px 20px;
+  }
+  .advisor-close-btn {
+    width: 100%;
+  }
+}

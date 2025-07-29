@@ -4,6 +4,12 @@ const { generateRoutine, formatGradeSheet, formatSemesterRoutine, formatFee, for
 
 
 
+async function get_advisor_data(advisor_id){
+  const query =`SELECT get_advised_students($1);`
+const result =  (await client.query(query,[advisor_id]));
+return result.rows[0];
+}
+
 async function get_dept_wise_subject_allocation(department_id) {
   const query = `SELECT * from get_subject_allocation($1)`;
   const res = await client.query(query, [department_id]);
@@ -485,5 +491,6 @@ module.exports = {
   get_failed_prerequisites,
   get_all_failed_courses,
   get_eligible_missed_courses,
-  get_dept_wise_subject_allocation
+  get_dept_wise_subject_allocation,
+  get_advisor_data
 };

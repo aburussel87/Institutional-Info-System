@@ -198,11 +198,6 @@ const Header = () => {
           <a className="btn btn-outline-primary w-100 mb-2" href="/teacher_info">Profile</a>
           <a className="btn btn-outline-primary w-100 mb-2" href="/add_exam_page">Schedule Exam</a>
           <a className="btn btn-outline-primary w-100 mb-2" href="/addNotice">Add Notice</a>
-          {isAdvisor && (
-            <a className="btn btn-outline-primary w-100 mb-2" href="/advisor">
-              Advisor Panel
-            </a>
-          )}
           {isProvost && (
             <a className="btn btn-outline-primary w-100 mb-2" href="/provost_page">
               Provost Panel
@@ -217,6 +212,12 @@ const Header = () => {
           {isHOD && (
             <a className="btn btn-outline-primary w-100 mb-2" href="/allocateSubject">
               Allocate Subject
+            </a>
+            
+          )}
+          {isAdvisor && (
+            <a className="btn btn-outline-primary w-100 mb-2" href="/advisor">
+              Advisor Panel
             </a>
             
           )}

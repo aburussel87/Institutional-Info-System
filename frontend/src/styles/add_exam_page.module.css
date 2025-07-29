@@ -1,392 +1,432 @@
+/* add_exam_page.module.css */
+
 .addexam-container {
+  margin-top: 50px;
+  background-color: #f8f9fa;
   min-height: 100vh;
-  background: linear-gradient(to bottom right, #e0f2f7, #c6e7f2);
-  padding: 30px 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  font-family: 'Inter', sans-serif;
+  color: #343a40;
+  padding-bottom: 40px;
 }
 
 .addexam-content {
-  width: 100%;
   max-width: 1200px;
-  padding: 20px;
-  background: rgba(255, 255, 255, 0.15);
-  border-radius: 20px;
-  box-shadow: 0 10px 40px 0 rgba(31, 38, 135, 0.3);
-  backdrop-filter: blur(15px);
-  -webkit-backdrop-filter: blur(15px);
-  border: 1px solid rgba(255, 255, 255, 0.4);
-  margin-top: 20px;
-  margin-bottom: 50px;
+  margin: 0 auto;
+  padding: 40px 20px;
 }
 
 .addexam-title, .scheduled-exams-title {
-  text-align: center;
-  color: #2c3e50;
-  margin-bottom: 30px;
-  font-size: 2.5em;
+
+  font-size: 2.5rem;
   font-weight: 700;
-  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.1);
-  letter-spacing: 1px;
+  color: #2c3e50;
+  text-align: center;
+  margin-bottom: 30px;
+  position: relative;
+  padding-bottom: 15px;
+  letter-spacing: 0.5px;
 }
 
-.addexam-instruction, .no-exams-message {
+.addexam-title::after, .scheduled-exams-title::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  transform: translateX(-50%);
+  width: 80px;
+  height: 4px;
+  background-color: #007bff;
+  border-radius: 5px;
+}
+
+.addexam-instruction {
   text-align: center;
+  font-size: 1.1rem;
   color: #555;
-  font-size: 1.1em;
-  margin-bottom: 30px;
+  margin-bottom: 40px;
 }
 
 .addexam-spinner {
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 150px;
+  min-height: 200px;
 }
 
 .custom-spinner {
-  color: #007bff !important;
-  width: 3.5rem;
-  height: 3.5rem;
-  border-width: 0.35em !important;
+  color: #007bff;
+  width: 3rem;
+  height: 3rem;
 }
 
 .addexam-card-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 25px;
-  padding: 20px 0;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 30px;
+  margin-bottom: 60px;
 }
 
-.addexam-card, .scheduled-exam-card {
-  background: rgba(255, 255, 255, 0.2);
+.addexam-card {
+  border: none;
   border-radius: 15px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  overflow: hidden;
+  background: linear-gradient(145deg, #ffffff, #f0f0f0);
+  position: relative;
+}
+
+.addexam-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 6px;
+  background: linear-gradient(90deg, #007bff, #28a745);
+  transform: translateY(-100%);
+  transition: transform 0.3s ease-out;
+}
+
+.addexam-card:hover::before {
+  transform: translateY(0);
+}
+
+.addexam-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+}
+
+.addexam-card-body-layout {
   display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-}
-
-.addexam-card:hover, .scheduled-exam-card:hover {
-  transform: translateY(-5px) scale(1.02);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-}
-
-.addexam-card .card-body, .scheduled-exam-card .card-body {
+  align-items: center;
   padding: 25px;
+}
+
+.addexam-card-image-container {
+  flex-shrink: 0;
+  margin-right: 20px;
+}
+
+.addexam-card-image {
+  width: 100px;
+  height: 100px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 4px solid #e0e0e0;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.addexam-card-details {
   flex-grow: 1;
 }
 
-.addexam-card .card-title, .exam-card-title {
-  font-size: 1.4em;
-  font-weight: 600;
-  color: #72adec;
+.addexam-card-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #2c3e50;
+  margin-bottom: 8px;
+}
+
+.addexam-card-subtitle {
+  font-size: 0.95rem;
+  color: #6c757d;
   margin-bottom: 10px;
 }
 
-.addexam-card .card-subtitle {
-  font-size: 0.9em;
-  color: #666;
-  margin-bottom: 15px;
-}
-
-.addexam-card .card-text {
-  font-size: 0.95em;
-  color: #444;
+.addexam-card-text {
+  font-size: 0.9rem;
+  color: #555;
   line-height: 1.6;
 }
 
 .scheduled-exams-list {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
   gap: 25px;
-  padding: 20px 0;
 }
 
-.scheduled-exam-card .exam-card-title {
-  color: #32cd32;
+.scheduled-exam-card {
+  border: none;
+  border-radius: 12px;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+  background-color: #ffffff;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-.scheduled-exam-card .card-text strong {
-  color: #0056b3;
+.scheduled-exam-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
 }
 
 .scheduled-exam-card-body {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start; /* Align content to the top */
-  flex-wrap: nowrap; /* Prevent wrapping on larger screens */
-  padding: 25px; /* Ensure consistent padding */
+  align-items: center;
+  padding: 20px;
 }
 
-.scheduled-exam-card-body > div:first-child {
-  flex-grow: 1; /* Allow content to take available space */
-  flex-shrink: 1; /* Allow content to shrink if needed */
-  min-width: 0; /* Important for flex items with long content */
-  padding-right: 15px; /* Add space between content and buttons */
+.exam-card-title {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 5px;
 }
 
 .exam-actions-right {
   display: flex;
-  flex-direction: column; /* Stack buttons vertically */
+  flex-direction: column;
   gap: 10px;
-  flex-shrink: 0; /* Prevent actions from shrinking */
-  margin-left: auto; /* Push to the right */
-  align-items: flex-end; /* Align buttons to the right within their container */
+  align-items: flex-end;
 }
 
 .action-button {
-  font-weight: 500;
-  padding: 8px 18px;
-  border-radius: 8px;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  white-space: nowrap;
+  padding: 8px 15px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  min-width: 100px;
+  transition: all 0.2s ease;
 }
 
 .action-button.btn-info {
-  background: linear-gradient(45deg, #17a2b8, #117a8b) !important;
-  border: none !important;
-  color: white !important;
+  background-color: #17a2b8;
+  border-color: #17a2b8;
+}
+.action-button.btn-info:hover {
+  background-color: #138496;
+  border-color: #117a8b;
+  transform: translateY(-1px);
 }
 
-.action-button.btn-info:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(23, 162, 184, 0.3);
+.action-button.btn-primary {
+  background-color: #007bff;
+  border-color: #007bff;
+}
+.action-button.btn-primary:hover {
+  background-color: #0056b3;
+  border-color: #004aab;
+  transform: translateY(-1px);
 }
 
 .action-button.btn-secondary {
-  background: linear-gradient(45deg, #6c757d, #5a6268) !important;
-  border: none !important;
-  color: white !important;
+  background-color: #6c757d;
+  border-color: #6c757d;
 }
-
 .action-button.btn-secondary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(108, 117, 125, 0.3);
+  background-color: #5a6268;
+  border-color: #545b62;
+  transform: translateY(-1px);
 }
 
 .action-button.btn-danger {
-  background: linear-gradient(45deg, #dc3545, #b02a37) !important;
-  border: none !important;
-  color: white !important;
+  background-color: #dc3545;
+  border-color: #dc3545;
 }
-
 .action-button.btn-danger:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3);
+  background-color: #c82333;
+  border-color: #bd2130;
+  transform: translateY(-1px);
 }
 
+.no-exams-message {
+  text-align: center;
+  font-size: 1.1rem;
+  color: #777;
+  margin-top: 30px;
+}
+
+/* Modal Styles */
 .custom-modal .modal-content {
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 20px;
-  box-shadow: 0 10px 40px 0 rgba(31, 38, 135, 0.3);
-  backdrop-filter: blur(15px);
-  -webkit-backdrop-filter: blur(15px);
-  border: 1px solid rgba(255, 255, 255, 0.4);
-  color: #333;
+  border-radius: 15px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+  border: none;
+  overflow: hidden;
 }
 
 .modal-header-custom {
-  background: linear-gradient(45deg, #007bff, #0056b3) !important;
-  border-bottom: none !important;
-  border-top-left-radius: 20px !important;
-  border-top-right-radius: 20px !important;
-  color: white !important;
-  padding: 20px 25px;
+  background: linear-gradient(90deg, #007bff, #0056b3);
+  color: #ffffff;
+  border-bottom: none;
+  padding: 20px 30px;
+  border-radius: 15px 15px 0 0;
+}
+
+.modal-header-custom-danger {
+  background: linear-gradient(90deg, #dc3545, #c82333);
+  color: #ffffff;
+  border-bottom: none;
+  padding: 20px 30px;
+  border-radius: 15px 15px 0 0;
 }
 
 .modal-header-custom .btn-close {
   filter: invert(1);
+  font-size: 1.2rem;
+  opacity: 0.8;
 }
-
-.modal-header-custom-danger {
-  background: linear-gradient(45deg, #dc3545, #b02a37) !important;
-  border-bottom: none !important;
-  border-top-left-radius: 20px !important;
-  border-top-right-radius: 20px !important;
-  color: white !important;
-  padding: 20px 25px;
-}
-
-.modal-header-custom-danger .btn-close {
-  filter: invert(1);
+.modal-header-custom .btn-close:hover {
+  opacity: 1;
 }
 
 .modal-body-custom {
-  padding: 30px !important;
+  padding: 30px;
+  background-color: #fcfdff;
 }
 
 .form-control-custom, .form-select-custom {
-  background: rgba(255, 255, 255, 0.4) !important;
-  border: 1px solid rgba(255, 255, 255, 0.6) !important;
-  border-radius: 10px !important;
-  color: #333 !important;
-  padding: 12px 15px;
-  transition: all 0.3s ease;
-}
-
-.form-control-custom::placeholder, .form-select-custom option {
-  color: #666;
+  border-radius: 8px;
+  border: 1px solid #ced4da;
+  padding: 10px 15px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .form-control-custom:focus, .form-select-custom:focus {
-  box-shadow: 0 0 0 0.25rem rgba(0, 123, 255, 0.25) !important;
-  border-color: #007bff !important;
-  background: rgba(255, 255, 255, 0.6) !important;
+  border-color: #007bff;
+  box-shadow: 0 0 0 0.25rem rgba(0, 123, 255, 0.25);
+}
+
+.custom-alert {
+  border-radius: 8px;
+  font-size: 0.95rem;
 }
 
 .modal-footer-custom {
-  border-top: none !important;
-  padding: 20px 25px !important;
-  background: rgba(255, 255, 255, 0.1);
-  border-bottom-left-radius: 20px !important;
-  border-bottom-right-radius: 20px !important;
+  border-top: none;
+  padding: 20px 30px;
+  background-color: #f0f2f5;
+  border-radius: 0 0 15px 15px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 15px;
+}
+
+.modal-button-primary, .modal-button-secondary, .modal-button-danger {
+  padding: 10px 25px;
+  border-radius: 25px;
+  font-weight: 600;
+  transition: all 0.3s ease;
 }
 
 .modal-button-primary {
-  background: linear-gradient(45deg, #007bff, #0056b3) !important;
-  border: none !important;
-  font-weight: bold;
-  padding: 10px 25px;
-  border-radius: 8px;
-  box-shadow: 0 4px 10px rgba(0, 123, 255, 0.3);
-  transition: all 0.3s ease;
+  background-color: #007bff;
+  border-color: #007bff;
+  color: #ffffff;
 }
-
 .modal-button-primary:hover {
+  background-color: #0056b3;
+  border-color: #004aab;
   transform: translateY(-2px);
-  box-shadow: 0 6px 15px rgba(0, 123, 255, 0.4);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
 .modal-button-secondary {
-  background: linear-gradient(45deg, #6c757d, #5a6268) !important;
-  border: none !important;
-  font-weight: bold;
-  padding: 10px 25px;
-  border-radius: 8px;
-  box-shadow: 0 4px 10px rgba(108, 117, 125, 0.3);
-  transition: all 0.3s ease;
+  background-color: #6c757d;
+  border-color: #6c757d;
+  color: #ffffff;
 }
-
 .modal-button-secondary:hover {
+  background-color: #5a6268;
+  border-color: #545b62;
   transform: translateY(-2px);
-  box-shadow: 0 6px 15px rgba(108, 117, 125, 0.4);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
 .modal-button-danger {
-  background: linear-gradient(45deg, #dc3545, #b02a37) !important;
-  border: none !important;
-  font-weight: bold;
-  padding: 10px 25px;
-  border-radius: 8px;
-  box-shadow: 0 4px 10px rgba(220, 53, 69, 0.3);
-  transition: all 0.3s ease;
+  background-color: #dc3545;
+  border-color: #dc3545;
+  color: #ffffff;
+}
+.modal-button-danger:hover {
+  background-color: #c82333;
+  border-color: #bd2130;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
-.modal-button-danger:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 15px rgba(220, 53, 69, 0.4);
+.student-id-list {
+  max-height: 300px;
+  overflow-y: auto;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  padding: 15px;
+  background-color: #fcfdff;
+}
+
+.student-id-row {
+  margin-bottom: 8px;
+  font-size: 0.95rem;
+  color: #495057;
+  padding-bottom: 5px;
+  border-bottom: 1px dashed #e9ecef;
+}
+
+.student-id-row:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
 }
 
 @media (max-width: 768px) {
   .addexam-content {
-    padding: 15px;
-    border-radius: 15px;
+    padding: 20px 15px;
   }
+
   .addexam-title, .scheduled-exams-title {
-    font-size: 2em;
-    margin-bottom: 20px;
+    font-size: 2rem;
+    margin-bottom: 25px;
   }
-  .addexam-instruction, .no-exams-message {
-    font-size: 1em;
-    margin-bottom: 20px;
+
+  .addexam-card-grid {
+    grid-template-columns: 1fr;
   }
-  .addexam-card-grid, .scheduled-exams-list {
-    gap: 15px;
-    padding: 10px 0;
+
+  .addexam-card-body-layout {
+    flex-direction: column;
+    text-align: center;
   }
-  .addexam-card .card-body, .scheduled-exam-card .card-body {
-    padding: 20px;
+
+  .addexam-card-image-container {
+    margin-right: 0;
+    margin-bottom: 15px;
   }
-  .addexam-card .card-title, .exam-card-title {
-    font-size: 1.2em;
+
+  .scheduled-exams-list {
+    grid-template-columns: 1fr;
   }
-  .addexam-card .card-subtitle, .addexam-card .card-text {
-    font-size: 0.85em;
+
+  .scheduled-exam-card-body {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 15px;
   }
+
   .exam-actions-right {
-    margin-left: 0;
-    margin-top: 15px;
     width: 100%;
-    flex-direction: row;
-    justify-content: center;
+    align-items: center;
+    margin-top: 15px;
   }
+
   .action-button {
-    padding: 6px 15px;
-    font-size: 0.9em;
+    width: 100%;
+    max-width: 200px;
   }
-  .custom-modal .modal-content {
-    border-radius: 15px;
-  }
+
   .modal-header-custom, .modal-header-custom-danger {
     padding: 15px 20px;
   }
-  .modal-body-custom {
-    padding: 20px !important;
-  }
-  .form-control-custom, .form-select-custom {
-    padding: 10px 12px;
-  }
-  .modal-footer-custom {
-    padding: 15px 20px !important;
-  }
-  .modal-button-primary, .modal-button-secondary, .modal-button-danger {
-    padding: 8px 20px;
-    font-size: 0.9em;
-  }
-}
 
-@media (max-width: 480px) {
-  .addexam-content {
-    padding: 10px;
-    border-radius: 10px;
-  }
-  .addexam-title, .scheduled-exams-title {
-    font-size: 1.8em;
-  }
-  .addexam-card-grid, .scheduled-exams-list {
-    grid-template-columns: 1fr;
-    gap: 10px;
-  }
-  .addexam-card .card-body, .scheduled-exam-card .card-body {
-    padding: 15px;
-  }
-  .addexam-card .card-title, .exam-card-title {
-    font-size: 1.1em;
-  }
-  .action-button {
-    padding: 5px 12px;
-    font-size: 0.8em;
-  }
-  .custom-modal .modal-content {
-    border-radius: 10px;
-  }
-  .modal-header-custom, .modal-header-custom-danger {
-    padding: 12px 15px;
-  }
   .modal-body-custom {
-    padding: 15px !important;
+    padding: 20px;
   }
+
+  .modal-footer-custom {
+    flex-direction: column;
+    gap: 10px;
+    padding: 15px 20px;
+  }
+
   .modal-button-primary, .modal-button-secondary, .modal-button-danger {
-    padding: 6px 15px;
-    font-size: 0.8em;
+    width: 100%;
   }
 }
