@@ -5,21 +5,84 @@ import { jwtDecode } from 'jwt-decode';
 import '../styles/header.css';
 import API_BASE_URL from '../config/config';
 
+const getGroupedNotifications = (notifsToGroup) => {
+  const grouped = {};
+  notifsToGroup.forEach(notif => {
+    const date = new Date(notif.created_at).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
+    if (!grouped[date]) {
+      grouped[date] = [];
+    }
+    grouped[date].push(notif);
+  });
+  return grouped;
+};
+
 const Header = () => {
   const [showSidebar, setShowSidebar] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [notifications, setNotifications] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [lastNotificationIdFromBackend, setLastNotificationIdFromBackend] = useState(0);
   const [showDetailPopup, setShowDetailPopup] = useState(false);
   const [selectedNotification, setSelectedNotification] = useState(null);
   const [isAdvisor, setIsAdvisor] = useState(false);
   const [isProvost, setIsProvost] = useState(false);
   const [isHOD, setIsHOD] = useState(false);
 
+  const [currentPage, setCurrentPage] = useState(0);
+  const [showingReadNotifications, setShowingReadNotifications] = useState(false);
+
+  const NOTIFICATIONS_PER_PAGE = 10;
+
   const toggleSidebar = () => setShowSidebar(!showSidebar);
-  const toggleNotifications = () => setShowNotifications(!showNotifications);
+  const toggleNotifications = () => {
+    setShowNotifications(!showNotifications);
+    // When opening the popup, always default to showing unread notifications from page 0
+    if (!showNotifications) {
+      setCurrentPage(0);
+      setShowingReadNotifications(false);
+    }
+  };
 
   const bellRef = useRef(null);
   const popupRef = useRef(null);
+
+  const fetchNotifications = async () => {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/notify`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        const sortedNotifications = (data.notifications || []).sort((a, b) =>
+          new Date(b.created_at) - new Date(a.created_at)
+        );
+        setNotifications(sortedNotifications);
+        setLastNotificationIdFromBackend(data.last_notification || 0);
+
+        const newUnreadCount = sortedNotifications.filter(
+          notif => notif.notification_id > (data.last_notification || 0)
+        ).length;
+        setUnreadCount(newUnreadCount);
+
+      } else {
+        console.error('Failed to fetch notifications:', data.error);
+      }
+    } catch (err) {
+      console.error('Notification fetch error:', err);
+    }
+  };
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -39,6 +102,8 @@ const Header = () => {
     } catch (err) {
       console.error("Invalid token", err);
     }
+
+    fetchNotifications();
   }, []);
 
   useEffect(() => {
@@ -62,45 +127,6 @@ const Header = () => {
     return () => document.removeEventListener('click', handleClickOutside);
   }, [showNotifications]);
 
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (!token) return;
-
-    fetch(`${API_BASE_URL}/notify`, {
-      method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
-    })
-      .then(res => res.json())
-      .then(data => {
-        if (data.success) {
-          const sortedNotifications = (data.notifications || []).sort((a, b) =>
-            new Date(b.created_at) - new Date(a.created_at)
-          );
-          setNotifications(sortedNotifications);
-        } else {
-          console.error('Failed to fetch notifications:', data.error);
-        }
-      })
-      .catch(err => console.error('Notification fetch error:', err));
-  }, []);
-
-  const getGroupedNotifications = () => {
-    const grouped = {};
-    notifications.forEach(notif => {
-      const date = new Date(notif.created_at).toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-      });
-      if (!grouped[date]) {
-        grouped[date] = [];
-      }
-      grouped[date].push(notif);
-    });
-    return grouped;
-  };
 
   const getNotificationCategory = (notif) => {
     if (notif.student_id) return `For You`;
@@ -166,10 +192,6 @@ const Header = () => {
     }
   };
 
-
-
-
-
   const handleNotificationItemClick = (notification) => {
     setSelectedNotification(notification);
     setShowDetailPopup(true);
@@ -181,7 +203,84 @@ const Header = () => {
     setSelectedNotification(null);
   };
 
-  const groupedNotifications = getGroupedNotifications();
+  const handleClearAllNotifications = async (e) => {
+    e.stopPropagation();
+    if (notifications.length === 0) return;
+
+    const maxNotificationId = Math.max(...notifications.map(n => n.notification_id));
+    const token = localStorage.getItem('token');
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/notify/clear_all/${maxNotificationId}`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      const data = await res.json();
+      if (data.success) {
+        setUnreadCount(0);
+        setLastNotificationIdFromBackend(maxNotificationId);
+        setCurrentPage(0);
+        setShowingReadNotifications(false);
+        fetchNotifications();
+      } else {
+        console.error('Failed to clear notifications:', data.error);
+        alert('Failed to clear notifications. Please try again.');
+      }
+    } catch (err) {
+      console.error('Clear notifications error:', err);
+      alert('Network error: Could not clear notifications.');
+    }
+  };
+
+  const handleNextPage = (e) => {
+    e.stopPropagation();
+    setCurrentPage(prev => prev + 1);
+  };
+
+  const handlePreviousPage = (e) => {
+    e.stopPropagation();
+    setCurrentPage(prev => Math.max(0, prev - 1));
+  };
+
+  const handleShowPrevious = (e) => {
+    e.stopPropagation();
+    setShowingReadNotifications(true);
+    setCurrentPage(0);
+  };
+
+  const handleHidePrevious = (e) => {
+    e.stopPropagation();
+    setShowingReadNotifications(false);
+    setCurrentPage(0);
+  };
+
+  const unreadNotifications = notifications.filter(notif => notif.notification_id > lastNotificationIdFromBackend);
+  const readNotifications = notifications.filter(notif => notif.notification_id <= lastNotificationIdFromBackend);
+
+  let notificationsToDisplay = [];
+  let totalNotificationsInCurrentMode = 0;
+
+  if (!showingReadNotifications) {
+    notificationsToDisplay = unreadNotifications.slice(
+      currentPage * NOTIFICATIONS_PER_PAGE,
+      (currentPage + 1) * NOTIFICATIONS_PER_PAGE
+    );
+    totalNotificationsInCurrentMode = unreadNotifications.length;
+  } else {
+    notificationsToDisplay = readNotifications.slice(
+      currentPage * NOTIFICATIONS_PER_PAGE,
+      (currentPage + 1) * NOTIFICATIONS_PER_PAGE
+    );
+    totalNotificationsInCurrentMode = readNotifications.length;
+  }
+
+  const showClearAll = unreadCount > 0;
+  const showNextButton = (currentPage + 1) * NOTIFICATIONS_PER_PAGE < totalNotificationsInCurrentMode;
+  const showPreviousPageButton = currentPage > 0;
+  const showShowPreviousButton = !showingReadNotifications && unreadCount === 0 && readNotifications.length > 0;
+  const showHidePreviousButton = showingReadNotifications;
 
   return (
     <header className="app-header d-flex align-items-center justify-content-between px-3 py-2">
@@ -207,19 +306,19 @@ const Header = () => {
             <a className="btn btn-outline-primary w-100 mb-2" href="/HOD_page">
               HOD Panel
             </a>
-            
+
           )}
           {isHOD && (
             <a className="btn btn-outline-primary w-100 mb-2" href="/allocateSubject">
               Allocate Subject
             </a>
-            
+
           )}
           {isAdvisor && (
             <a className="btn btn-outline-primary w-100 mb-2" href="/advisor">
               Advisor Panel
             </a>
-            
+
           )}
           <Button
             className="btn btn-outline-primary w-100 mb-2"
@@ -248,7 +347,7 @@ const Header = () => {
             onClick={toggleNotifications}
           ></i>
           <Badge pill bg="danger" className="position-absolute top-0 start-100 translate-middle">
-            {notifications.length}
+            {unreadCount}
           </Badge>
 
           {showNotifications && (
@@ -257,13 +356,48 @@ const Header = () => {
               id="appNotificationPopup"
               className="position-absolute bg-white shadow rounded p-3 border"
             >
-              <div className="fw-bold mb-3 border-bottom pb-2">Notifications</div>
+              <div className="fw-bold mb-3 border-bottom pb-2 d-flex justify-content-between align-items-center">
+                <span>Notifications</span>
+                <div className="d-flex gap-2">
+                  {/* Clear All Button */}
+                  {showClearAll && (
+                    <Button
+                      variant="danger"
+                      size="sm"
+                      onClick={handleClearAllNotifications}
+                      className="p-0 px-2 rounded-pill"
+                    >
+                      Clear All
+                    </Button>
+                  )}
+                  {showShowPreviousButton && (
+                    <Button
+                      variant="link"
+                      size="sm"
+                      onClick={handleShowPrevious}
+                      className="p-0 text-decoration-none"
+                    >
+                      Show Previous
+                    </Button>
+                  )}
+                  {showHidePreviousButton && (
+                    <Button
+                      variant="link"
+                      size="sm"
+                      onClick={handleHidePrevious}
+                      className="p-0 text-decoration-none"
+                    >
+                      Hide Previous
+                    </Button>
+                  )}
+                </div>
+              </div>
               <div id="appNotificationList">
-                {Object.keys(groupedNotifications).length > 0 ? (
-                  Object.keys(groupedNotifications).map(date => (
+                {Object.keys(getGroupedNotifications(notificationsToDisplay)).length > 0 ? (
+                  Object.keys(getGroupedNotifications(notificationsToDisplay)).map(date => (
                     <div key={date} className="mb-3">
                       <h6 className="app-notification-date-heading">{date}</h6>
-                      {groupedNotifications[date].map((notif, idx) => (
+                      {getGroupedNotifications(notificationsToDisplay)[date].map((notif, idx) => (
                         <div
                           key={notif.notification_id || idx}
                           className="p-2 mb-2 bg-light rounded shadow-sm app-notification-item"
@@ -280,6 +414,32 @@ const Header = () => {
                   <div className="small text-muted p-2">No notifications</div>
                 )}
               </div>
+              {(showPreviousPageButton || showNextButton) && (
+                <div className="d-flex justify-content-between mt-3 px-2">
+                  {showPreviousPageButton ? (
+                    <Button
+                      variant="link"
+                      size="sm"
+                      onClick={handlePreviousPage}
+                      className="p-0 text-decoration-none"
+                    >
+                      Previous 10
+                    </Button>
+                  ) : (
+                    <div></div> 
+                  )}
+                  {showNextButton && (
+                    <Button
+                      variant="link"
+                      size="sm"
+                      onClick={handleNextPage}
+                      className="p-0 text-decoration-none"
+                    >
+                      Next 10
+                    </Button>
+                  )}
+                </div>
+              )}
             </div>
           )}
         </div>

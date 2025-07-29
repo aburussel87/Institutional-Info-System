@@ -4,19 +4,87 @@ import { Offcanvas, Button, Badge, Form, Modal } from 'react-bootstrap';
 import '../styles/header.css';
 import API_BASE_URL from '../config/config';
 
+const getGroupedNotifications = (notifsToGroup) => {
+  const grouped = {};
+  notifsToGroup.forEach(notif => {
+    const date = new Date(notif.created_at).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
+    if (!grouped[date]) {
+      grouped[date] = [];
+    }
+    grouped[date].push(notif);
+  });
+  return grouped;
+};
+
 const Header = () => {
   const [showSidebar, setShowSidebar] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [notifications, setNotifications] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [lastNotificationIdFromBackend, setLastNotificationIdFromBackend] = useState(0);
   const [showDetailPopup, setShowDetailPopup] = useState(false);
   const [selectedNotification, setSelectedNotification] = useState(null);
-  const [showAllNotifications, setShowAllNotifications] = useState(false);
+
+  const [currentPage, setCurrentPage] = useState(0);
+  const [showingReadNotifications, setShowingReadNotifications] = useState(false);
+
+  const NOTIFICATIONS_PER_PAGE = 10;
 
   const toggleSidebar = () => setShowSidebar(!showSidebar);
-  const toggleNotifications = () => setShowNotifications(!showNotifications);
+  const toggleNotifications = () => {
+    setShowNotifications(!showNotifications);
+    if (!showNotifications) {
+      setCurrentPage(0);
+      setShowingReadNotifications(false);
+    }
+  };
 
   const bellRef = useRef(null);
   const popupRef = useRef(null);
+
+  const fetchNotifications = async () => {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/notify`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        const sortedNotifications = (data.notifications || []).sort((a, b) =>
+          new Date(b.created_at) - new Date(a.created_at)
+        );
+        setNotifications(sortedNotifications);
+        setLastNotificationIdFromBackend(data.last_notification || 0);
+
+        const newUnreadCount = sortedNotifications.filter(
+          notif => notif.notification_id > (data.last_notification || 0)
+        ).length;
+        setUnreadCount(newUnreadCount);
+
+      } else {
+        console.error('Failed to fetch notifications:', data.error);
+      }
+    } catch (err) {
+      console.error('Notification fetch error:', err);
+    }
+  };
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+
+    fetchNotifications();
+  }, []);
 
   useEffect(() => {
     function handleClickOutside(event) {
@@ -39,45 +107,6 @@ const Header = () => {
     return () => document.removeEventListener('click', handleClickOutside);
   }, [showNotifications]);
 
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (!token) return;
-
-    fetch(`${API_BASE_URL}/notify`, {
-      method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
-    })
-      .then(res => res.json())
-      .then(data => {
-        if (data.success) {
-          const sortedNotifications = (data.notifications || []).sort((a, b) =>
-            new Date(b.created_at) - new Date(a.created_at)
-          );
-          setNotifications(sortedNotifications);
-        } else {
-          console.error('Failed to fetch notifications:', data.error);
-        }
-      })
-      .catch(err => console.error('Notification fetch error:', err));
-  }, []);
-
-  const getGroupedNotifications = (notifsToGroup) => {
-    const grouped = {};
-    notifsToGroup.forEach(notif => {
-      const date = new Date(notif.created_at).toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-      });
-      if (!grouped[date]) {
-        grouped[date] = [];
-      }
-      grouped[date].push(notif);
-    });
-    return grouped;
-  };
 
   const getNotificationCategory = (notif) => {
     if (notif.student_id || notif.teacher_id) return `For You`;
@@ -87,7 +116,6 @@ const Header = () => {
     if (notif.semester_id) return `Semester ${notif.semester_id}`;
     return 'System';
   };
-
 
   const handleDownloadPdf = (pdfData, filename = "notification.pdf") => {
     if (!pdfData || !pdfData.data) {
@@ -110,16 +138,6 @@ const Header = () => {
       console.error("Failed to process PDF:", err);
       alert("Failed to download PDF: Invalid data.");
     }
-  };
-  const handleNotificationItemClick = (notification) => {
-    setSelectedNotification(notification);
-    setShowDetailPopup(true);
-    setShowNotifications(false);
-  };
-
-  const handleCloseDetailPopup = () => {
-    setShowDetailPopup(false);
-    setSelectedNotification(null);
   };
 
   const handleResetPassword = async () => {
@@ -153,8 +171,88 @@ const Header = () => {
     }
   };
 
-  const notificationsToDisplay = showAllNotifications ? notifications : notifications.slice(0, 10);
-  const groupedNotifications = getGroupedNotifications(notificationsToDisplay);
+  const handleNotificationItemClick = (notification) => {
+    setSelectedNotification(notification);
+    setShowDetailPopup(true);
+    setShowNotifications(false);
+  };
+
+  const handleCloseDetailPopup = () => {
+    setShowDetailPopup(false);
+    setSelectedNotification(null);
+  };
+
+  const handleClearAllNotifications = async (e) => {
+    e.stopPropagation();
+    if (notifications.length === 0) return;
+
+    const maxNotificationId = Math.max(...notifications.map(n => n.notification_id));
+    const token = localStorage.getItem('token');
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/notify/clear_all/${maxNotificationId}`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      const data = await res.json();
+      if (data.success) {
+        setUnreadCount(0);
+        setLastNotificationIdFromBackend(maxNotificationId);
+        setCurrentPage(0);
+        setShowingReadNotifications(false);
+        fetchNotifications();
+      } else {
+        console.error('Failed to clear notifications:', data.error);
+        alert('Failed to clear notifications. Please try again.');
+      }
+    } catch (err) {
+      console.error('Clear notifications error:', err);
+      alert('Network error: Could not clear notifications.');
+    }
+  };
+
+  const handleNextPage = (e) => {
+    e.stopPropagation();
+    setCurrentPage(prev => prev + 1);
+  };
+
+  const handlePreviousPage = (e) => {
+    e.stopPropagation();
+    setCurrentPage(prev => Math.max(0, prev - 1));
+  };
+
+  const handleShowPrevious = (e) => {
+    e.stopPropagation();
+    setShowingReadNotifications(true);
+    setCurrentPage(0);
+  };
+
+  const unreadNotifications = notifications.filter(notif => notif.notification_id > lastNotificationIdFromBackend);
+  const readNotifications = notifications.filter(notif => notif.notification_id <= lastNotificationIdFromBackend);
+
+  let notificationsToDisplay = [];
+  let totalNotificationsInCurrentMode = 0;
+
+  if (!showingReadNotifications) {
+    notificationsToDisplay = unreadNotifications.slice(
+      currentPage * NOTIFICATIONS_PER_PAGE,
+      (currentPage + 1) * NOTIFICATIONS_PER_PAGE
+    );
+    totalNotificationsInCurrentMode = unreadNotifications.length;
+  } else {
+    notificationsToDisplay = readNotifications.slice(
+      currentPage * NOTIFICATIONS_PER_PAGE,
+      (currentPage + 1) * NOTIFICATIONS_PER_PAGE
+    );
+    totalNotificationsInCurrentMode = readNotifications.length;
+  }
+
+  const showClearAll = unreadCount > 0;
+  const showNextButton = (currentPage + 1) * NOTIFICATIONS_PER_PAGE < totalNotificationsInCurrentMode;
+  const showPreviousPageButton = currentPage > 0;
+  const showShowPreviousButton = !showingReadNotifications && unreadCount === 0 && readNotifications.length > 0;
 
   return (
     <header className="app-header d-flex align-items-center justify-content-between px-3 py-2">
@@ -203,7 +301,7 @@ const Header = () => {
             onClick={toggleNotifications}
           ></i>
           <Badge pill bg="danger" className="position-absolute top-0 start-100 translate-middle">
-            {notifications.length}
+            {unreadCount}
           </Badge>
 
           {showNotifications && (
@@ -214,23 +312,36 @@ const Header = () => {
             >
               <div className="fw-bold mb-3 border-bottom pb-2 d-flex justify-content-between align-items-center">
                 <span>Notifications</span>
-                {notifications.length > 10 && (
-                  <Button
-                    variant="link"
-                    size="sm"
-                    onClick={() => setShowAllNotifications(!showAllNotifications)}
-                    className="p-0 text-decoration-none"
-                  >
-                    {showAllNotifications ? 'Hide' : 'See All'}
-                  </Button>
-                )}
+                <div className="d-flex gap-2">
+                  {showClearAll && (
+                    <Button
+                      variant="danger"
+                      size="sm"
+                      onClick={handleClearAllNotifications}
+                      className="p-0 px-2 rounded-pill"
+                    >
+                      Clear All
+                    </Button>
+                  )}
+
+                  {showShowPreviousButton && (
+                    <Button
+                      variant="link"
+                      size="sm"
+                      onClick={handleShowPrevious}
+                      className="p-0 text-decoration-none"
+                    >
+                      Show Previous
+                    </Button>
+                  )}
+                </div>
               </div>
               <div id="appNotificationList">
-                {Object.keys(groupedNotifications).length > 0 ? (
-                  Object.keys(groupedNotifications).map(date => (
+                {Object.keys(getGroupedNotifications(notificationsToDisplay)).length > 0 ? (
+                  Object.keys(getGroupedNotifications(notificationsToDisplay)).map(date => (
                     <div key={date} className="mb-3">
                       <h6 className="app-notification-date-heading">{date}</h6>
-                      {groupedNotifications[date].map((notif, idx) => (
+                      {getGroupedNotifications(notificationsToDisplay)[date].map((notif, idx) => (
                         <div
                           key={notif.notification_id || idx}
                           className="p-2 mb-2 bg-light rounded shadow-sm app-notification-item"
@@ -247,6 +358,32 @@ const Header = () => {
                   <div className="small text-muted p-2">No notifications</div>
                 )}
               </div>
+              {(showPreviousPageButton || showNextButton) && (
+                <div className="d-flex justify-content-between mt-3 px-2">
+                  {showPreviousPageButton ? (
+                    <Button
+                      variant="link"
+                      size="sm"
+                      onClick={handlePreviousPage}
+                      className="p-0 text-decoration-none"
+                    >
+                      Previous 10
+                    </Button>
+                  ) : (
+                    <div></div>
+                  )}
+                  {showNextButton && (
+                    <Button
+                      variant="link"
+                      size="sm"
+                      onClick={handleNextPage}
+                      className="p-0 text-decoration-none"
+                    >
+                      Next 10
+                    </Button>
+                  )}
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -267,41 +404,29 @@ const Header = () => {
           </Modal.Header>
           <Modal.Body className="app-notification-detail-body">
             <p className="app-notification-detail-message">{selectedNotification.message}</p>
-            {selectedNotification.student_id && (
-              <p><strong>Student ID:</strong> {selectedNotification.student_id}</p>
-            )}
-            {selectedNotification.teacher_id && (
-              <p><strong>Teacher ID:</strong> {selectedNotification.teacher_id}</p>
-            )}
-            {selectedNotification.department_id && (
-              <p><strong>Department ID:</strong> {selectedNotification.department_id}</p>
-            )}
-            {selectedNotification.course_id && (
-              <p><strong>Course ID:</strong> {selectedNotification.course_id}</p>
-            )}
-            {selectedNotification.hall_id && (
-              <p><strong>Hall ID:</strong> {selectedNotification.hall_id}</p>
-            )}
-            {selectedNotification.semester_id && (
-              <p><strong>Semester ID:</strong> {selectedNotification.semester_id}</p>
-            )}
+            <div className="app-notification-detail-meta">
+              {selectedNotification.student_id && <p><strong>Student ID:</strong> {selectedNotification.student_id}</p>}
+              {selectedNotification.teacher_id && <p><strong>Teacher ID:</strong> {selectedNotification.teacher_id}</p>}
+              {selectedNotification.department_id && <p><strong>Department ID:</strong> {selectedNotification.department_id}</p>}
+              {selectedNotification.course_id && <p><strong>Course ID:</strong> {selectedNotification.course_id}</p>}
+              {selectedNotification.hall_id && <p><strong>Hall ID:</strong> {selectedNotification.hall_id}</p>}
+              {selectedNotification.semester_id && <p><strong>Semester ID:</strong> {selectedNotification.semester_id}</p>}
+              {selectedNotification.pdf && (
+                <p>
+                  <strong>PDF:</strong>{' '}
+                  <Button
+                    size="sm"
+                    variant="link"
+                    onClick={() => handleDownloadPdf(selectedNotification.pdf)}
+                  >
+                    Download PDF
+                  </Button>
+                </p>
+              )}
 
-            <p><strong>Created By:</strong> {selectedNotification.created_by}</p>
-            <p><strong>Created At:</strong> {new Date(selectedNotification.created_at).toLocaleString()}</p>
-
-            {selectedNotification.pdf && (
-              <p>
-                <strong>PDF:</strong>{' '}
-                <Button
-                  size="sm"
-                  variant="link"
-                  onClick={() => handleDownloadPdf(selectedNotification.pdf)}
-                >
-                  Download PDF
-                </Button>
-              </p>
-            )}
-
+              <p><strong>Created By:</strong> {selectedNotification.created_by}</p>
+              <p><strong>Created At:</strong> {new Date(selectedNotification.created_at).toLocaleString()}</p>
+            </div>
           </Modal.Body>
           <Modal.Footer>
             <Button variant="secondary" onClick={handleCloseDetailPopup}>

@@ -23,7 +23,6 @@ router.get('/get', authenticateToken, async (req, res) => {
 });
 
 
-
 router.get('/registration/:student_id', authenticateToken, async (req, res) => {
   try {
     const { student_id } = req.params;
