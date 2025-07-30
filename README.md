@@ -9,10 +9,13 @@ This is a full-stack application for managing institutional information, built w
 ## 🔗 Live Demo & Credentials
 
 The application can be accessed at the following link. Use the provided credentials to log in.
-
+* **
   * **URL:**   [`Institutional Information System`](https://institutional-info-system.vercel.app)
   * **User ID:** `2204032`
   * **Password:** `TCB349A3`
+* **2012045384** - `0WY9TZL9` - `HOD`
+* **2000119324** - `YYBDFYC4` - `Provost`
+* **2016041148** - `DV8GHZ1B` - `Advisor`
 
 ## 🛠️ Technology Stack
 

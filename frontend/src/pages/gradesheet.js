@@ -127,6 +127,7 @@ export default function Gradesheet() {
                 <th>Course Title</th>
                 <th>Total Credit</th>
                 <th>GPA</th>
+                <th> Total </th>
               </tr>
             </thead>
             <tbody>
@@ -137,6 +138,7 @@ export default function Gradesheet() {
                   <td>{course.title}</td>
                   <td>{course.credit}</td>
                   <td>{course.gpa.toFixed(2)}</td>
+                  <td>4.00</td>
                 </tr>
               ))}
             </tbody>
