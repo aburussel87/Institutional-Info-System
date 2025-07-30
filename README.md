@@ -125,14 +125,3 @@ The following scripts are available in the `frontend/` directory:
 The following script is available in the `backend/` directory:
 
   * `npx nodemon server.js`: Runs the server with automatic restarts on file changes.
-
-## 📚 Resources
-
-  * [React Documentation](https://reactjs.org/)
-  * [Create React App Documentation](https://create-react-app.dev/docs/getting-started)
-  * [Node.js Documentation](https://nodejs.org/en/docs/)
-  * [Express.js Documentation](https://expressjs.com/en/4x/api.html)
-
-## 🐞 Troubleshooting
-
-  * If `npm run build` fails to minify, refer to the [Create React App Troubleshooting guide](https://www.google.com/search?q=https://create-react-app.dev/docs/troubleshooting/%23npm-run-build-fails-to-minify).
