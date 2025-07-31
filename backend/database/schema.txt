@@ -1,0 +1,4209 @@
+CREATE TYPE adminstatus AS ENUM (
+    'Current',
+    'Retired'
+);
+CREATE TYPE attendancestatus AS ENUM (
+    'Present',
+    'Absent',
+    'Late',
+    'Excused'
+);
+CREATE TYPE examtype AS ENUM (
+    'Term',
+    'Quiz',
+    'CT1',
+    'CT2',
+    'CT3',
+    'CT4'
+);
+CREATE TYPE feestatus AS ENUM (
+    'Paid',
+    'Unpaid',
+    'Partial'
+);
+CREATE TYPE feetypeenum AS ENUM (
+    'ExamFee',
+    'DiningFee',
+    'HallFee',
+    'SemesterFee',
+    'RegistrationFee',
+    'CertificateFee'
+);
+CREATE TYPE gender AS ENUM (
+    'Male',
+    'Female',
+    'Other'
+);
+CREATE TYPE roomtype AS ENUM (
+    'Classroom',
+    'Laboratory',
+    'Auditorium',
+    'Office'
+);
+CREATE TYPE semester AS ENUM (
+    'L1T1',
+    'L1T2',
+    'L2T1',
+    'L2T2',
+    'L3T1',
+    'L3T2',
+    'L4T1',
+    'L4T2'
+);
+CREATE TYPE std AS (
+	id integer,
+	name character varying(30),
+	dept character varying(50)
+);
+CREATE TYPE teacher_info AS (
+	user_name character varying(50),
+	user_email character varying(100),
+	user_phone character varying(20),
+	user_gender gender,
+	user_joining_date timestamp without time zone,
+	user_isactive boolean,
+	user_lastlogin timestamp without time zone,
+	user_loginattempts integer,
+	user_twofactor boolean,
+	user_photo bytea,
+	user_department integer,
+	user_hiredate timestamp without time zone,
+	user_designation character varying(20)
+);
+CREATE TYPE userrole AS ENUM (
+    'Student',
+    'Teacher',
+    'Admin'
+);
+CREATE FUNCTION add_exam_by_teacher(p_course_id character varying, p_teacher_id integer, p_title character varying, p_exam_type examtype, p_total_marks integer, p_date_of_exam timestamp without time zone, p_semester semester, p_academic_session character varying, p_section character varying) RETURNS void
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+  INSERT INTO exam (
+    course_id,
+    teacher_id,
+    title,
+    exam_type,
+    total_marks,
+    date_of_exam,
+    semester,
+    academic_session,
+    section
+  )
+  VALUES (
+    p_course_id,
+    p_teacher_id,
+    p_title,
+    p_exam_type,
+    p_total_marks,
+    p_date_of_exam,
+    p_semester,
+    p_academic_session,
+    p_section
+  );
+END;
+$$;
+
+
+ALTER FUNCTION add_exam_by_teacher(p_course_id character varying, p_teacher_id integer, p_title character varying, p_exam_type examtype, p_total_marks integer, p_date_of_exam timestamp without time zone, p_semester semester, p_academic_session character varying, p_section character varying) OWNER TO system;
+
+--
+-- Name: assign_random_provosts_to_halls(); Type: FUNCTION; Schema: public; Owner: system
+--
+
+CREATE FUNCTION assign_random_provosts_to_halls() RETURNS void
+    LANGUAGE plpgsql
+    AS $$
+DECLARE
+    h RECORD;
+    t_id INT;
+BEGIN
+    FOR h IN SELECT hall_id FROM Hall LOOP
+        SELECT teacher_id INTO t_id
+        FROM Teacher
+        WHERE teacher_id NOT IN (
+            SELECT teacher_id FROM Provost
+        )
+        ORDER BY RANDOM()
+        LIMIT 1;
+        INSERT INTO Provost (teacher_id, hall_id, assigned_on, resigned_on)
+        VALUES (t_id, h.hall_id, CURRENT_DATE, NULL);
+    END LOOP;
+END;
+$$;
+
+
+ALTER FUNCTION assign_random_provosts_to_halls() OWNER TO system;
+
+--
+-- Name: course_not_taken_recent_years(integer); Type: FUNCTION; Schema: public; Owner: system
+--
+
+CREATE FUNCTION course_not_taken_recent_years(year_diff integer) RETURNS TABLE(course_id character varying, course_title character varying, department_id integer)
+    LANGUAGE plpgsql
+    AS $$
+BEGIN 
+    RETURN QUERY 
+    SELECT c.course_id, c.title, c.offered_by
+    FROM course c
+    where NOT EXISTS (
+        SELECT 1
+        FROM enrollment e
+        WHERE e.course_id = c.course_id
+        AND e.enrolled_on >= CURRENT_DATE - (year_diff * INTERVAL '1 year')
+    );
+END;
+$$;
+
+
+ALTER FUNCTION course_not_taken_recent_years(year_diff integer) OWNER TO system;
+
+--
+-- Name: get_advised_students(integer); Type: FUNCTION; Schema: public; Owner: system
+--
+
+CREATE FUNCTION get_advised_students(advisor integer) RETURNS json
+    LANGUAGE plpgsql
+    AS $$
+DECLARE
+    current_session TEXT;
+BEGIN
+    SELECT academic_session 
+    INTO current_session 
+    FROM registration_log 
+    ORDER BY log_id DESC 
+    LIMIT 1;
+    RETURN (
+        SELECT json_agg(
+            json_build_object(
+                'student_id', s.student_id,
+                'hall_id', s.hall_id,
+                'current_semester', s.current_semester,
+                'academic_session', s.academic_session,
+                'username', u.username,
+                'photo', u.photo,
+                'gender', u.gender,
+                'dob', u.dob,
+                'email', u.email,
+                'phone', u.phone,
+                'emergency_name', e.name,
+                'emergency_mobile', e.mobile,
+                'emergency_address', e.address,
+                'cgpa', r.cgpa,
+                'total_credit', r.total_credit,
+                'enrollment', (
+                    SELECT json_agg(
+                        json_build_object(
+                            'student_id', en.student_id,
+                            'course_id', en.course_id,
+                            'section_type', en.section_type,
+                            'academic_session', en.academic_session,
+                            'semester', en.semester
+                        )
+                    )
+                    FROM enrollment en
+                    WHERE en.student_id = s.student_id
+                      AND en.academic_session = current_session
+                )
+            )
+        )
+        FROM student s
+        JOIN "User" u ON u.user_id = s.student_id
+        JOIN emergencycontact e ON e.user_id = s.student_id
+        JOIN gradesheet r ON r.student_id = s.student_id
+        WHERE s.advisor_id = advisor
+    );
+END;
+$$;
+
+
+ALTER FUNCTION get_advised_students(advisor integer) OWNER TO system;
+
+--
+-- Name: get_advisor_summary(); Type: FUNCTION; Schema: public; Owner: system
+--
+
+CREATE FUNCTION get_advisor_summary() RETURNS TABLE(advisor_id integer, advisor_name character varying, advising_students integer)
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+  RETURN QUERY
+  SELECT 
+    a.teacher_id AS advisor_id,
+    u.username AS advisor_name,
+    COUNT(s.student_id)::INT AS advising_students
+  FROM Advisor a
+  JOIN "User" u ON a.teacher_id = u.user_id
+  LEFT JOIN Student s ON s.advisor_id = a.teacher_id
+  GROUP BY a.teacher_id, u.username;
+END;
+$$;
+
+
+ALTER FUNCTION get_advisor_summary() OWNER TO system;
+
+--
+-- Name: get_all_failed_courses(integer); Type: FUNCTION; Schema: public; Owner: system
+--
+
+CREATE FUNCTION get_all_failed_courses(sid integer) RETURNS TABLE(course_id character varying, semester semester, final_grade character varying, offered_by integer, credit_hours double precision, title character varying, pre_requisite character varying)
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+  RETURN QUERY
+  SELECT 
+    r.course_id,
+    r.semester,
+    r.final_grade,
+    c.offered_by,
+    c.credit_hours,
+    c.title,
+    c.pre_requisite
+  FROM courseresult r
+  JOIN course c ON c.course_id = r.course_id
+  WHERE r.student_id = sid
+    AND r.final_grade = 'F';
+END;
+$$;
+
+
+ALTER FUNCTION get_all_failed_courses(sid integer) OWNER TO system;
+
+--
+-- Name: get_all_payments_ordered_by_type(integer); Type: FUNCTION; Schema: public; Owner: system
+--
+
+CREATE FUNCTION get_all_payments_ordered_by_type(uid integer) RETURNS TABLE(student_fee_id integer, student_id integer, fee_type_id character varying, fee_type_name character varying, amount integer, due_date timestamp without time zone, status feestatus, paid_on timestamp without time zone)
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+    RETURN QUERY
+    SELECT
+        sf.student_fee_id,
+        sf.student_id,
+        sf.fee_type_id,
+        ft.name AS fee_type_name,
+        sf.amount,
+        sf.due_date,
+        sf.status,
+        sf.paid_on
+    FROM
+        StudentFee sf
+    JOIN
+        FeeType ft ON sf.fee_type_id = ft.fee_type_id
+		WHERE sf.student_id = uid
+    ORDER BY
+        ft.name, sf.student_fee_id;
+END;
+$$;
+
+
+ALTER FUNCTION get_all_payments_ordered_by_type(uid integer) OWNER TO system;
+
+--
+-- Name: get_basic_hall_info_for_provost(integer); Type: FUNCTION; Schema: public; Owner: system
+--
+
+CREATE FUNCTION get_basic_hall_info_for_provost(p_teacher_id integer) RETURNS TABLE(hall_id integer, name character varying, capacity integer, location character varying, total_assignments bigint, resident_count bigint, non_resident_count bigint)
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+    RETURN QUERY
+    SELECT
+        h.hall_id,
+        h.name,
+        h.capacity,
+        h.location,
+        COALESCE(sa.total, 0) AS total_assignments,
+        COALESCE(sa.resident_count, 0) AS resident_count,
+        COALESCE(sa.non_resident_count, 0) AS non_resident_count
+    FROM hall h
+    LEFT JOIN (
+        SELECT
+            ha.hall_id,
+            COUNT(*) AS total,
+            COUNT(*) FILTER (WHERE ha.resident = TRUE) AS resident_count,
+            COUNT(*) FILTER (WHERE ha.resident = FALSE) AS non_resident_count
+        FROM hallassignment ha
+        GROUP BY ha.hall_id
+    ) sa
+    ON sa.hall_id = h.hall_id
+    WHERE h.hall_id = (
+        SELECT p.hall_id
+        FROM provost p
+        WHERE p.teacher_id = p_teacher_id
+          AND p.resigned_on IS NULL
+        LIMIT 1
+    );
+END;
+$$;
+
+
+ALTER FUNCTION get_basic_hall_info_for_provost(p_teacher_id integer) OWNER TO system;
+
+--
+-- Name: get_class_routine(semester, character varying, integer); Type: FUNCTION; Schema: public; Owner: system
+--
+
+CREATE FUNCTION get_class_routine(p_semester semester, p_academic_session character varying, p_department_id integer) RETURNS TABLE(academic_session character varying, day_of_week character varying, start_time time without time zone, end_time time without time zone, section_type character varying, course_id character varying, course_title character varying, room_id character varying, room_type roomtype, teacher_name character varying)
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+    RETURN QUERY
+    SELECT
+        cs.academic_session,
+        cs.day_of_week,
+        cs.start_time,
+        cs.end_time,
+        cs.section_type,
+        cs.course_id,
+        c.title AS course_title,
+        cs.room_id,
+        r.room_type,
+        u.username AS teacher_name
+    FROM ClassSchedule cs
+    JOIN Course c
+        ON cs.course_id = c.course_id
+    JOIN Room r
+        ON cs.room_id = r.room_id
+    LEFT JOIN SubjectAllocation sa
+        ON sa.course_id = cs.course_id
+       AND sa.academic_session = cs.academic_session
+       AND (sa.section_type = cs.section_type OR sa.section_type = 'All')
+    LEFT JOIN Teacher t
+        ON sa.teacher_id = t.teacher_id
+    LEFT JOIN "User" u
+        ON t.teacher_id = u.user_id
+    WHERE cs.academic_session = (SELECT r.academic_session 
+          FROM registration_log r
+          ORDER BY r.log_id DESC 
+          LIMIT 1)
+      AND c.semester = p_semester
+      AND c.department_id = p_department_id
+      AND (cs.section_type IN ('A', 'A1', 'A2', 'All'))
+    ORDER BY cs.day_of_week, cs.start_time;
+END;
+$$;
+
+
+ALTER FUNCTION get_class_routine(p_semester semester, p_academic_session character varying, p_department_id integer) OWNER TO system;
+
+SET default_tablespace = '';
+
+SET default_table_access_method = heap;
+
+--
+-- Name: course; Type: TABLE; Schema: public; Owner: system
+--
+
+CREATE TABLE course (
+CREATE TABLE course (
+    course_id character varying(10) NOT NULL,
+    course_id character varying(10) NOT NULL,
+    title character varying(100),
+    title character varying(100),
+    credit_hours double precision,
+    credit_hours double precision,
+    semester semester,
+    semester semester,
+    offered_by integer NOT NULL,
+    offered_by integer NOT NULL,
+    department_id integer NOT NULL,
+    department_id integer NOT NULL,
+    pre_requisite character varying(10),
+    pre_requisite character varying(10),
+    still_offered boolean,
+    still_offered boolean,
+    outline text
+    outline text
+);
+);
+
+
+ALTER TABLE course OWNER TO system;
+
+--
+-- Name: get_course_by_dept_by_level_term(integer, semester); Type: FUNCTION; Schema: public; Owner: system
+--
+
+CREATE FUNCTION get_course_by_dept_by_level_term(dept_id integer, sem semester) RETURNS SETOF course
+    LANGUAGE plpgsql
+    AS $$
+BEGIN 
+	RETURN query
+	SELECT * FROM course
+	WHERE department_id = dept_id and semester = sem;
+end;
+$$;
+
+
+ALTER FUNCTION get_course_by_dept_by_level_term(dept_id integer, sem semester) OWNER TO system;
+
+--
+-- Name: get_course_from_other_dept(integer); Type: FUNCTION; Schema: public; Owner: system
+--
+
+CREATE FUNCTION get_course_from_other_dept(dept_id integer) RETURNS SETOF course
+    LANGUAGE plpgsql
+    AS $$
+BEGIN 
+    RETURN QUERY
+    SELECT *
+    FROM course
+    WHERE department_id = dept_id AND offered_by <> dept_id and still_offered is TRUE;
+END;
+$$;
+
+
+ALTER FUNCTION get_course_from_other_dept(dept_id integer) OWNER TO system;
+
+--
+-- Name: get_course_materials_by_teacher(character varying, integer); Type: FUNCTION; Schema: public; Owner: system
+--
+
+CREATE FUNCTION get_course_materials_by_teacher(p_course_id character varying, p_teacher_id integer) RETURNS TABLE(material_id integer, course_id character varying, uploaded_by integer, description text, pdf bytea, upload_date timestamp without time zone)
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+  RETURN QUERY
+  SELECT
+		c.material_id,
+    c.course_id,
+    c.uploaded_by,
+    c.description,
+    c.pdf,
+    c.upload_date
+  FROM
+    CourseMaterial c
+  WHERE
+    c.course_id = p_course_id
+    AND c.uploaded_by = p_teacher_id
+  ORDER BY
+    c.upload_date DESC;
+END;
+$$;
+
+
+ALTER FUNCTION get_course_materials_by_teacher(p_course_id character varying, p_teacher_id integer) OWNER TO system;
+
+--
+-- Name: get_courses_by_teacher_id(integer, character varying); Type: FUNCTION; Schema: public; Owner: system
+--
+
+CREATE FUNCTION get_courses_by_teacher_id(p_teacher_id integer, asession character varying) RETURNS TABLE(course_id character varying, course_title character varying, credit_hours double precision, semester semester, section_type character varying, session character varying, department integer, total bigint)
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+  RETURN QUERY
+  SELECT 
+    c.course_id,
+    c.title AS course_title,
+    c.credit_hours,
+    c.semester,
+    sa.section_type,
+    sa.academic_session AS session,
+    c.department_id AS department,
+    COALESCE((
+      SELECT COUNT(*)
+      FROM Enrollment e
+      WHERE 
+        e.course_id = sa.course_id
+        AND sa.section_type in ('All' , e.section_type)
+        AND e.academic_session = sa.academic_session
+    ), 0) AS total
+  FROM 
+    SubjectAllocation sa
+  JOIN 
+    Course c ON sa.course_id = c.course_id
+  WHERE 
+    sa.teacher_id = p_teacher_id
+    AND sa.academic_session = asession;
+END;
+$$;
+
+
+ALTER FUNCTION get_courses_by_teacher_id(p_teacher_id integer, asession character varying) OWNER TO system;
+
+--
+-- Name: get_department_data(integer); Type: FUNCTION; Schema: public; Owner: system
+--
+
+CREATE FUNCTION get_department_data(p_department_id integer) RETURNS jsonb
+    LANGUAGE plpgsql
+    AS $$
+DECLARE
+    result JSONB;
+BEGIN
+    result := jsonb_build_object(
+        'teachers', (
+            SELECT COALESCE(jsonb_agg(
+                jsonb_build_object(
+                    'teacher_id', t.teacher_id,
+                    'department_id', t.department_id,
+                    'username', u.username,
+                    'email', u.email,
+                    'gender', u.gender,
+                    'mobile', u.phone,
+                    'photo', u.photo,
+                    'designation', t.designation
+                )
+            ), '[]'::jsonb)
+            FROM teacher t
+            JOIN "User" u ON t.teacher_id = u.user_id
+            WHERE t.department_id = p_department_id AND u.is_active = TRUE
+        ),
+        
+        'students', (
+            SELECT COALESCE(jsonb_agg(
+                jsonb_build_object(
+                    'student_id', s.student_id,
+                    'username', u.username,
+                    'email', u.email,
+                    'gender', u.gender,
+                    'mobile', u.phone,
+                    'photo', u.photo,
+                    'semester', s.current_semester,
+                    'cgpa', g.cgpa,
+                    'credits', g.total_credit
+                )
+            ), '[]'::jsonb)
+            FROM student s
+            JOIN "User" u ON s.student_id = u.user_id
+            JOIN gradesheet g ON g.student_id = s.student_id
+            WHERE s.department_id = p_department_id AND u.is_active = TRUE
+        ),
+
+        'courses', (
+            SELECT COALESCE(jsonb_agg(
+                jsonb_build_object(
+                    'course_id', c.course_id,
+                    'title', c.title,
+                    'offered_for', c.department_id,
+                    'offered_by', c.offered_by,
+                    'credits', c.credit_hours,
+                    'semester', c.semester
+                )
+            ), '[]'::jsonb)
+            FROM course c
+            WHERE (c.offered_by = p_department_id OR c.department_id = p_department_id)
+              AND c.still_offered = TRUE
+        ),
+
+        'subject_allocations', (
+            SELECT COALESCE(jsonb_agg(
+                jsonb_build_object(
+                    'teacher_id', sa.teacher_id,
+                    'teacher_name', u.username,
+                    'course_id', sa.course_id,
+                    'section_type', sa.section_type,
+                    'semester', c.semester
+                )
+            ), '[]'::jsonb)
+            FROM subjectallocation sa
+            JOIN teacher t ON t.teacher_id = sa.teacher_id
+            JOIN "User" u ON u.user_id = t.teacher_id
+            JOIN course c ON c.course_id = sa.course_id
+            WHERE t.department_id = p_department_id
+              AND sa.academic_session = (
+                  SELECT academic_session 
+                  FROM registration_log 
+                  ORDER BY log_id DESC 
+                  LIMIT 1
+              )
+            AND c.offered_by = p_department_id
+        )
+    );
+
+    RETURN result;
+END;
+$$;
+
+
+ALTER FUNCTION get_department_data(p_department_id integer) OWNER TO system;
+
+--
+-- Name: get_departmentwise_student_summary(); Type: FUNCTION; Schema: public; Owner: system
+--
+
+CREATE FUNCTION get_departmentwise_student_summary() RETURNS TABLE(department_id integer, department_name character varying, total_students integer, hod_name character varying)
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+  RETURN QUERY
+  SELECT 
+    d.department_id,
+    d.name AS department_name,
+    COUNT(s.student_id)::INT AS total_students,
+    u.username AS hod_name
+  FROM Department d
+  LEFT JOIN Student s ON d.department_id = s.department_id
+  LEFT JOIN head_of_department h ON d.department_id = h.department_id
+  LEFT JOIN "User" u ON h.teacher_id = u.user_id
+  WHERE h.resigned_on IS NULL
+  GROUP BY d.department_id, d.name, u.username;
+END;
+$$;
+
+
+ALTER FUNCTION get_departmentwise_student_summary() OWNER TO system;
+
+--
+-- Name: get_eligible_missed_courses(integer); Type: FUNCTION; Schema: public; Owner: system
+--
+
+CREATE FUNCTION get_eligible_missed_courses(uid integer) RETURNS TABLE(course_id character varying, title character varying, credits double precision, offered_by integer, semester semester, pre_requisite character varying)
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+  RETURN QUERY
+  SELECT 
+    c.course_id,
+    c.title,
+    c.credit_hours,
+    c.offered_by,
+    m.missed_on,
+    c.pre_requisite
+  FROM missed_courses m
+  JOIN course c ON c.course_id = m.course_id
+  LEFT JOIN courseresult r ON r.student_id = uid AND r.course_id = c.pre_requisite
+  WHERE m.student_id = uid
+    AND (c.pre_requisite IS NULL OR r.final_grade <> 'F');
+END;
+$$;
+
+
+ALTER FUNCTION get_eligible_missed_courses(uid integer) OWNER TO system;
+
+--
+-- Name: get_exam_routine(integer); Type: FUNCTION; Schema: public; Owner: system
+--
+
+CREATE FUNCTION get_exam_routine(p_student_id integer) RETURNS TABLE(student_id integer, teacher_id character varying, section character varying, course_id character varying, course_title character varying, exam_title character varying, exam_type examtype, total_marks integer, date_of_exam timestamp without time zone, semester semester, academic_session character varying)
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+  RETURN QUERY
+  SELECT 
+      en.student_id,
+			u.username,
+			e.section,
+      e.course_id,
+      c.title AS course_title,
+      e.title AS exam_title,
+      e.exam_type,
+      e.total_marks,
+      e.date_of_exam,
+      e.semester,
+      e.academic_session
+  FROM 
+      Enrollment en
+  JOIN 
+      Exam e ON en.course_id = e.course_id
+  JOIN 
+      Course c ON e.course_id = c.course_id
+	left outer JOIN 
+			"User" u on u.user_id = e.teacher_id
+  WHERE 
+      en.student_id = p_student_id and e.academic_session = (SELECT academic_session 
+          FROM registration_log 
+          ORDER BY log_id DESC 
+          LIMIT 1)
+  ORDER BY 
+      e.date_of_exam ASC;
+END;
+$$;
+
+
+ALTER FUNCTION get_exam_routine(p_student_id integer) OWNER TO system;
+
+--
+-- Name: get_exams_by_teacher_and_session(integer, character varying); Type: FUNCTION; Schema: public; Owner: system
+--
+
+CREATE FUNCTION get_exams_by_teacher_and_session(p_teacher_id integer, p_academic_session character varying) RETURNS TABLE(exam_id integer, course_id character varying, teacher_id integer, title character varying, exam_type examtype, total_marks integer, date_of_exam timestamp without time zone, semester semester, academic_session character varying, section character varying)
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+  RETURN QUERY
+  SELECT
+    e.exam_id,
+    e.course_id,
+    e.teacher_id,
+    e.title,
+    e.exam_type,
+    e.total_marks,
+    e.date_of_exam,
+    e.semester,
+    e.academic_session,
+    e.section
+  FROM exam e
+  WHERE e.teacher_id = p_teacher_id
+    AND e.academic_session = (SELECT r.academic_session 
+          FROM registration_log r  
+          ORDER BY log_id DESC 
+          LIMIT 1)
+  ORDER BY date_of_exam DESC;
+END;
+$$;
+
+
+ALTER FUNCTION get_exams_by_teacher_and_session(p_teacher_id integer, p_academic_session character varying) OWNER TO system;
+
+--
+-- Name: get_failed_prerequisites(integer); Type: FUNCTION; Schema: public; Owner: system
+--
+
+CREATE FUNCTION get_failed_prerequisites(sid integer) RETURNS TABLE(course_id character varying, semester semester, final_grade character varying, offered_by integer, credit_hours double precision, title character varying, pre_requisite character varying)
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+  RETURN QUERY
+  WITH pre_requisite_result AS (
+    SELECT r.course_id, r.semester, r.final_grade,r.student_id
+    FROM courseresult r
+    WHERE r.course_id IN (
+      SELECT c.pre_requisite
+      FROM course c
+      JOIN student s ON s.department_id = c.department_id
+      WHERE c.semester = s.current_semester
+        AND s.student_id = sid
+        AND c.pre_requisite IS NOT NULL
+    )
+  )
+  SELECT p.course_id, p.semester, p.final_grade,c.offered_by,c.credit_hours,c.title,c.pre_requisite
+  FROM pre_requisite_result p JOIN course c on c.course_id = p.course_id
+  WHERE p.student_id = sid
+    AND p.final_grade = 'F';
+END;
+$$;
+
+
+ALTER FUNCTION get_failed_prerequisites(sid integer) OWNER TO system;
+
+--
+-- Name: get_hall_info_by_provost(integer); Type: FUNCTION; Schema: public; Owner: system
+--
+
+CREATE FUNCTION get_hall_info_by_provost(p_teacher_id integer) RETURNS TABLE(hall_id integer, name character varying, capacity integer, location character varying, assigned_on date, resigned_on date)
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+  RETURN QUERY
+  SELECT 
+    h.hall_id,
+    h.name,
+    h.capacity,
+    h.location,
+    p.assigned_on,
+    p.resigned_on
+  FROM 
+    Hall h
+  JOIN 
+    Provost p ON h.hall_id = p.hall_id
+  WHERE 
+    p.teacher_id = p_teacher_id;
+END;
+$$;
+
+
+ALTER FUNCTION get_hall_info_by_provost(p_teacher_id integer) OWNER TO system;
+
+--
+-- Name: get_hallwise_student_summary(); Type: FUNCTION; Schema: public; Owner: system
+--
+
+CREATE FUNCTION get_hallwise_student_summary() RETURNS TABLE(hall_id integer, hall_name character varying, total_students integer, provost_name character varying)
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+  RETURN QUERY
+  SELECT 
+    h.hall_id,
+    h.name AS hall_name,
+    COUNT(s.student_id)::INT AS total_students,
+    u.username AS provost_name
+  FROM Hall h
+  LEFT JOIN Student s ON h.hall_id = s.hall_id
+  LEFT JOIN Provost p ON h.hall_id = p.hall_id
+  LEFT JOIN "User" u ON p.teacher_id = u.user_id
+  WHERE p.resigned_on IS NULL
+  GROUP BY h.hall_id, h.name, u.username;
+END;
+$$;
+
+
+ALTER FUNCTION get_hallwise_student_summary() OWNER TO system;
+
+--
+-- Name: get_notifications(integer, userrole); Type: FUNCTION; Schema: public; Owner: system
+--
+
+CREATE FUNCTION get_notifications(p_uid integer, p_role userrole) RETURNS TABLE(notification_id integer, title character varying, message text, created_by character varying, created_at timestamp without time zone, student_id integer, teacher_id integer, department_id integer, course_id character varying, hall_id integer, semester_id semester, pdf bytea)
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+  IF p_role = 'Student' THEN
+    RETURN QUERY
+    SELECT
+      n.notification_id,
+      n.title,
+      n.message,
+      u.username,
+      n.created_at,
+      n.student_id,
+      n.teacher_id,
+      n.department_id,
+      n.course_id,
+      n.hall_id,
+      n.semester_id,
+      n.pdf
+    FROM notification n
+    JOIN student s ON s.student_id = p_uid
+    LEFT JOIN "User" u ON u.user_id::VARCHAR = n.created_by
+    WHERE
+      (n.student_id IS NULL OR n.student_id = s.student_id)
+      AND (n.department_id IS NULL OR n.department_id = s.department_id)
+      AND (n.hall_id IS NULL OR n.hall_id = s.hall_id)
+      AND (n.semester_id IS NULL OR n.semester_id = s.current_semester)
+      AND (
+        n.course_id IS NULL
+        OR (
+          n.teacher_id IS NULL AND
+          n.course_id IN (
+            SELECT e.course_id
+            FROM enrollment e
+            WHERE e.student_id = s.student_id
+              AND e.semester = s.current_semester
+          )
+        )
+        OR (
+          n.teacher_id IS NOT NULL AND
+          n.course_id IN (
+            SELECT e.course_id
+            FROM enrollment e
+            LEFT JOIN subjectallocation sa ON sa.course_id = e.course_id AND sa.teacher_id = n.teacher_id
+            WHERE e.student_id = s.student_id
+              AND e.semester = s.current_semester
+              AND sa.section_type IN (e.section_type, 'All')
+          )
+        )
+      )
+      AND NOT (n.teacher_id IS NOT NULL AND n.course_id IS NULL)
+    ORDER BY n.created_at DESC;
+
+  ELSIF p_role = 'Teacher' THEN
+    RETURN QUERY
+    SELECT
+      n.notification_id,
+      n.title,
+      n.message,
+      u.username,
+      n.created_at,
+      n.student_id,
+      n.teacher_id,
+      n.department_id,
+      n.course_id,
+      n.hall_id,
+      n.semester_id,
+      n.pdf
+    FROM notification n
+    LEFT JOIN "User" u ON u.user_id::VARCHAR = n.created_by
+    WHERE
+      n.teacher_id = p_uid
+      OR n.department_id = (
+        SELECT t.department_id FROM teacher t WHERE t.teacher_id = p_uid
+      )
+      OR n.course_id IN (
+        SELECT sa.course_id
+        FROM subjectallocation sa
+        WHERE sa.teacher_id = p_uid
+      )
+    ORDER BY n.created_at DESC;
+
+  ELSIF p_role = 'Admin' THEN
+    RETURN QUERY
+    SELECT
+      n.notification_id,
+      n.title,
+      n.message,
+      u.username,
+      n.created_at,
+      n.student_id,
+      n.teacher_id,
+      n.department_id,
+      n.course_id,
+      n.hall_id,
+      n.semester_id,
+      n.pdf
+    FROM notification n
+    LEFT JOIN "User" u ON u.user_id::VARCHAR = n.created_by
+    ORDER BY n.created_at DESC;
+
+  ELSE
+    RAISE EXCEPTION 'Invalid role: %', p_role;
+  END IF;
+END;
+$$;
+
+
+ALTER FUNCTION get_notifications(p_uid integer, p_role userrole) OWNER TO system;
+
+--
+-- Name: get_registration_course(integer); Type: FUNCTION; Schema: public; Owner: system
+--
+
+CREATE FUNCTION get_registration_course(sid integer) RETURNS TABLE(c_id character varying, c_title character varying, c_by integer, credit double precision, c_did character varying)
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+    RETURN QUERY
+    SELECT 
+        c.course_id, 
+				c.title,
+        c.offered_by, 
+        c.credit_hours, 
+        c.pre_requisite
+    FROM course c JOIN student s on s.department_id = c.department_id
+    WHERE c.semester = s.CURRENT_semester and s.student_id = sid and c.still_offered = TRUE;
+END;
+$$;
+
+
+ALTER FUNCTION get_registration_course(sid integer) OWNER TO system;
+
+--
+-- Name: get_registration_course(semester, integer); Type: FUNCTION; Schema: public; Owner: system
+--
+
+CREATE FUNCTION get_registration_course(sem semester, dept integer) RETURNS TABLE(c_id character varying, c_by integer, credit double precision, c_did character varying)
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+    RETURN QUERY
+    SELECT 
+        c.course_id, 
+        c.offered_by, 
+        c.credit_hours, 
+        c.pre_requisite
+    FROM course c
+    WHERE c.semester = sem AND c.department_id = dept;
+END;
+$$;
+
+
+ALTER FUNCTION get_registration_course(sem semester, dept integer) OWNER TO system;
+
+--
+-- Name: get_student_course_outlines(integer); Type: FUNCTION; Schema: public; Owner: system
+--
+
+CREATE FUNCTION get_student_course_outlines(p_student_id integer) RETURNS TABLE(course_id character varying, title character varying, outline text)
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+  RETURN QUERY
+  SELECT c.course_id, c.title, c.outline
+  FROM enrollment e
+  JOIN course c ON e.course_id = c.course_id
+  JOIN student s ON e.student_id = s.student_id
+  WHERE e.student_id = p_student_id
+    AND c.semester = s.current_semester
+    AND e.approved_by IS NOT NULL
+    AND e.semester = s.current_semester;
+
+END;
+$$;
+
+
+ALTER FUNCTION get_student_course_outlines(p_student_id integer) OWNER TO system;
+
+--
+-- Name: get_student_enrolled_courses(integer); Type: FUNCTION; Schema: public; Owner: system
+--
+
+CREATE FUNCTION get_student_enrolled_courses(p_student_id integer) RETURNS TABLE(course_id character varying, course_title character varying, credit_hours double precision, offered_by character varying, teacher_name character varying)
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+    RETURN QUERY
+    SELECT 
+    e.course_id,
+    c.title AS course_title,
+    c.credit_hours,
+    d.name AS offered_by,
+    COALESCE(u.username, 'Not Assigned') AS teacher_name
+FROM enrollment e
+JOIN course c ON e.course_id = c.course_id
+JOIN department d ON d.department_id = c.offered_by
+LEFT JOIN subjectallocation sa 
+    ON e.course_id = sa.course_id 
+   AND (sa.section_type = 'All' OR e.section_type = sa.section_type) 
+LEFT JOIN teacher t ON sa.teacher_id = t.teacher_id
+LEFT JOIN "User" u ON t.teacher_id = u.user_id
+WHERE e.student_id = p_student_id
+  AND e.approved_by IS NOT NULL;
+END;
+$$;
+
+
+ALTER FUNCTION get_student_enrolled_courses(p_student_id integer) OWNER TO system;
+
+--
+-- Name: get_student_exams(integer, character varying); Type: FUNCTION; Schema: public; Owner: system
+--
+
+CREATE FUNCTION get_student_exams(p_student_id integer, asession character varying) RETURNS TABLE(student_id integer, teacher_name character varying, section_type character varying, course_id character varying, course_title character varying, exam_title character varying, exam_type examtype, total_marks integer, date_of_exam timestamp without time zone, semester semester, academic_session character varying, marks_obtained real)
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+    RETURN QUERY
+     SELECT 
+        en.student_id,
+        u.username,
+        en.section_type,
+        e.course_id,
+        c.title AS course_title,
+        e.title AS exam_title,
+        e.exam_type,
+        e.total_marks,
+        e.date_of_exam,
+        e.semester,
+        e.academic_session,
+        r.marks_obtained
+    FROM 
+        enrollment en
+    JOIN 
+        exam e ON en.course_id = e.course_id and e.SECTION in (en.section_type,'All')
+    JOIN 
+        course c ON e.course_id = c.course_id
+    JOIN
+        examresult r on r.exam_id = e.exam_id and r.student_id = p_student_id
+    LEFT JOIN 
+        "User" u ON u.user_id = e.teacher_id
+    WHERE 
+        en.student_id = p_student_id and e.academic_session = (SELECT r.academic_session 
+          FROM registration_log r  
+          ORDER BY log_id DESC 
+          LIMIT 1) and en.approved_by is not NULL
+    ORDER BY 
+        e.date_of_exam ASC;
+END;
+$$;
+
+
+ALTER FUNCTION get_student_exams(p_student_id integer, asession character varying) OWNER TO system;
+
+--
+-- Name: get_student_full_info(integer); Type: FUNCTION; Schema: public; Owner: system
+--
+
+CREATE FUNCTION get_student_full_info(p_student_id integer) RETURNS TABLE(user_id integer, username character varying, email character varying, phone character varying, dob date, gender gender, role userrole, date_joined timestamp without time zone, is_active boolean, last_login timestamp without time zone, photo bytea, department_id integer, academic_session character varying, current_semester semester, hall_id integer, hall_name character varying, hall_room_number character varying, hall_residency_status character varying, hall_assigned_on timestamp without time zone, hall_vacated_on timestamp without time zone, emergency_contact_name character varying, emergency_contact_mobile character varying, emergency_contact_address character varying, advisor_id integer, advisor_total_students integer, advisor_name character varying, advisor_email character varying, advisor_phone character varying, advisor_designation character varying)
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+  RETURN QUERY
+  SELECT
+    u.user_id,
+    u.username,
+    u.email,
+    u.phone,
+    u.dob,
+    u.gender,
+    u.role,
+    u.date_joined,
+    u.is_active,
+    u.last_login,
+    u.photo,
+
+    s.department_id,
+    s.academic_session,
+    s.current_semester,
+
+    ha.hall_id,
+    h.name AS hall_name,
+    ha.room_number,
+    CASE
+      WHEN ha.resident IS TRUE THEN 'Resident'
+      ELSE 'Attached'
+    END::varchar AS hall_residency_status,  
+
+    ha.assigned_on,
+    ha.vacated_on,
+
+    ec.name AS emergency_contact_name,
+    ec.mobile AS emergency_contact_mobile,
+    ec.address AS emergency_contact_address,
+
+    adv.teacher_id AS advisor_id,
+    adv.total_student AS advisor_total_students,
+    u_adv.username AS advisor_name,
+    u_adv.email AS advisor_email,
+    u_adv.phone AS advisor_phone,
+    t.designation AS advisor_designation
+
+  FROM "User" u
+  JOIN Student s ON u.user_id = s.student_id
+  LEFT JOIN EmergencyContact ec ON u.user_id = ec.user_id
+  LEFT JOIN HallAssignment ha ON s.student_id = ha.student_id
+  LEFT JOIN Hall h ON ha.hall_id = h.hall_id
+  LEFT JOIN Advisor adv ON s.advisor_id = adv.teacher_id
+  LEFT JOIN Teacher t ON adv.teacher_id = t.teacher_id
+  LEFT JOIN "User" u_adv ON adv.teacher_id = u_adv.user_id
+
+  WHERE s.student_id = p_student_id;
+END;
+$$;
+
+
+ALTER FUNCTION get_student_full_info(p_student_id integer) OWNER TO system;
+
+--
+-- Name: get_student_grades(integer); Type: FUNCTION; Schema: public; Owner: system
+--
+
+CREATE FUNCTION get_student_grades(p_student_id integer) RETURNS TABLE(student_id integer, lt semester, name character varying, level_term semester, course_id character varying, title character varying, credit double precision, gpa double precision)
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+    RETURN QUERY
+    SELECT
+        s.student_id,
+        s.current_semester,
+        u.username,
+        cr.semester,
+        c.course_id,
+        c.title,
+        c.credit_hours,
+        cr.grade_point
+    FROM
+        CourseResult cr
+    JOIN
+        Student s ON cr.student_id = s.student_id
+    JOIN
+        "User" u ON u.user_id = s.student_id
+    JOIN
+        Course c ON cr.course_id = c.course_id
+    WHERE
+        s.student_id = p_student_id
+    ORDER BY
+        cr.semester, c.course_id;
+END;
+$$;
+
+
+ALTER FUNCTION get_student_grades(p_student_id integer) OWNER TO system;
+
+--
+-- Name: get_student_hall_details(integer); Type: FUNCTION; Schema: public; Owner: system
+--
+
+CREATE FUNCTION get_student_hall_details(p_student_id integer) RETURNS TABLE(student_id integer, student_name character varying, is_resident boolean, hall_id integer, hall_name character varying, hall_location character varying, room_number character varying, roommate_id integer, roommate_name character varying, roommate_resident boolean)
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+  RETURN QUERY
+  SELECT 
+    ha1.student_id,
+    u1.username AS student_name,
+    ha1.resident AS is_resident,
+    ha1.hall_id,
+    h.name AS hall_name,
+    h.location AS hall_location,
+    ha1.room_number,
+    ha2.student_id AS roommate_id,
+    u2.username AS roommate_name,
+    ha2.resident AS roommate_resident
+  FROM 
+    HallAssignment ha1
+  JOIN 
+    "User" u1 ON ha1.student_id = u1.user_id
+  JOIN 
+    Hall h ON ha1.hall_id = h.hall_id
+  left outer JOIN 
+    HallAssignment ha2 ON ha1.hall_id = ha2.hall_id
+                     AND ha1.room_number = ha2.room_number
+                     AND ha2.student_id != ha1.student_id
+  left outer JOIN 
+    "User" u2 ON ha2.student_id = u2.user_id
+  WHERE 
+    ha1.student_id = p_student_id;
+END;
+$$;
+
+
+ALTER FUNCTION get_student_hall_details(p_student_id integer) OWNER TO system;
+
+--
+-- Name: get_students_by_advisor(integer); Type: FUNCTION; Schema: public; Owner: system
+--
+
+CREATE FUNCTION get_students_by_advisor(p_teacher_id integer) RETURNS TABLE(student_id integer, username character varying, email character varying, phone character varying, dob date, gender gender, academic_session character varying, current_semester semester, hall_id integer, department_id integer)
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+  RETURN QUERY
+  SELECT 
+    s.student_id,
+    u.username,
+    u.email,
+    u.phone,
+    u.dob,
+    u.gender,
+    s.academic_session,
+    s.current_semester,
+    s.hall_id,
+    s.department_id
+  FROM 
+    Student s
+  JOIN 
+    "User" u ON s.student_id = u.user_id
+  WHERE 
+    s.advisor_id = p_teacher_id;
+END;
+$$;
+
+
+ALTER FUNCTION get_students_by_advisor(p_teacher_id integer) OWNER TO system;
+
+--
+-- Name: get_students_by_provost(integer); Type: FUNCTION; Schema: public; Owner: system
+--
+
+CREATE FUNCTION get_students_by_provost(p_teacher_id integer) RETURNS TABLE(student_id integer, student_name character varying, department_id integer, semsester semester)
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+  RETURN QUERY
+  SELECT 
+    s.student_id,
+    u.username AS student_name,
+		s.department_id,
+		s.current_semester
+  FROM 
+    Provost p
+  JOIN 
+    Hall h ON p.hall_id = h.hall_id
+  JOIN 
+    Student s ON s.hall_id = h.hall_id
+  JOIN 
+    "User" u ON s.student_id = u.user_id
+  WHERE 
+    p.teacher_id = p_teacher_id;
+END;
+$$;
+
+
+ALTER FUNCTION get_students_by_provost(p_teacher_id integer) OWNER TO system;
+
+--
+-- Name: get_subject_allocation(integer); Type: FUNCTION; Schema: public; Owner: system
+--
+
+CREATE FUNCTION get_subject_allocation(did integer) RETURNS TABLE(teacher_id integer, teacher_name character varying, course_id character varying, section_type character varying, semester semester)
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+    RETURN QUERY
+    SELECT sa.teacher_id, u.username, sa.course_id, sa.section_type, c.semester
+    FROM subjectallocation sa 
+    JOIN teacher t ON t.teacher_id = sa.teacher_id
+    JOIN course c ON c.course_id = sa.course_id
+    JOIN "User" u ON u.user_id = t.teacher_id
+    WHERE t.department_id = did
+      AND sa.academic_session = (
+          SELECT academic_session 
+          FROM registration_log 
+          ORDER BY log_id DESC 
+          LIMIT 1
+      )
+    ORDER BY c.semester;
+END;
+$$;
+
+
+ALTER FUNCTION get_subject_allocation(did integer) OWNER TO system;
+
+--
+-- Name: get_teacher_context(integer, character varying); Type: FUNCTION; Schema: public; Owner: system
+--
+
+CREATE FUNCTION get_teacher_context(p_teacher_id integer, p_session character varying) RETURNS json
+    LANGUAGE plpgsql
+    AS $$
+DECLARE
+    result JSON;
+BEGIN
+    SELECT json_build_object(
+
+        -- courses taught by teacher in subjectallocation
+        'course', (
+            SELECT json_agg(sa)
+            FROM subjectallocation sa
+            WHERE sa.teacher_id = p_teacher_id
+              AND sa.academic_session = (SELECT academic_session 
+          FROM registration_log 
+          ORDER BY log_id DESC 
+          LIMIT 1)
+        ),
+
+        -- hall students if teacher is provost
+        'hallstudent', (
+            SELECT json_agg(json_build_object(
+                'student_id', s.student_id,
+                'student_name', u.username,
+                'department_id', s.department_id,
+                'current_semester', s.current_semester,
+								'hall_id', s.hall_id
+            ))
+            FROM provost p
+            JOIN hall h ON p.hall_id = h.hall_id
+            JOIN student s ON s.hall_id = h.hall_id
+            JOIN "User" u ON u.user_id = s.student_id
+            WHERE p.teacher_id = p_teacher_id
+        ),
+
+        -- advising students if teacher is advisor
+        'advisingstudent', (
+            SELECT json_agg(json_build_object(
+                'student_id', s.student_id,
+                'student_name', u.username,
+                'department_id', s.department_id,
+                'current_semester', s.current_semester,
+                'advisor_id', s.advisor_id
+            ))
+            FROM student s
+            JOIN "User" u ON u.user_id = s.student_id
+            WHERE s.advisor_id = p_teacher_id
+        ),
+
+        -- teachers of department if teacher is HOD
+        'teacher', (
+            SELECT json_agg(json_build_object(
+                'teacher_id', t.teacher_id,
+                'teacher_name', u.username,
+                'department_id', t.department_id
+            ))
+            FROM head_of_department hod
+            JOIN teacher t ON t.department_id = hod.department_id
+            JOIN "User" u ON u.user_id = t.teacher_id
+            WHERE hod.teacher_id = p_teacher_id
+        ),
+
+        -- department courses if teacher is HOD
+        'deptcourse', (
+            SELECT json_agg(c)
+            FROM head_of_department hod
+            JOIN course c ON c.department_id = hod.department_id
+            WHERE hod.teacher_id = p_teacher_id and c.still_offered is not NULL
+        ),
+
+        -- department students if teacher is HOD
+        'deptstudent', (
+            SELECT json_agg(json_build_object(
+                'student_id', s.student_id,
+                'student_name', u.username,
+                'department_id', s.department_id,
+                'current_semester', s.current_semester
+            ))
+            FROM head_of_department hod
+            JOIN student s ON s.department_id = hod.department_id
+            JOIN "User" u ON u.user_id = s.student_id
+            WHERE hod.teacher_id = p_teacher_id
+        )
+
+    ) INTO result;
+
+    RETURN result;
+
+END;
+$$;
+
+
+ALTER FUNCTION get_teacher_context(p_teacher_id integer, p_session character varying) OWNER TO system;
+
+--
+-- Name: get_teacher_courses(integer); Type: FUNCTION; Schema: public; Owner: system
+--
+
+CREATE FUNCTION get_teacher_courses(p_teacher_id integer) RETURNS TABLE(course_id character varying, course_title character varying, section_type character varying, academic_session character varying, credit_hours double precision)
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+  RETURN QUERY
+  SELECT 
+    sa.course_id,
+    c.title AS course_title,
+    sa.section_type,
+    sa.academic_session,
+    c.credit_hours
+  FROM SubjectAllocation sa
+  JOIN Course c ON sa.course_id = c.course_id
+  WHERE sa.teacher_id = p_teacher_id
+  AND sa.academic_session = (SELECT academic_session 
+          FROM registration_log 
+          ORDER BY log_id DESC 
+          LIMIT 1);
+END;
+$$;
+
+
+ALTER FUNCTION get_teacher_courses(p_teacher_id integer) OWNER TO system;
+
+--
+-- Name: get_teacher_info(integer); Type: FUNCTION; Schema: public; Owner: system
+--
+
+CREATE FUNCTION get_teacher_info(p_user_id integer) RETURNS json
+    LANGUAGE plpgsql
+    AS $$
+DECLARE
+  result JSON;
+BEGIN
+  SELECT json_build_object(
+    'user_id', u.user_id,
+    'username', u.username,
+    'email', u.email,
+    'phone', u.phone,
+    'dob', u.dob,
+    'gender', u.gender,
+    'date_joined', u.date_joined,
+    'last_login', u.last_login,
+    'is_active', u.is_active,
+    'two_fa_enabled', u.two_fa_enabled,
+    'photo', encode(u.photo, 'base64'),
+
+    'emergency_contact', json_build_object(
+      'name', ec.name,
+      'mobile', ec.mobile,
+      'address', ec.address
+    ),
+
+    'teacher_info', json_build_object(
+      'teacher_id', t.teacher_id,
+      'hire_date', t.hire_date,
+      'designation', t.designation
+    ),
+
+    'department', json_build_object(
+      'department_id', d.department_id,
+      'name', d.name
+    ),
+
+    'advisor_info', json_build_object(
+      'total_students', a.total_student
+    ),
+
+    'hod_info', json_build_object(
+      'department_id', hod.department_id,
+      'assigned_on', hod.assigned_on,
+      'resigned_on', hod.resigned_on
+    ),
+
+    'provost_info', json_build_object(
+      'hall_id', p.hall_id,
+      'assigned_on', p.assigned_on,
+      'resigned_on', p.resigned_on
+    ),
+
+    'courses_taught', (
+      SELECT json_agg(
+        json_build_object(
+          'course_id', sa.course_id,
+          'course_title', c.title,
+          'section_type', sa.section_type,
+          'academic_session', sa.academic_session
+        )
+      )
+      FROM SubjectAllocation sa
+      JOIN Course c ON sa.course_id = c.course_id
+      WHERE sa.teacher_id = t.teacher_id
+    )
+  )
+  INTO result
+  FROM "User" u
+  JOIN Teacher t ON u.user_id = t.teacher_id
+  LEFT JOIN Department d ON t.department_id = d.department_id
+  LEFT JOIN Advisor a ON t.teacher_id = a.teacher_id
+  LEFT JOIN head_of_department hod ON t.teacher_id = hod.teacher_id
+  LEFT JOIN Provost p ON t.teacher_id = p.teacher_id
+  LEFT JOIN EmergencyContact ec ON u.user_id = ec.user_id
+  WHERE u.user_id = p_user_id;
+
+  RETURN result;
+END;
+$$;
+
+
+ALTER FUNCTION get_teacher_info(p_user_id integer) OWNER TO system;
+
+--
+-- Name: get_teacherinfo(integer); Type: FUNCTION; Schema: public; Owner: system
+--
+
+CREATE FUNCTION get_teacherinfo(uid integer) RETURNS teacher_info
+    LANGUAGE plpgsql
+    AS $$
+DECLARE
+    result teacher_info;
+BEGIN
+    SELECT
+        u.username,
+        u.email,
+				u.phone,
+        u.gender,
+        u.date_joined,
+        u.is_active,
+        u.last_login,
+        u.login_attempts,
+        u.two_fa_enabled,
+        u.photo,
+				s.department_id,
+        s.hire_date,
+				s.designation
+    INTO result
+    FROM "User" u , teacher s 
+		WHERE u.user_id = uid and s.teacher_id = uid;
+    RETURN result;
+END;
+$$;
+
+
+ALTER FUNCTION get_teacherinfo(uid integer) OWNER TO system;
+
+--
+-- Name: get_total_students(); Type: FUNCTION; Schema: public; Owner: system
+--
+
+CREATE FUNCTION get_total_students() RETURNS TABLE(total_students integer)
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+  RETURN QUERY
+  SELECT COUNT(*)::INT FROM Student;
+END;
+$$;
+
+
+ALTER FUNCTION get_total_students() OWNER TO system;
+
+--
+-- Name: get_user_notifications(integer, userrole); Type: FUNCTION; Schema: public; Owner: system
+--
+
+CREATE FUNCTION get_user_notifications(p_uid integer, p_role userrole) RETURNS TABLE(notification_id integer, title character varying, message text, created_by character varying, created_at timestamp without time zone, student_id integer, teacher_id integer, department_id integer, course_id character varying, hall_id integer, semester_id semester, pdf bytea)
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+  IF p_role = 'Student' THEN
+    RETURN QUERY
+    SELECT n.notification_id, n.title, n.message, n.created_by, n.created_at,
+           n.student_id, n.teacher_id, n.department_id, n.course_id, n.hall_id, n.semester_id, n.pdf
+    FROM notification n
+    WHERE n.student_id = p_uid
+       OR n.department_id = (
+            SELECT s.department_id FROM student s WHERE s.student_id = p_uid
+         )
+       OR n.hall_id = (
+            SELECT s.hall_id FROM student s WHERE s.student_id = p_uid
+         )
+       OR n.semester_id = (
+            SELECT s.current_semester FROM student s WHERE s.student_id = p_uid
+         )
+       OR n.course_id IN (
+            SELECT e.course_id
+            FROM enrollment e
+            JOIN student s ON e.student_id = s.student_id
+            WHERE e.student_id = p_uid AND e.semester = s.current_semester
+         )
+    ORDER BY n.created_at DESC;
+
+  ELSIF p_role = 'Teacher' THEN
+    RETURN QUERY
+    SELECT n.notification_id, n.title, n.message, n.created_by, n.created_at,
+           n.student_id, n.teacher_id, n.department_id, n.course_id, n.hall_id, n.semester_id,n.pdf
+    FROM notification n
+    WHERE n.teacher_id = p_uid
+       OR n.department_id = (
+            SELECT t.department_id FROM teacher t WHERE t.teacher_id = p_uid
+         )
+       OR n.course_id IN (
+            SELECT sa.course_id
+            FROM subjectallocation sa
+            WHERE sa.teacher_id = p_uid
+         )
+    ORDER BY n.created_at DESC;
+
+  ELSIF p_role = 'Admin' THEN
+    RETURN QUERY
+    SELECT n.notification_id, n.title, n.message, n.created_by, n.created_at,
+           n.student_id, n.teacher_id, n.department_id, n.course_id, n.hall_id, n.semester_id,n.pdf
+    FROM notification n
+    ORDER BY n.created_at DESC;
+
+  ELSE
+    RAISE EXCEPTION 'Invalid role: %', p_role;
+  END IF;
+END;
+$$;
+
+
+ALTER FUNCTION get_user_notifications(p_uid integer, p_role userrole) OWNER TO system;
+
+--
+-- Name: increment_advisor_student_count(); Type: FUNCTION; Schema: public; Owner: system
+--
+
+CREATE FUNCTION increment_advisor_student_count() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+  IF NEW.advisor_id IS NOT NULL THEN
+    UPDATE Advisor
+    SET total_student = total_student + 1
+    WHERE teacher_id = NEW.advisor_id;
+  END IF;
+
+  RETURN NEW;
+END;
+$$;
+
+
+ALTER FUNCTION increment_advisor_student_count() OWNER TO system;
+
+--
+-- Name: insert_into_role_table(); Type: FUNCTION; Schema: public; Owner: system
+--
+
+CREATE FUNCTION insert_into_role_table() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+    IF NEW.role = 'Student' THEN
+        INSERT INTO student (student_id) VALUES (NEW.user_id)
+        ON CONFLICT (student_id) DO NOTHING;
+    END IF;
+
+    RETURN NEW;
+END;
+$$;
+
+
+ALTER FUNCTION insert_into_role_table() OWNER TO system;
+
+--
+-- Name: insert_missed_courses_on_semester_change(); Type: FUNCTION; Schema: public; Owner: system
+--
+
+CREATE FUNCTION insert_missed_courses_on_semester_change() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+  INSERT INTO missed_courses (student_id, course_id, missed_on)
+  SELECT
+    NEW.student_id,
+    c.course_id,
+    NEW.current_semester
+  FROM course c
+  WHERE c.semester = NEW.current_semester
+    AND c.department_id = NEW.department_id
+    AND c.pre_requisite IS NOT NULL
+
+  EXCEPT
+
+  SELECT
+    NEW.student_id,
+    c.course_id,
+    NEW.current_semester
+  FROM course c
+  JOIN courseresult cr ON cr.course_id = c.pre_requisite
+                       AND cr.student_id = NEW.student_id
+                       AND cr.final_grade <> 'F'
+  WHERE c.semester = NEW.current_semester
+    AND c.department_id = NEW.department_id
+    AND c.pre_requisite IS NOT NULL;
+
+  RETURN NEW;
+END;
+$$;
+
+
+ALTER FUNCTION insert_missed_courses_on_semester_change() OWNER TO system;
+
+--
+-- Name: insert_random_advisors(); Type: FUNCTION; Schema: public; Owner: system
+--
+
+CREATE FUNCTION insert_random_advisors() RETURNS void
+    LANGUAGE plpgsql
+    AS $$
+DECLARE
+    teacher_ids INT[];
+    selected_id INT;
+    i INT := 1;
+BEGIN
+
+    SELECT ARRAY(
+        SELECT teacher_id FROM Teacher
+        ORDER BY random()
+        LIMIT 24
+    ) INTO teacher_ids;
+
+    WHILE i <= array_length(teacher_ids, 1) LOOP
+        selected_id := teacher_ids[i];
+
+        INSERT INTO Advisor (teacher_id, total_student)
+        VALUES (selected_id, 0)
+        ON CONFLICT (teacher_id) DO NOTHING;
+
+        i := i + 1;
+    END LOOP;
+END;
+$$;
+
+
+ALTER FUNCTION insert_random_advisors() OWNER TO system;
+
+--
+-- Name: insert_user_to_teacher(integer); Type: FUNCTION; Schema: public; Owner: system
+--
+
+CREATE FUNCTION insert_user_to_teacher(p_user_id integer) RETURNS void
+    LANGUAGE plpgsql
+    AS $$
+DECLARE
+    dept_code_text TEXT;
+    dept_code INT;
+    hire_date DATE;
+    designation VARCHAR(30);
+    designations TEXT[] := ARRAY['Lecturer', 'Assistant Professor', 'Associate Professor', 'Professor'];
+BEGIN
+
+    dept_code_text := substring(p_user_id::TEXT from 5 for 2);
+    dept_code := dept_code_text::INT;
+
+    SELECT date_joined INTO hire_date FROM "User" WHERE user_id = p_user_id;
+    SELECT designations[ floor(random() * array_length(designations,1) + 1)::INT ] INTO designation;
+    INSERT INTO Teacher (teacher_id, hire_date, designation, department_id)
+    VALUES (p_user_id, hire_date, designation, dept_code)
+    ON CONFLICT (teacher_id) DO NOTHING;  
+
+END;
+$$;
+
+
+ALTER FUNCTION insert_user_to_teacher(p_user_id integer) OWNER TO system;
+
+--
+-- Name: last_7_days_login(); Type: FUNCTION; Schema: public; Owner: system
+--
+
+CREATE FUNCTION last_7_days_login() RETURNS TABLE(login_date date, login_count bigint)
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+    RETURN QUERY
+    SELECT
+        CAST(ul.login_time AS DATE) AS date,
+        COUNT(DISTINCT ul.user_id) AS login_count
+    FROM
+        user_logins ul -- Alias added for clarity
+    WHERE
+        ul.login_time >= NOW() - INTERVAL '7 days'
+    GROUP BY
+        CAST(ul.login_time AS DATE)
+    ORDER BY
+        date ASC;
+END;
+$$;
+
+
+ALTER FUNCTION last_7_days_login() OWNER TO system;
+
+--
+-- Name: last_7_days_login(integer); Type: FUNCTION; Schema: public; Owner: system
+--
+
+CREATE FUNCTION last_7_days_login(uid integer) RETURNS TABLE(login_date date, login_count bigint)
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+    RETURN QUERY
+    SELECT
+        CAST(ul.login_time AS DATE) AS login_date,
+        COUNT(ul.user_id) AS login_count
+    FROM
+        usersession ul 
+    WHERE
+        ul.user_id = uid
+        AND ul.login_time >= NOW() - INTERVAL '7 days'
+    GROUP BY
+        CAST(ul.login_time AS DATE)
+    ORDER BY
+        login_date ASC;
+END;
+$$;
+
+
+ALTER FUNCTION last_7_days_login(uid integer) OWNER TO system;
+
+--
+-- Name: notify_exam_insert(); Type: FUNCTION; Schema: public; Owner: system
+--
+
+CREATE FUNCTION notify_exam_insert() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+DECLARE
+  teacher_name VARCHAR(100);
+BEGIN
+  SELECT username INTO teacher_name
+  FROM "User"
+  WHERE user_id = NEW.teacher_id;
+
+  INSERT INTO Notification (
+    title,
+    message,
+    created_by,
+    course_id,
+    teacher_id
+  )
+  VALUES (
+    CONCAT(NEW.exam_type, ' on ', NEW.course_id, ' has been scheduled on ', TO_CHAR(NEW.date_of_exam, 'YYYY-MM-DD')),
+    CONCAT(NEW.exam_type, ' for course ', NEW.course_id, ' has been scheduled on ', TO_CHAR(NEW.date_of_exam, 'YYYY-MM-DD'), ' by ', teacher_name),
+    NEW.teacher_id::text,
+    NEW.course_id,
+    NEW.teacher_id
+  );
+
+  RETURN NEW;
+END;
+$$;
+
+
+ALTER FUNCTION notify_exam_insert() OWNER TO system;
+
+--
+-- Name: pay_student_fee(integer, timestamp without time zone); Type: FUNCTION; Schema: public; Owner: system
+--
+
+CREATE FUNCTION pay_student_fee(p_student_fee_id integer, p_date timestamp without time zone DEFAULT NULL::timestamp without time zone) RETURNS TABLE(already_paid boolean, msg text)
+    LANGUAGE plpgsql
+    AS $$
+DECLARE
+    is_paid BOOL;
+BEGIN
+  SELECT (status = 'Paid') INTO is_paid
+  FROM StudentFee
+  WHERE student_fee_id = p_student_fee_id;
+
+  IF NOT FOUND THEN
+    RETURN QUERY SELECT FALSE, format('No StudentFee record found with ID %s', p_student_fee_id);
+    RETURN;
+  END IF;
+
+  IF is_paid THEN
+    RETURN QUERY SELECT TRUE, format('StudentFee ID %s is already marked as Paid', p_student_fee_id);
+    RETURN;
+  END IF;
+
+  UPDATE StudentFee
+  SET
+    status = 'Paid',
+    paid_on = p_date
+  WHERE student_fee_id = p_student_fee_id;
+
+  RETURN QUERY SELECT FALSE, format('StudentFee ID %s updated to Paid', p_student_fee_id);
+END;
+$$;
+
+
+ALTER FUNCTION pay_student_fee(p_student_fee_id integer, p_date timestamp without time zone) OWNER TO system;
+
+--
+-- Name: populate_exam_results(); Type: FUNCTION; Schema: public; Owner: system
+--
+
+CREATE FUNCTION populate_exam_results() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+  IF NEW.exam_type IN ('CT1', 'CT2', 'CT3', 'CT4') THEN
+    IF NEW.section = 'All' THEN
+      INSERT INTO ExamResult (exam_id, student_id, marks_obtained, remarks)
+      SELECT
+        NEW.exam_id,
+        e.student_id,
+        NULL,
+        NULL
+      FROM Enrollment e
+      WHERE e.course_id = NEW.course_id
+        AND e.semester = NEW.semester
+				AND e.academic_session = NEW.academic_session;
+    ELSE
+      INSERT INTO ExamResult (exam_id, student_id, marks_obtained, remarks)
+      SELECT
+        NEW.exam_id,
+        e.student_id,
+        NULL,
+        NULL
+      FROM Enrollment e
+      WHERE e.course_id = NEW.course_id
+        AND e.semester = NEW.semester
+				AND e.academic_session = NEW.academic_session
+        AND e.section_type = NEW.section;
+    END IF;
+
+  ELSIF NEW.exam_type IN ('Term', 'Quiz') THEN
+    INSERT INTO ExamResult (exam_id, student_id, marks_obtained, remarks)
+    SELECT
+      NEW.exam_id,
+      e.student_id,
+      NULL,
+      NULL
+    FROM Enrollment e
+    WHERE e.course_id = NEW.course_id
+			AND e.academic_session = NEW.academic_session
+      AND e.semester = NEW.semester;
+  END IF;
+
+  RETURN NEW;
+END;
+$$;
+
+
+ALTER FUNCTION populate_exam_results() OWNER TO system;
+
+--
+-- Name: remove_missed_courses_if_enrolled(); Type: FUNCTION; Schema: public; Owner: system
+--
+
+CREATE FUNCTION remove_missed_courses_if_enrolled() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+    IF NEW.approved_by IS NOT NULL THEN
+        DELETE FROM missed_courses
+        WHERE student_id = NEW.student_id
+          AND course_id = NEW.course_id;
+    END IF;
+    RETURN NEW;
+END;
+$$;
+
+
+ALTER FUNCTION remove_missed_courses_if_enrolled() OWNER TO system;
+
+--
+-- Name: students_taken_course(character varying); Type: FUNCTION; Schema: public; Owner: system
+--
+
+CREATE FUNCTION students_taken_course(c_id character varying) RETURNS SETOF std
+    LANGUAGE plpgsql
+    AS $$
+BEGIN 
+    RETURN QUERY 
+    SELECT
+        s.student_id,
+        u.username,
+        d.name 
+    FROM
+        student s
+    JOIN "User" u ON u.user_id = s.student_id
+    JOIN Department d ON s.department_id = d.department_id
+		JOIN enrollment e on e.student_id = u.user_id
+		WHERE e.course_id = c_id and s.current_semester = e.semester;
+END;
+$$;
+
+
+ALTER FUNCTION students_taken_course(c_id character varying) OWNER TO system;
+
+--
+-- Name: update_gradesheet(); Type: FUNCTION; Schema: public; Owner: system
+--
+
+CREATE FUNCTION update_gradesheet() RETURNS boolean
+    LANGUAGE plpgsql
+    AS $$
+DECLARE
+    total_credits_val FLOAT := 0;
+    cgpa_val FLOAT := 0;
+    student_total INT;
+    weighted_sum FLOAT;
+    student_rec RECORD;
+    semester_rec RECORD;
+    course_rec RECORD;
+BEGIN 
+    FOR student_rec IN 
+        SELECT s.student_id, s.current_semester 
+        FROM student s 
+        JOIN "User" u ON u.user_id = s.student_id 
+        WHERE u.is_active = TRUE
+        ORDER BY s.department_id ASC, s.student_id ASC
+    LOOP
+        -- Reset totals per student
+        total_credits_val := 0;
+        weighted_sum := 0;
+
+        FOR semester_rec IN 
+            SELECT DISTINCT semester 
+            FROM courseresult 
+            WHERE student_id = student_rec.student_id
+        LOOP
+            IF semester_rec.semester < student_rec.current_semester THEN
+                FOR course_rec IN 
+                    SELECT cr.grade_point, c.credit_hours 
+                    FROM courseresult cr 
+                    JOIN course c ON c.course_id = cr.course_id 
+                    WHERE cr.student_id = student_rec.student_id 
+                      AND cr.semester = semester_rec.semester
+                LOOP
+                    total_credits_val := total_credits_val + course_rec.credit_hours;
+                    weighted_sum := weighted_sum + (course_rec.credit_hours * course_rec.grade_point);
+                END LOOP;
+            END IF;
+        END LOOP;
+
+        IF total_credits_val > 0 THEN
+            cgpa_val := weighted_sum / total_credits_val;
+        ELSE
+            cgpa_val := 0;
+        END IF;
+        UPDATE gradesheet
+        SET cgpa = cgpa_val, total_credit = total_credits_val
+        WHERE student_id = student_rec.student_id;
+        
+    END LOOP;
+
+    RETURN TRUE;
+END;
+$$;
+
+
+ALTER FUNCTION update_gradesheet() OWNER TO system;
+
+--
+-- Name: update_student_hall(); Type: FUNCTION; Schema: public; Owner: system
+--
+
+CREATE FUNCTION update_student_hall() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+    UPDATE Student
+    SET hall_id = NEW.hall_id
+    WHERE student_id = NEW.student_id;
+    RETURN NEW;
+END;
+$$;
+
+
+ALTER FUNCTION update_student_hall() OWNER TO system;
+
+--
+-- Name: User; Type: TABLE; Schema: public; Owner: system
+--
+
+CREATE TABLE "User" (
+CREATE TABLE "User" (
+    user_id integer NOT NULL,
+    user_id integer NOT NULL,
+    username character varying(30),
+    username character varying(30),
+    password_hash character varying(60),
+    password_hash character varying(60),
+    email character varying(100),
+    email character varying(100),
+    phone character varying(13),
+    phone character varying(13),
+    dob date,
+    dob date,
+    gender gender,
+    gender gender,
+    role userrole,
+    role userrole,
+    date_joined timestamp without time zone,
+    date_joined timestamp without time zone,
+    is_active boolean DEFAULT true,
+    is_active boolean DEFAULT true,
+    last_login timestamp without time zone,
+    last_login timestamp without time zone,
+    login_attempts integer DEFAULT 0,
+    login_attempts integer DEFAULT 0,
+    two_fa_enabled boolean DEFAULT false,
+    two_fa_enabled boolean DEFAULT false,
+    photo bytea,
+    photo bytea,
+    reset_token text,
+    reset_token text,
+    reset_token_expires timestamp without time zone,
+    reset_token_expires timestamp without time zone,
+    last_notification integer
+    last_notification integer
+);
+);
+
+
+ALTER TABLE "User" OWNER TO system;
+
+--
+-- Name: achievements; Type: TABLE; Schema: public; Owner: system
+--
+
+CREATE TABLE achievements (
+CREATE TABLE achievements (
+    ach_id integer NOT NULL,
+    ach_id integer NOT NULL,
+    photo bytea,
+    photo bytea,
+    title character varying(100),
+    title character varying(100),
+    description character varying(500)
+    description character varying(500)
+);
+);
+
+
+ALTER TABLE achievements OWNER TO system;
+
+--
+-- Name: achievements_ach_id_seq; Type: SEQUENCE; Schema: public; Owner: system
+--
+
+CREATE SEQUENCE achievements_ach_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE achievements_ach_id_seq OWNER TO system;
+
+--
+-- Name: achievements_ach_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: system
+--
+
+ALTER SEQUENCE achievements_ach_id_seq OWNED BY achievements.ach_id;
+
+
+--
+-- Name: address; Type: TABLE; Schema: public; Owner: system
+--
+
+CREATE TABLE address (
+CREATE TABLE address (
+    address_id integer NOT NULL,
+    address_id integer NOT NULL,
+    user_id integer NOT NULL,
+    user_id integer NOT NULL,
+    country character varying(50),
+    country character varying(50),
+    city character varying(50),
+    city character varying(50),
+    street character varying(50)
+    street character varying(50)
+);
+);
+
+
+ALTER TABLE address OWNER TO system;
+
+--
+-- Name: address_address_id_seq; Type: SEQUENCE; Schema: public; Owner: system
+--
+
+CREATE SEQUENCE address_address_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE address_address_id_seq OWNER TO system;
+
+--
+-- Name: address_address_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: system
+--
+
+ALTER SEQUENCE address_address_id_seq OWNED BY address.address_id;
+
+
+--
+-- Name: admin; Type: TABLE; Schema: public; Owner: system
+--
+
+CREATE TABLE admin (
+CREATE TABLE admin (
+    admin_id integer NOT NULL,
+    admin_id integer NOT NULL,
+    user_id integer NOT NULL,
+    user_id integer NOT NULL,
+    assigned_date timestamp without time zone,
+    assigned_date timestamp without time zone,
+    status adminstatus
+    status adminstatus
+);
+);
+
+
+ALTER TABLE admin OWNER TO system;
+
+--
+-- Name: adminrole; Type: TABLE; Schema: public; Owner: system
+--
+
+CREATE TABLE adminrole (
+CREATE TABLE adminrole (
+    admin_id integer NOT NULL,
+    admin_id integer NOT NULL,
+    role_name character varying(20) NOT NULL,
+    role_name character varying(20) NOT NULL,
+    assigned_on date
+    assigned_on date
+);
+);
+
+
+ALTER TABLE adminrole OWNER TO system;
+
+--
+-- Name: advisor; Type: TABLE; Schema: public; Owner: system
+--
+
+CREATE TABLE advisor (
+CREATE TABLE advisor (
+    teacher_id integer NOT NULL,
+    teacher_id integer NOT NULL,
+    total_student integer
+    total_student integer
+);
+);
+
+
+ALTER TABLE advisor OWNER TO system;
+
+--
+-- Name: assignmentsubmission; Type: TABLE; Schema: public; Owner: system
+--
+
+CREATE TABLE assignmentsubmission (
+CREATE TABLE assignmentsubmission (
+    submission_id integer NOT NULL,
+    submission_id integer NOT NULL,
+    student_id integer,
+    student_id integer,
+    course_id character varying(10),
+    course_id character varying(10),
+    title character varying(100),
+    title character varying(100),
+    file_path text,
+    file_path text,
+    submitted_on timestamp without time zone,
+    submitted_on timestamp without time zone,
+    marks integer,
+    marks integer,
+    feedback text
+    feedback text
+);
+);
+
+
+ALTER TABLE assignmentsubmission OWNER TO system;
+
+--
+-- Name: assignmentsubmission_submission_id_seq; Type: SEQUENCE; Schema: public; Owner: system
+--
+
+CREATE SEQUENCE assignmentsubmission_submission_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE assignmentsubmission_submission_id_seq OWNER TO system;
+
+--
+-- Name: assignmentsubmission_submission_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: system
+--
+
+ALTER SEQUENCE assignmentsubmission_submission_id_seq OWNED BY assignmentsubmission.submission_id;
+
+
+--
+-- Name: attendance; Type: TABLE; Schema: public; Owner: system
+--
+
+CREATE TABLE attendance (
+CREATE TABLE attendance (
+    student_id integer NOT NULL,
+    student_id integer NOT NULL,
+    course_id character varying(10) NOT NULL,
+    course_id character varying(10) NOT NULL,
+    date timestamp without time zone,
+    date timestamp without time zone,
+    status attendancestatus
+    status attendancestatus
+);
+);
+
+
+ALTER TABLE attendance OWNER TO system;
+
+--
+-- Name: auditlog; Type: TABLE; Schema: public; Owner: system
+--
+
+CREATE TABLE auditlog (
+CREATE TABLE auditlog (
+    log_id integer NOT NULL,
+    log_id integer NOT NULL,
+    user_id integer,
+    user_id integer,
+    action text,
+    action text,
+    entity text,
+    entity text,
+    "timestamp" timestamp without time zone DEFAULT CURRENT_TIMESTAMP
+    "timestamp" timestamp without time zone DEFAULT CURRENT_TIMESTAMP
+);
+);
+
+
+ALTER TABLE auditlog OWNER TO system;
+
+--
+-- Name: auditlog_log_id_seq; Type: SEQUENCE; Schema: public; Owner: system
+--
+
+CREATE SEQUENCE auditlog_log_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE auditlog_log_id_seq OWNER TO system;
+
+--
+-- Name: auditlog_log_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: system
+--
+
+ALTER SEQUENCE auditlog_log_id_seq OWNED BY auditlog.log_id;
+
+
+--
+-- Name: building; Type: TABLE; Schema: public; Owner: system
+--
+
+CREATE TABLE building (
+CREATE TABLE building (
+    building_id integer NOT NULL,
+    building_id integer NOT NULL,
+    name character varying(100),
+    name character varying(100),
+    department integer,
+    department integer,
+    campus integer
+    campus integer
+);
+);
+
+
+ALTER TABLE building OWNER TO system;
+
+--
+-- Name: building_building_id_seq; Type: SEQUENCE; Schema: public; Owner: system
+--
+
+CREATE SEQUENCE building_building_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE building_building_id_seq OWNER TO system;
+
+--
+-- Name: building_building_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: system
+--
+
+ALTER SEQUENCE building_building_id_seq OWNED BY building.building_id;
+
+
+--
+-- Name: classschedule; Type: TABLE; Schema: public; Owner: system
+--
+
+CREATE TABLE classschedule (
+CREATE TABLE classschedule (
+    schedule_id integer NOT NULL,
+    schedule_id integer NOT NULL,
+    course_id character varying(10) NOT NULL,
+    course_id character varying(10) NOT NULL,
+    section_type character varying(5),
+    section_type character varying(5),
+    room_id character varying(10),
+    room_id character varying(10),
+    day_of_week character varying(10),
+    day_of_week character varying(10),
+    start_time time without time zone,
+    start_time time without time zone,
+    end_time time without time zone,
+    end_time time without time zone,
+    academic_session character varying(8)
+    academic_session character varying(8)
+);
+);
+
+
+ALTER TABLE classschedule OWNER TO system;
+
+--
+-- Name: classschedule_schedule_id_seq; Type: SEQUENCE; Schema: public; Owner: system
+--
+
+CREATE SEQUENCE classschedule_schedule_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE classschedule_schedule_id_seq OWNER TO system;
+
+--
+-- Name: classschedule_schedule_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: system
+--
+
+ALTER SEQUENCE classschedule_schedule_id_seq OWNED BY classschedule.schedule_id;
+
+
+--
+-- Name: coursematerial; Type: TABLE; Schema: public; Owner: system
+--
+
+CREATE TABLE coursematerial (
+CREATE TABLE coursematerial (
+    material_id integer NOT NULL,
+    material_id integer NOT NULL,
+    course_id character varying(10),
+    course_id character varying(10),
+    uploaded_by integer,
+    uploaded_by integer,
+    description text,
+    description text,
+    upload_date timestamp without time zone,
+    upload_date timestamp without time zone,
+    pdf bytea
+    pdf bytea
+);
+);
+
+
+ALTER TABLE coursematerial OWNER TO system;
+
+--
+-- Name: coursematerial_material_id_seq; Type: SEQUENCE; Schema: public; Owner: system
+--
+
+CREATE SEQUENCE coursematerial_material_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE coursematerial_material_id_seq OWNER TO system;
+
+--
+-- Name: coursematerial_material_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: system
+--
+
+ALTER SEQUENCE coursematerial_material_id_seq OWNED BY coursematerial.material_id;
+
+
+--
+-- Name: courseresult; Type: TABLE; Schema: public; Owner: system
+--
+
+CREATE TABLE courseresult (
+CREATE TABLE courseresult (
+    student_id integer NOT NULL,
+    student_id integer NOT NULL,
+    course_id character varying(10) NOT NULL,
+    course_id character varying(10) NOT NULL,
+    semester semester NOT NULL,
+    semester semester NOT NULL,
+    final_grade character varying(2),
+    final_grade character varying(2),
+    grade_point double precision
+    grade_point double precision
+);
+);
+
+
+ALTER TABLE courseresult OWNER TO system;
+
+--
+-- Name: department; Type: TABLE; Schema: public; Owner: system
+--
+
+CREATE TABLE department (
+CREATE TABLE department (
+    department_id integer NOT NULL,
+    department_id integer NOT NULL,
+    name character varying(50),
+    name character varying(50),
+    student integer
+    student integer
+);
+);
+
+
+ALTER TABLE department OWNER TO system;
+
+--
+-- Name: department_department_id_seq; Type: SEQUENCE; Schema: public; Owner: system
+--
+
+CREATE SEQUENCE department_department_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE department_department_id_seq OWNER TO system;
+
+--
+-- Name: department_department_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: system
+--
+
+ALTER SEQUENCE department_department_id_seq OWNED BY department.department_id;
+
+
+--
+-- Name: emergencycontact; Type: TABLE; Schema: public; Owner: system
+--
+
+CREATE TABLE emergencycontact (
+CREATE TABLE emergencycontact (
+    emergency_id integer NOT NULL,
+    emergency_id integer NOT NULL,
+    user_id integer NOT NULL,
+    user_id integer NOT NULL,
+    name character varying(50),
+    name character varying(50),
+    mobile character varying(15),
+    mobile character varying(15),
+    address character varying(100)
+    address character varying(100)
+);
+);
+
+
+ALTER TABLE emergencycontact OWNER TO system;
+
+--
+-- Name: emergencycontact_emergency_id_seq; Type: SEQUENCE; Schema: public; Owner: system
+--
+
+CREATE SEQUENCE emergencycontact_emergency_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE emergencycontact_emergency_id_seq OWNER TO system;
+
+--
+-- Name: emergencycontact_emergency_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: system
+--
+
+ALTER SEQUENCE emergencycontact_emergency_id_seq OWNED BY emergencycontact.emergency_id;
+
+
+--
+-- Name: enrollment; Type: TABLE; Schema: public; Owner: system
+--
+
+CREATE TABLE enrollment (
+CREATE TABLE enrollment (
+    student_id integer NOT NULL,
+    student_id integer NOT NULL,
+    course_id character varying(10) NOT NULL,
+    course_id character varying(10) NOT NULL,
+    semester semester NOT NULL,
+    semester semester NOT NULL,
+    enrolled_on date,
+    enrolled_on date,
+    approved_by character varying(10),
+    approved_by character varying(10),
+    section_type character varying(5),
+    section_type character varying(5),
+    academic_session character varying(10)
+    academic_session character varying(10)
+);
+);
+
+
+ALTER TABLE enrollment OWNER TO system;
+
+--
+-- Name: exam; Type: TABLE; Schema: public; Owner: system
+--
+
+CREATE TABLE exam (
+CREATE TABLE exam (
+    course_id character varying(10) NOT NULL,
+    course_id character varying(10) NOT NULL,
+    teacher_id integer,
+    teacher_id integer,
+    title character varying(50),
+    title character varying(50),
+    exam_type examtype,
+    exam_type examtype,
+    total_marks integer,
+    total_marks integer,
+    date_of_exam timestamp without time zone,
+    date_of_exam timestamp without time zone,
+    semester semester,
+    semester semester,
+    academic_session character varying(8),
+    academic_session character varying(8),
+    exam_id integer NOT NULL,
+    exam_id integer NOT NULL,
+    section character varying(5)
+    section character varying(5)
+);
+);
+
+
+ALTER TABLE exam OWNER TO system;
+
+--
+-- Name: exam_exam_id_seq; Type: SEQUENCE; Schema: public; Owner: system
+--
+
+CREATE SEQUENCE exam_exam_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE exam_exam_id_seq OWNER TO system;
+
+--
+-- Name: exam_exam_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: system
+--
+
+ALTER SEQUENCE exam_exam_id_seq OWNED BY exam.exam_id;
+
+
+--
+-- Name: examresult; Type: TABLE; Schema: public; Owner: system
+--
+
+CREATE TABLE examresult (
+CREATE TABLE examresult (
+    result_id integer NOT NULL,
+    result_id integer NOT NULL,
+    student_id integer,
+    student_id integer,
+    remarks text,
+    remarks text,
+    exam_id bigint,
+    exam_id bigint,
+    marks_obtained real
+    marks_obtained real
+);
+);
+
+
+ALTER TABLE examresult OWNER TO system;
+
+--
+-- Name: examresult_result_id_seq; Type: SEQUENCE; Schema: public; Owner: system
+--
+
+CREATE SEQUENCE examresult_result_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE examresult_result_id_seq OWNER TO system;
+
+--
+-- Name: examresult_result_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: system
+--
+
+ALTER SEQUENCE examresult_result_id_seq OWNED BY examresult.result_id;
+
+
+--
+-- Name: feedback; Type: TABLE; Schema: public; Owner: system
+--
+
+CREATE TABLE feedback (
+CREATE TABLE feedback (
+    feedback_id character varying(10) NOT NULL,
+    feedback_id character varying(10) NOT NULL,
+    student_id integer NOT NULL,
+    student_id integer NOT NULL,
+    course_id character varying(10) NOT NULL,
+    course_id character varying(10) NOT NULL,
+    rating double precision,
+    rating double precision,
+    comments text,
+    comments text,
+    submitted timestamp without time zone
+    submitted timestamp without time zone
+);
+);
+
+
+ALTER TABLE feedback OWNER TO system;
+
+--
+-- Name: feetype; Type: TABLE; Schema: public; Owner: system
+--
+
+CREATE TABLE feetype (
+CREATE TABLE feetype (
+    fee_type_id character varying(10) NOT NULL,
+    fee_type_id character varying(10) NOT NULL,
+    name character varying(30),
+    name character varying(30),
+    description text
+    description text
+);
+);
+
+
+ALTER TABLE feetype OWNER TO system;
+
+--
+-- Name: gradesheet; Type: TABLE; Schema: public; Owner: system
+--
+
+CREATE TABLE gradesheet (
+CREATE TABLE gradesheet (
+    student_id integer NOT NULL,
+    student_id integer NOT NULL,
+    total_credit double precision,
+    total_credit double precision,
+    cgpa double precision,
+    cgpa double precision,
+    remark text
+    remark text
+);
+);
+
+
+ALTER TABLE gradesheet OWNER TO system;
+
+--
+-- Name: hall; Type: TABLE; Schema: public; Owner: system
+--
+
+CREATE TABLE hall (
+CREATE TABLE hall (
+    hall_id integer NOT NULL,
+    hall_id integer NOT NULL,
+    name character varying(50),
+    name character varying(50),
+    capacity integer,
+    capacity integer,
+    location character varying(100)
+    location character varying(100)
+);
+);
+
+
+ALTER TABLE hall OWNER TO system;
+
+--
+-- Name: hallassignment; Type: TABLE; Schema: public; Owner: system
+--
+
+CREATE TABLE hallassignment (
+CREATE TABLE hallassignment (
+    student_id integer NOT NULL,
+    student_id integer NOT NULL,
+    hall_id integer NOT NULL,
+    hall_id integer NOT NULL,
+    room_number character varying(10),
+    room_number character varying(10),
+    assigned_on timestamp without time zone,
+    assigned_on timestamp without time zone,
+    vacated_on timestamp without time zone,
+    vacated_on timestamp without time zone,
+    resident boolean
+    resident boolean
+);
+);
+
+
+ALTER TABLE hallassignment OWNER TO system;
+
+--
+-- Name: head_of_department; Type: TABLE; Schema: public; Owner: system
+--
+
+CREATE TABLE head_of_department (
+CREATE TABLE head_of_department (
+    teacher_id integer NOT NULL,
+    teacher_id integer NOT NULL,
+    department_id integer NOT NULL,
+    department_id integer NOT NULL,
+    assigned_on date,
+    assigned_on date,
+    resigned_on date
+    resigned_on date
+);
+);
+
+
+ALTER TABLE head_of_department OWNER TO system;
+
+--
+-- Name: missed_courses; Type: TABLE; Schema: public; Owner: system
+--
+
+CREATE TABLE missed_courses (
+CREATE TABLE missed_courses (
+    student_id integer NOT NULL,
+    student_id integer NOT NULL,
+    course_id character varying(10) NOT NULL,
+    course_id character varying(10) NOT NULL,
+    missed_on semester
+    missed_on semester
+);
+);
+
+
+ALTER TABLE missed_courses OWNER TO system;
+
+--
+-- Name: notification; Type: TABLE; Schema: public; Owner: system
+--
+
+CREATE TABLE notification (
+CREATE TABLE notification (
+    notification_id integer NOT NULL,
+    notification_id integer NOT NULL,
+    title character varying(100),
+    title character varying(100),
+    message text,
+    message text,
+    created_by character varying(10) NOT NULL,
+    created_by character varying(10) NOT NULL,
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+    student_id integer,
+    student_id integer,
+    teacher_id integer,
+    teacher_id integer,
+    department_id integer,
+    department_id integer,
+    course_id character varying(10),
+    course_id character varying(10),
+    hall_id integer,
+    hall_id integer,
+    semester_id semester,
+    semester_id semester,
+    pdf bytea,
+    pdf bytea,
+    CONSTRAINT check_recipient_not_null CHECK (((student_id IS NOT NULL) OR (teacher_id IS NOT NULL) OR (department_id IS NOT NULL) OR (course_id IS NOT NULL) OR (hall_id IS NOT NULL) OR (semester_id IS NOT NULL)))
+    CONSTRAINT check_recipient_not_null CHECK (((student_id IS NOT NULL) OR (teacher_id IS NOT NULL) OR (department_id IS NOT NULL) OR (course_id IS NOT NULL) OR (hall_id IS NOT NULL) OR (semester_id IS NOT NULL)))
+);
+);
+
+
+ALTER TABLE notification OWNER TO system;
+
+--
+-- Name: notification_notification_id_seq; Type: SEQUENCE; Schema: public; Owner: system
+--
+
+CREATE SEQUENCE notification_notification_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE notification_notification_id_seq OWNER TO system;
+
+--
+-- Name: notification_notification_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: system
+--
+
+ALTER SEQUENCE notification_notification_id_seq OWNED BY notification.notification_id;
+
+
+--
+-- Name: provost; Type: TABLE; Schema: public; Owner: system
+--
+
+CREATE TABLE provost (
+CREATE TABLE provost (
+    teacher_id integer NOT NULL,
+    teacher_id integer NOT NULL,
+    hall_id integer NOT NULL,
+    hall_id integer NOT NULL,
+    assigned_on date,
+    assigned_on date,
+    resigned_on date
+    resigned_on date
+);
+);
+
+
+ALTER TABLE provost OWNER TO system;
+
+--
+-- Name: registration_log; Type: TABLE; Schema: public; Owner: system
+--
+
+CREATE TABLE registration_log (
+CREATE TABLE registration_log (
+    log_id integer NOT NULL,
+    log_id integer NOT NULL,
+    academic_session character varying(10),
+    academic_session character varying(10),
+    isactive boolean
+    isactive boolean
+);
+);
+
+
+ALTER TABLE registration_log OWNER TO system;
+
+--
+-- Name: registration_log_log_id_seq; Type: SEQUENCE; Schema: public; Owner: system
+--
+
+CREATE SEQUENCE registration_log_log_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE registration_log_log_id_seq OWNER TO system;
+
+--
+-- Name: registration_log_log_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: system
+--
+
+ALTER SEQUENCE registration_log_log_id_seq OWNED BY registration_log.log_id;
+
+
+--
+-- Name: room; Type: TABLE; Schema: public; Owner: system
+--
+
+CREATE TABLE room (
+CREATE TABLE room (
+    room_id character varying(10) NOT NULL,
+    room_id character varying(10) NOT NULL,
+    capacity integer,
+    capacity integer,
+    room_type roomtype,
+    room_type roomtype,
+    building_id integer
+    building_id integer
+);
+);
+
+
+ALTER TABLE room OWNER TO system;
+
+--
+-- Name: salary; Type: TABLE; Schema: public; Owner: system
+--
+
+CREATE TABLE salary (
+CREATE TABLE salary (
+    salary_id integer NOT NULL,
+    salary_id integer NOT NULL,
+    designation character varying(100),
+    designation character varying(100),
+    department_id integer,
+    department_id integer,
+    salary_k double precision,
+    salary_k double precision,
+    commission_pct double precision
+    commission_pct double precision
+);
+);
+
+
+ALTER TABLE salary OWNER TO system;
+
+--
+-- Name: salary_salary_id_seq; Type: SEQUENCE; Schema: public; Owner: system
+--
+
+CREATE SEQUENCE salary_salary_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE salary_salary_id_seq OWNER TO system;
+
+--
+-- Name: salary_salary_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: system
+--
+
+ALTER SEQUENCE salary_salary_id_seq OWNED BY salary.salary_id;
+
+
+--
+-- Name: student; Type: TABLE; Schema: public; Owner: system
+--
+
+CREATE TABLE student (
+CREATE TABLE student (
+    student_id integer NOT NULL,
+    student_id integer NOT NULL,
+    department_id integer,
+    department_id integer,
+    academic_session character varying(8),
+    academic_session character varying(8),
+    current_semester semester,
+    current_semester semester,
+    hall_id integer,
+    hall_id integer,
+    advisor_id integer
+    advisor_id integer
+);
+);
+
+
+ALTER TABLE student OWNER TO system;
+
+--
+-- Name: studentfee; Type: TABLE; Schema: public; Owner: system
+--
+
+CREATE TABLE studentfee (
+CREATE TABLE studentfee (
+    student_fee_id integer NOT NULL,
+    student_fee_id integer NOT NULL,
+    student_id integer NOT NULL,
+    student_id integer NOT NULL,
+    fee_type_id character varying(10),
+    fee_type_id character varying(10),
+    amount integer,
+    amount integer,
+    due_date timestamp without time zone,
+    due_date timestamp without time zone,
+    status feestatus,
+    status feestatus,
+    paid_on timestamp without time zone
+    paid_on timestamp without time zone
+);
+);
+
+
+ALTER TABLE studentfee OWNER TO system;
+
+--
+-- Name: studentfee_student_fee_id_seq; Type: SEQUENCE; Schema: public; Owner: system
+--
+
+CREATE SEQUENCE studentfee_student_fee_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE studentfee_student_fee_id_seq OWNER TO system;
+
+--
+-- Name: studentfee_student_fee_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: system
+--
+
+ALTER SEQUENCE studentfee_student_fee_id_seq OWNED BY studentfee.student_fee_id;
+
+
+--
+-- Name: subjectallocation; Type: TABLE; Schema: public; Owner: system
+--
+
+CREATE TABLE subjectallocation (
+CREATE TABLE subjectallocation (
+    teacher_id integer NOT NULL,
+    teacher_id integer NOT NULL,
+    course_id character varying(10) NOT NULL,
+    course_id character varying(10) NOT NULL,
+    section_type character varying(5) NOT NULL,
+    section_type character varying(5) NOT NULL,
+    academic_session character varying(8)
+    academic_session character varying(8)
+);
+);
+
+
+ALTER TABLE subjectallocation OWNER TO system;
+
+--
+-- Name: teacher; Type: TABLE; Schema: public; Owner: system
+--
+
+CREATE TABLE teacher (
+CREATE TABLE teacher (
+    teacher_id integer NOT NULL,
+    teacher_id integer NOT NULL,
+    hire_date date,
+    hire_date date,
+    designation character varying(30),
+    designation character varying(30),
+    department_id integer NOT NULL
+    department_id integer NOT NULL
+);
+);
+
+
+ALTER TABLE teacher OWNER TO system;
+
+--
+-- Name: usersession; Type: TABLE; Schema: public; Owner: system
+--
+
+CREATE TABLE usersession (
+CREATE TABLE usersession (
+    session_id integer NOT NULL,
+    session_id integer NOT NULL,
+    user_id integer,
+    user_id integer,
+    login_time timestamp without time zone,
+    login_time timestamp without time zone,
+    ip_address character varying(45)
+    ip_address character varying(45)
+);
+);
+
+
+ALTER TABLE usersession OWNER TO system;
+
+--
+-- Name: usersession_session_id_seq; Type: SEQUENCE; Schema: public; Owner: system
+--
+
+CREATE SEQUENCE usersession_session_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE usersession_session_id_seq OWNER TO system;
+
+--
+-- Name: usersession_session_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: system
+--
+
+ALTER SEQUENCE usersession_session_id_seq OWNED BY usersession.session_id;
+
+
+--
+-- Name: achievements ach_id; Type: DEFAULT; Schema: public; Owner: system
+--
+
+ALTER TABLE ONLY achievements ALTER COLUMN ach_id SET DEFAULT nextval('achievements_ach_id_seq'::regclass);
+
+
+--
+-- Name: address address_id; Type: DEFAULT; Schema: public; Owner: system
+--
+
+ALTER TABLE ONLY address ALTER COLUMN address_id SET DEFAULT nextval('address_address_id_seq'::regclass);
+
+
+--
+-- Name: assignmentsubmission submission_id; Type: DEFAULT; Schema: public; Owner: system
+--
+
+ALTER TABLE ONLY assignmentsubmission ALTER COLUMN submission_id SET DEFAULT nextval('assignmentsubmission_submission_id_seq'::regclass);
+
+
+--
+-- Name: auditlog log_id; Type: DEFAULT; Schema: public; Owner: system
+--
+
+ALTER TABLE ONLY auditlog ALTER COLUMN log_id SET DEFAULT nextval('auditlog_log_id_seq'::regclass);
+
+
+--
+-- Name: building building_id; Type: DEFAULT; Schema: public; Owner: system
+--
+
+ALTER TABLE ONLY building ALTER COLUMN building_id SET DEFAULT nextval('building_building_id_seq'::regclass);
+
+
+--
+-- Name: classschedule schedule_id; Type: DEFAULT; Schema: public; Owner: system
+--
+
+ALTER TABLE ONLY classschedule ALTER COLUMN schedule_id SET DEFAULT nextval('classschedule_schedule_id_seq'::regclass);
+
+
+--
+-- Name: coursematerial material_id; Type: DEFAULT; Schema: public; Owner: system
+--
+
+ALTER TABLE ONLY coursematerial ALTER COLUMN material_id SET DEFAULT nextval('coursematerial_material_id_seq'::regclass);
+
+
+--
+-- Name: department department_id; Type: DEFAULT; Schema: public; Owner: system
+--
+
+ALTER TABLE ONLY department ALTER COLUMN department_id SET DEFAULT nextval('department_department_id_seq'::regclass);
+
+
+--
+-- Name: emergencycontact emergency_id; Type: DEFAULT; Schema: public; Owner: system
+--
+
+ALTER TABLE ONLY emergencycontact ALTER COLUMN emergency_id SET DEFAULT nextval('emergencycontact_emergency_id_seq'::regclass);
+
+
+--
+-- Name: exam exam_id; Type: DEFAULT; Schema: public; Owner: system
+--
+
+ALTER TABLE ONLY exam ALTER COLUMN exam_id SET DEFAULT nextval('exam_exam_id_seq'::regclass);
+
+
+--
+-- Name: examresult result_id; Type: DEFAULT; Schema: public; Owner: system
+--
+
+ALTER TABLE ONLY examresult ALTER COLUMN result_id SET DEFAULT nextval('examresult_result_id_seq'::regclass);
+
+
+--
+-- Name: notification notification_id; Type: DEFAULT; Schema: public; Owner: system
+--
+
+ALTER TABLE ONLY notification ALTER COLUMN notification_id SET DEFAULT nextval('notification_notification_id_seq'::regclass);
+
+
+--
+-- Name: registration_log log_id; Type: DEFAULT; Schema: public; Owner: system
+--
+
+ALTER TABLE ONLY registration_log ALTER COLUMN log_id SET DEFAULT nextval('registration_log_log_id_seq'::regclass);
+
+
+--
+-- Name: salary salary_id; Type: DEFAULT; Schema: public; Owner: system
+--
+
+ALTER TABLE ONLY salary ALTER COLUMN salary_id SET DEFAULT nextval('salary_salary_id_seq'::regclass);
+
+
+--
+-- Name: studentfee student_fee_id; Type: DEFAULT; Schema: public; Owner: system
+--
+
+ALTER TABLE ONLY studentfee ALTER COLUMN student_fee_id SET DEFAULT nextval('studentfee_student_fee_id_seq'::regclass);
+
+
+--
+-- Name: usersession session_id; Type: DEFAULT; Schema: public; Owner: system
+--
+
+ALTER TABLE ONLY usersession ALTER COLUMN session_id SET DEFAULT nextval('usersession_session_id_seq'::regclass);
+
+
+--
+-- Name: User User_email_key; Type: CONSTRAINT; Schema: public; Owner: system
+--
+
+ALTER TABLE ONLY "User"
+    ADD CONSTRAINT "User_email_key" UNIQUE (email);
+
+
+--
+-- Name: User User_phone_key; Type: CONSTRAINT; Schema: public; Owner: system
+--
+
+ALTER TABLE ONLY "User"
+    ADD CONSTRAINT "User_phone_key" UNIQUE (phone);
+
+
+--
+-- Name: User User_pkey; Type: CONSTRAINT; Schema: public; Owner: system
+--
+
+ALTER TABLE ONLY "User"
+    ADD CONSTRAINT "User_pkey" PRIMARY KEY (user_id);
+
+
+--
+-- Name: User User_username_key; Type: CONSTRAINT; Schema: public; Owner: system
+--
+
+ALTER TABLE ONLY "User"
+    ADD CONSTRAINT "User_username_key" UNIQUE (username);
+
+
+--
+-- Name: address address_pkey; Type: CONSTRAINT; Schema: public; Owner: system
+--
+
+ALTER TABLE ONLY address
+    ADD CONSTRAINT address_pkey PRIMARY KEY (address_id);
+
+
+--
+-- Name: address address_user_id_key; Type: CONSTRAINT; Schema: public; Owner: system
+--
+
+ALTER TABLE ONLY address
+    ADD CONSTRAINT address_user_id_key UNIQUE (user_id);
+
+
+--
+-- Name: admin admin_pkey; Type: CONSTRAINT; Schema: public; Owner: system
+--
+
+ALTER TABLE ONLY admin
+    ADD CONSTRAINT admin_pkey PRIMARY KEY (admin_id);
+
+
+--
+-- Name: admin admin_user_id_key; Type: CONSTRAINT; Schema: public; Owner: system
+--
+
+ALTER TABLE ONLY admin
+    ADD CONSTRAINT admin_user_id_key UNIQUE (user_id);
+
+
+--
+-- Name: adminrole adminrole_pkey; Type: CONSTRAINT; Schema: public; Owner: system
+--
+
+ALTER TABLE ONLY adminrole
+    ADD CONSTRAINT adminrole_pkey PRIMARY KEY (admin_id, role_name);
+
+
+--
+-- Name: advisor advisor_pkey; Type: CONSTRAINT; Schema: public; Owner: system
+--
+
+ALTER TABLE ONLY advisor
+    ADD CONSTRAINT advisor_pkey PRIMARY KEY (teacher_id);
+
+
+--
+-- Name: assignmentsubmission assignmentsubmission_pkey; Type: CONSTRAINT; Schema: public; Owner: system
+--
+
+ALTER TABLE ONLY assignmentsubmission
+    ADD CONSTRAINT assignmentsubmission_pkey PRIMARY KEY (submission_id);
+
+
+--
+-- Name: attendance attendance_student_id_course_id_date_key; Type: CONSTRAINT; Schema: public; Owner: system
+--
+
+ALTER TABLE ONLY attendance
+    ADD CONSTRAINT attendance_student_id_course_id_date_key UNIQUE (student_id, course_id, date);
+
+
+--
+-- Name: auditlog auditlog_pkey; Type: CONSTRAINT; Schema: public; Owner: system
+--
+
+ALTER TABLE ONLY auditlog
+    ADD CONSTRAINT auditlog_pkey PRIMARY KEY (log_id);
+
+
+--
+-- Name: building building_pkey; Type: CONSTRAINT; Schema: public; Owner: system
+--
+
+ALTER TABLE ONLY building
+    ADD CONSTRAINT building_pkey PRIMARY KEY (building_id);
+
+
+--
+-- Name: classschedule classschedule_pkey; Type: CONSTRAINT; Schema: public; Owner: system
+--
+
+ALTER TABLE ONLY classschedule
+    ADD CONSTRAINT classschedule_pkey PRIMARY KEY (schedule_id);
+
+
+--
+-- Name: course course_pkey; Type: CONSTRAINT; Schema: public; Owner: system
+--
+
+ALTER TABLE ONLY course
+    ADD CONSTRAINT course_pkey PRIMARY KEY (course_id);
+
+
+--
+-- Name: coursematerial coursematerial_pkey; Type: CONSTRAINT; Schema: public; Owner: system
+--
+
+ALTER TABLE ONLY coursematerial
+    ADD CONSTRAINT coursematerial_pkey PRIMARY KEY (material_id);
+
+
+--
+-- Name: courseresult courseresult_pkey; Type: CONSTRAINT; Schema: public; Owner: system
+--
+
+ALTER TABLE ONLY courseresult
+    ADD CONSTRAINT courseresult_pkey PRIMARY KEY (student_id, course_id, semester);
+
+
+--
+-- Name: department department_pkey; Type: CONSTRAINT; Schema: public; Owner: system
+--
+
+ALTER TABLE ONLY department
+    ADD CONSTRAINT department_pkey PRIMARY KEY (department_id);
+
+
+--
+-- Name: emergencycontact emergencycontact_pkey; Type: CONSTRAINT; Schema: public; Owner: system
+--
+
+ALTER TABLE ONLY emergencycontact
+    ADD CONSTRAINT emergencycontact_pkey PRIMARY KEY (emergency_id);
+
+
+--
+-- Name: emergencycontact emergencycontact_user_id_key; Type: CONSTRAINT; Schema: public; Owner: system
+--
+
+ALTER TABLE ONLY emergencycontact
+    ADD CONSTRAINT emergencycontact_user_id_key UNIQUE (user_id);
+
+
+--
+-- Name: enrollment enrollment_pkey; Type: CONSTRAINT; Schema: public; Owner: system
+--
+
+ALTER TABLE ONLY enrollment
+    ADD CONSTRAINT enrollment_pkey PRIMARY KEY (student_id, course_id, semester);
+
+
+--
+-- Name: exam exam_pkey; Type: CONSTRAINT; Schema: public; Owner: system
+--
+
+ALTER TABLE ONLY exam
+    ADD CONSTRAINT exam_pkey PRIMARY KEY (exam_id);
+
+
+--
+-- Name: examresult examresult_pkey; Type: CONSTRAINT; Schema: public; Owner: system
+--
+
+ALTER TABLE ONLY examresult
+    ADD CONSTRAINT examresult_pkey PRIMARY KEY (result_id);
+
+
+--
+-- Name: feedback feedback_pkey; Type: CONSTRAINT; Schema: public; Owner: system
+--
+
+ALTER TABLE ONLY feedback
+    ADD CONSTRAINT feedback_pkey PRIMARY KEY (feedback_id);
+
+
+--
+-- Name: feetype feetype_pkey; Type: CONSTRAINT; Schema: public; Owner: system
+--
+
+ALTER TABLE ONLY feetype
+    ADD CONSTRAINT feetype_pkey PRIMARY KEY (fee_type_id);
+
+
+--
+-- Name: gradesheet gradesheet_pkey; Type: CONSTRAINT; Schema: public; Owner: system
+--
+
+ALTER TABLE ONLY gradesheet
+    ADD CONSTRAINT gradesheet_pkey PRIMARY KEY (student_id);
+
+
+--
+-- Name: hall hall_pkey; Type: CONSTRAINT; Schema: public; Owner: system
+--
+
+ALTER TABLE ONLY hall
+    ADD CONSTRAINT hall_pkey PRIMARY KEY (hall_id);
+
+
+--
+-- Name: hallassignment hallassignment_pkey; Type: CONSTRAINT; Schema: public; Owner: system
+--
+
+ALTER TABLE ONLY hallassignment
+    ADD CONSTRAINT hallassignment_pkey PRIMARY KEY (student_id);
+
+
+--
+-- Name: head_of_department head_of_department_pkey; Type: CONSTRAINT; Schema: public; Owner: system
+--
+
+ALTER TABLE ONLY head_of_department
+    ADD CONSTRAINT head_of_department_pkey PRIMARY KEY (teacher_id, department_id);
+
+
+--
+-- Name: missed_courses missed_courses_pkey; Type: CONSTRAINT; Schema: public; Owner: system
+--
+
+ALTER TABLE ONLY missed_courses
+    ADD CONSTRAINT missed_courses_pkey PRIMARY KEY (student_id, course_id);
+
+
+--
+-- Name: notification notification_pkey; Type: CONSTRAINT; Schema: public; Owner: system
+--
+
+ALTER TABLE ONLY notification
+    ADD CONSTRAINT notification_pkey PRIMARY KEY (notification_id);
+
+
+--
+-- Name: provost provost_pkey; Type: CONSTRAINT; Schema: public; Owner: system
+--
+
+ALTER TABLE ONLY provost
+    ADD CONSTRAINT provost_pkey PRIMARY KEY (teacher_id, hall_id);
+
+
+--
+-- Name: registration_log registration_log_pkey; Type: CONSTRAINT; Schema: public; Owner: system
+--
+
+ALTER TABLE ONLY registration_log
+    ADD CONSTRAINT registration_log_pkey PRIMARY KEY (log_id);
+
+
+--
+-- Name: room room_pkey; Type: CONSTRAINT; Schema: public; Owner: system
+--
+
+ALTER TABLE ONLY room
+    ADD CONSTRAINT room_pkey PRIMARY KEY (room_id);
+
+
+--
+-- Name: salary salary_department_designation_uniq; Type: CONSTRAINT; Schema: public; Owner: system
+--
+
+ALTER TABLE ONLY salary
+    ADD CONSTRAINT salary_department_designation_uniq UNIQUE (department_id, designation);
+
+
+--
+-- Name: salary salary_pkey; Type: CONSTRAINT; Schema: public; Owner: system
+--
+
+ALTER TABLE ONLY salary
+    ADD CONSTRAINT salary_pkey PRIMARY KEY (salary_id);
+
+
+--
+-- Name: student student_pkey; Type: CONSTRAINT; Schema: public; Owner: system
+--
+
+ALTER TABLE ONLY student
+    ADD CONSTRAINT student_pkey PRIMARY KEY (student_id);
+
+
+--
+-- Name: studentfee studentfee_pkey; Type: CONSTRAINT; Schema: public; Owner: system
+--
+
+ALTER TABLE ONLY studentfee
+    ADD CONSTRAINT studentfee_pkey PRIMARY KEY (student_fee_id);
+
+
+--
+-- Name: subjectallocation subjectallocation_pkey; Type: CONSTRAINT; Schema: public; Owner: system
+--
+
+ALTER TABLE ONLY subjectallocation
+    ADD CONSTRAINT subjectallocation_pkey PRIMARY KEY (teacher_id, course_id, section_type);
+
+
+--
+-- Name: teacher teacher_pkey; Type: CONSTRAINT; Schema: public; Owner: system
+--
+
+ALTER TABLE ONLY teacher
+    ADD CONSTRAINT teacher_pkey PRIMARY KEY (teacher_id);
+
+
+--
+-- Name: subjectallocation unique_subject_allocation; Type: CONSTRAINT; Schema: public; Owner: system
+--
+
+ALTER TABLE ONLY subjectallocation
+    ADD CONSTRAINT unique_subject_allocation UNIQUE (course_id, teacher_id, section_type, academic_session);
+
+
+--
+-- Name: usersession usersession_pkey; Type: CONSTRAINT; Schema: public; Owner: system
+--
+
+ALTER TABLE ONLY usersession
+    ADD CONSTRAINT usersession_pkey PRIMARY KEY (session_id);
+
+
+--
+-- Name: User insert_user_role; Type: TRIGGER; Schema: public; Owner: system
+--
+
+CREATE TRIGGER insert_user_role AFTER INSERT ON "User" FOR EACH ROW EXECUTE FUNCTION insert_into_role_table();
+CREATE TRIGGER insert_user_role AFTER INSERT ON "User" FOR EACH ROW EXECUTE FUNCTION insert_into_role_table();
+
+
+
+
+--
+--
+-- Name: enrollment remove_missed_courses; Type: TRIGGER; Schema: public; Owner: system
+-- Name: enrollment remove_missed_courses; Type: TRIGGER; Schema: public; Owner: system
+--
+
+CREATE TRIGGER remove_missed_courses AFTER INSERT OR UPDATE OF approved_by ON enrollment FOR EACH ROW EXECUTE FUNCTION remove_missed_courses_if_enrolled();
+CREATE TRIGGER remove_missed_courses AFTER INSERT OR UPDATE OF approved_by ON enrollment FOR EACH ROW EXECUTE FUNCTION remove_missed_courses_if_enrolled();
+
+
+
+
+--
+--
+-- Name: exam trg_exam_insert_notify; Type: TRIGGER; Schema: public; Owner: system
+-- Name: exam trg_exam_insert_notify; Type: TRIGGER; Schema: public; Owner: system
+--
+
+CREATE TRIGGER trg_exam_insert_notify AFTER INSERT ON exam FOR EACH ROW EXECUTE FUNCTION notify_exam_insert();
+CREATE TRIGGER trg_exam_insert_notify AFTER INSERT ON exam FOR EACH ROW EXECUTE FUNCTION notify_exam_insert();
+
+
+
+
+--
+--
+-- Name: student trg_increment_advisor_count; Type: TRIGGER; Schema: public; Owner: system
+-- Name: student trg_increment_advisor_count; Type: TRIGGER; Schema: public; Owner: system
+--
+
+CREATE TRIGGER trg_increment_advisor_count AFTER UPDATE ON student FOR EACH ROW EXECUTE FUNCTION increment_advisor_student_count();
+CREATE TRIGGER trg_increment_advisor_count AFTER UPDATE ON student FOR EACH ROW EXECUTE FUNCTION increment_advisor_student_count();
+
+
+
+
+--
+--
+-- Name: exam trg_populate_exam_results; Type: TRIGGER; Schema: public; Owner: system
+-- Name: exam trg_populate_exam_results; Type: TRIGGER; Schema: public; Owner: system
+--
+
+CREATE TRIGGER trg_populate_exam_results AFTER INSERT ON exam FOR EACH ROW EXECUTE FUNCTION populate_exam_results();
+CREATE TRIGGER trg_populate_exam_results AFTER INSERT ON exam FOR EACH ROW EXECUTE FUNCTION populate_exam_results();
+
+
+
+
+--
+--
+-- Name: hallassignment trg_update_student_hall; Type: TRIGGER; Schema: public; Owner: system
+-- Name: hallassignment trg_update_student_hall; Type: TRIGGER; Schema: public; Owner: system
+--
+
+CREATE TRIGGER trg_update_student_hall AFTER INSERT OR UPDATE ON hallassignment FOR EACH ROW EXECUTE FUNCTION update_student_hall();
+CREATE TRIGGER trg_update_student_hall AFTER INSERT OR UPDATE ON hallassignment FOR EACH ROW EXECUTE FUNCTION update_student_hall();
+
+
+
+
+--
+--
+-- Name: student trigger_insert_missed_courses_on_semester_change; Type: TRIGGER; Schema: public; Owner: system
+-- Name: student trigger_insert_missed_courses_on_semester_change; Type: TRIGGER; Schema: public; Owner: system
+--
+
+CREATE TRIGGER trigger_insert_missed_courses_on_semester_change AFTER UPDATE OF current_semester ON student FOR EACH ROW WHEN ((old.current_semester IS DISTINCT FROM new.current_semester)) EXECUTE FUNCTION insert_missed_courses_on_semester_change();
+CREATE TRIGGER trigger_insert_missed_courses_on_semester_change AFTER UPDATE OF current_semester ON student FOR EACH ROW WHEN ((old.current_semester IS DISTINCT FROM new.current_semester)) EXECUTE FUNCTION insert_missed_courses_on_semester_change();
+
+
+
+
+--
+--
+-- Name: address address_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: system
+-- Name: address address_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: system
+--
+
+ALTER TABLE ONLY address
+    ADD CONSTRAINT address_user_id_fkey FOREIGN KEY (user_id) REFERENCES "User"(user_id);
+
+
+--
+-- Name: adminrole adminrole_admin_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: system
+--
+
+ALTER TABLE ONLY adminrole
+    ADD CONSTRAINT adminrole_admin_id_fkey FOREIGN KEY (admin_id) REFERENCES admin(admin_id);
+
+
+--
+-- Name: assignmentsubmission assignmentsubmission_course_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: system
+--
+
+ALTER TABLE ONLY assignmentsubmission
+    ADD CONSTRAINT assignmentsubmission_course_id_fkey FOREIGN KEY (course_id) REFERENCES course(course_id);
+
+
+--
+-- Name: assignmentsubmission assignmentsubmission_student_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: system
+--
+
+ALTER TABLE ONLY assignmentsubmission
+    ADD CONSTRAINT assignmentsubmission_student_id_fkey FOREIGN KEY (student_id) REFERENCES student(student_id);
+
+
+--
+-- Name: attendance attendance_course_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: system
+--
+
+ALTER TABLE ONLY attendance
+    ADD CONSTRAINT attendance_course_id_fkey FOREIGN KEY (course_id) REFERENCES course(course_id);
+
+
+--
+-- Name: attendance attendance_student_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: system
+--
+
+ALTER TABLE ONLY attendance
+    ADD CONSTRAINT attendance_student_id_fkey FOREIGN KEY (student_id) REFERENCES student(student_id);
+
+
+--
+-- Name: auditlog auditlog_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: system
+--
+
+ALTER TABLE ONLY auditlog
+    ADD CONSTRAINT auditlog_user_id_fkey FOREIGN KEY (user_id) REFERENCES "User"(user_id);
+
+
+--
+-- Name: classschedule classschedule_course_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: system
+--
+
+ALTER TABLE ONLY classschedule
+    ADD CONSTRAINT classschedule_course_id_fkey FOREIGN KEY (course_id) REFERENCES course(course_id);
+
+
+--
+-- Name: classschedule classschedule_room_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: system
+--
+
+ALTER TABLE ONLY classschedule
+    ADD CONSTRAINT classschedule_room_id_fkey FOREIGN KEY (room_id) REFERENCES room(room_id);
+
+
+--
+-- Name: coursematerial coursematerial_course_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: system
+--
+
+ALTER TABLE ONLY coursematerial
+    ADD CONSTRAINT coursematerial_course_id_fkey FOREIGN KEY (course_id) REFERENCES course(course_id);
+
+
+--
+-- Name: coursematerial coursematerial_uploaded_by_fkey; Type: FK CONSTRAINT; Schema: public; Owner: system
+--
+
+ALTER TABLE ONLY coursematerial
+    ADD CONSTRAINT coursematerial_uploaded_by_fkey FOREIGN KEY (uploaded_by) REFERENCES teacher(teacher_id);
+
+
+--
+-- Name: courseresult courseresult_course_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: system
+--
+
+ALTER TABLE ONLY courseresult
+    ADD CONSTRAINT courseresult_course_id_fkey FOREIGN KEY (course_id) REFERENCES course(course_id);
+
+
+--
+-- Name: courseresult courseresult_student_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: system
+--
+
+ALTER TABLE ONLY courseresult
+    ADD CONSTRAINT courseresult_student_id_fkey FOREIGN KEY (student_id) REFERENCES student(student_id);
+
+
+--
+-- Name: emergencycontact emergencycontact_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: system
+--
+
+ALTER TABLE ONLY emergencycontact
+    ADD CONSTRAINT emergencycontact_user_id_fkey FOREIGN KEY (user_id) REFERENCES "User"(user_id);
+
+
+--
+-- Name: enrollment enrollment_course_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: system
+--
+
+ALTER TABLE ONLY enrollment
+    ADD CONSTRAINT enrollment_course_id_fkey FOREIGN KEY (course_id) REFERENCES course(course_id) ON DELETE CASCADE;
+
+
+--
+-- Name: enrollment enrollment_student_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: system
+--
+
+ALTER TABLE ONLY enrollment
+    ADD CONSTRAINT enrollment_student_id_fkey FOREIGN KEY (student_id) REFERENCES student(student_id) ON DELETE CASCADE;
+
+
+--
+-- Name: exam exam_course_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: system
+--
+
+ALTER TABLE ONLY exam
+    ADD CONSTRAINT exam_course_id_fkey FOREIGN KEY (course_id) REFERENCES course(course_id);
+
+
+--
+-- Name: exam exam_teacher_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: system
+--
+
+ALTER TABLE ONLY exam
+    ADD CONSTRAINT exam_teacher_id_fkey FOREIGN KEY (teacher_id) REFERENCES teacher(teacher_id);
+
+
+--
+-- Name: examresult examresult_student_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: system
+--
+
+ALTER TABLE ONLY examresult
+    ADD CONSTRAINT examresult_student_id_fkey FOREIGN KEY (student_id) REFERENCES student(student_id);
+
+
+--
+-- Name: feedback feedback_course_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: system
+--
+
+ALTER TABLE ONLY feedback
+    ADD CONSTRAINT feedback_course_id_fkey FOREIGN KEY (course_id) REFERENCES course(course_id);
+
+
+--
+-- Name: feedback feedback_student_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: system
+--
+
+ALTER TABLE ONLY feedback
+    ADD CONSTRAINT feedback_student_id_fkey FOREIGN KEY (student_id) REFERENCES student(student_id);
+
+
+--
+-- Name: admin fk_admin_user; Type: FK CONSTRAINT; Schema: public; Owner: system
+--
+
+ALTER TABLE ONLY admin
+    ADD CONSTRAINT fk_admin_user FOREIGN KEY (user_id) REFERENCES "User"(user_id);
+
+
+--
+-- Name: advisor fk_advisor_teacher; Type: FK CONSTRAINT; Schema: public; Owner: system
+--
+
+ALTER TABLE ONLY advisor
+    ADD CONSTRAINT fk_advisor_teacher FOREIGN KEY (teacher_id) REFERENCES teacher(teacher_id);
+
+
+--
+-- Name: building fk_building_dept; Type: FK CONSTRAINT; Schema: public; Owner: system
+--
+
+ALTER TABLE ONLY building
+    ADD CONSTRAINT fk_building_dept FOREIGN KEY (department) REFERENCES department(department_id);
+
+
+--
+-- Name: room fk_building_room; Type: FK CONSTRAINT; Schema: public; Owner: system
+--
+
+ALTER TABLE ONLY room
+    ADD CONSTRAINT fk_building_room FOREIGN KEY (building_id) REFERENCES building(building_id);
+
+
+--
+-- Name: course fk_course_department; Type: FK CONSTRAINT; Schema: public; Owner: system
+--
+
+ALTER TABLE ONLY course
+    ADD CONSTRAINT fk_course_department FOREIGN KEY (department_id) REFERENCES department(department_id);
+
+
+--
+-- Name: course fk_course_offered_by; Type: FK CONSTRAINT; Schema: public; Owner: system
+--
+
+ALTER TABLE ONLY course
+    ADD CONSTRAINT fk_course_offered_by FOREIGN KEY (offered_by) REFERENCES department(department_id);
+
+
+--
+-- Name: examresult fk_examresult_examid; Type: FK CONSTRAINT; Schema: public; Owner: system
+--
+
+ALTER TABLE ONLY examresult
+    ADD CONSTRAINT fk_examresult_examid FOREIGN KEY (exam_id) REFERENCES exam(exam_id) ON DELETE CASCADE;
+
+
+--
+-- Name: gradesheet fk_gradesheet_student; Type: FK CONSTRAINT; Schema: public; Owner: system
+--
+
+ALTER TABLE ONLY gradesheet
+    ADD CONSTRAINT fk_gradesheet_student FOREIGN KEY (student_id) REFERENCES student(student_id);
+
+
+--
+-- Name: head_of_department fk_hod_department; Type: FK CONSTRAINT; Schema: public; Owner: system
+--
+
+ALTER TABLE ONLY head_of_department
+    ADD CONSTRAINT fk_hod_department FOREIGN KEY (department_id) REFERENCES department(department_id);
+
+
+--
+-- Name: head_of_department fk_hod_teacher; Type: FK CONSTRAINT; Schema: public; Owner: system
+--
+
+ALTER TABLE ONLY head_of_department
+    ADD CONSTRAINT fk_hod_teacher FOREIGN KEY (teacher_id) REFERENCES teacher(teacher_id);
+
+
+--
+-- Name: student fk_student_advisor; Type: FK CONSTRAINT; Schema: public; Owner: system
+--
+
+ALTER TABLE ONLY student
+    ADD CONSTRAINT fk_student_advisor FOREIGN KEY (advisor_id) REFERENCES advisor(teacher_id);
+
+
+--
+-- Name: student fk_student_department; Type: FK CONSTRAINT; Schema: public; Owner: system
+--
+
+ALTER TABLE ONLY student
+    ADD CONSTRAINT fk_student_department FOREIGN KEY (department_id) REFERENCES department(department_id);
+
+
+--
+-- Name: student fk_student_hall; Type: FK CONSTRAINT; Schema: public; Owner: system
+--
+
+ALTER TABLE ONLY student
+    ADD CONSTRAINT fk_student_hall FOREIGN KEY (hall_id) REFERENCES hall(hall_id);
+
+
+--
+-- Name: student fk_student_user; Type: FK CONSTRAINT; Schema: public; Owner: system
+--
+
+ALTER TABLE ONLY student
+    ADD CONSTRAINT fk_student_user FOREIGN KEY (student_id) REFERENCES "User"(user_id);
+
+
+--
+-- Name: teacher fk_teacher_department; Type: FK CONSTRAINT; Schema: public; Owner: system
+--
+
+ALTER TABLE ONLY teacher
+    ADD CONSTRAINT fk_teacher_department FOREIGN KEY (department_id) REFERENCES department(department_id);
+
+
+--
+-- Name: teacher fk_teacher_user; Type: FK CONSTRAINT; Schema: public; Owner: system
+--
+
+ALTER TABLE ONLY teacher
+    ADD CONSTRAINT fk_teacher_user FOREIGN KEY (teacher_id) REFERENCES "User"(user_id);
+
+
+--
+-- Name: hallassignment hallassignment_hall_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: system
+--
+
+ALTER TABLE ONLY hallassignment
+    ADD CONSTRAINT hallassignment_hall_id_fkey FOREIGN KEY (hall_id) REFERENCES hall(hall_id);
+
+
+--
+-- Name: hallassignment hallassignment_student_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: system
+--
+
+ALTER TABLE ONLY hallassignment
+    ADD CONSTRAINT hallassignment_student_id_fkey FOREIGN KEY (student_id) REFERENCES student(student_id);
+
+
+--
+-- Name: notification notification_course_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: system
+--
+
+ALTER TABLE ONLY notification
+    ADD CONSTRAINT notification_course_id_fkey FOREIGN KEY (course_id) REFERENCES course(course_id);
+
+
+--
+-- Name: notification notification_department_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: system
+--
+
+ALTER TABLE ONLY notification
+    ADD CONSTRAINT notification_department_id_fkey FOREIGN KEY (department_id) REFERENCES department(department_id);
+
+
+--
+-- Name: notification notification_hall_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: system
+--
+
+ALTER TABLE ONLY notification
+    ADD CONSTRAINT notification_hall_id_fkey FOREIGN KEY (hall_id) REFERENCES hall(hall_id);
+
+
+--
+-- Name: notification notification_student_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: system
+--
+
+ALTER TABLE ONLY notification
+    ADD CONSTRAINT notification_student_id_fkey FOREIGN KEY (student_id) REFERENCES student(student_id);
+
+
+--
+-- Name: notification notification_teacher_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: system
+--
+
+ALTER TABLE ONLY notification
+    ADD CONSTRAINT notification_teacher_id_fkey FOREIGN KEY (teacher_id) REFERENCES teacher(teacher_id);
+
+
+--
+-- Name: provost provost_hall_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: system
+--
+
+ALTER TABLE ONLY provost
+    ADD CONSTRAINT provost_hall_id_fkey FOREIGN KEY (hall_id) REFERENCES hall(hall_id);
+
+
+--
+-- Name: provost provost_teacher_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: system
+--
+
+ALTER TABLE ONLY provost
+    ADD CONSTRAINT provost_teacher_id_fkey FOREIGN KEY (teacher_id) REFERENCES teacher(teacher_id);
+
+
+--
+-- Name: salary sal_dept_fk; Type: FK CONSTRAINT; Schema: public; Owner: system
+--
+
+ALTER TABLE ONLY salary
+    ADD CONSTRAINT sal_dept_fk FOREIGN KEY (department_id) REFERENCES department(department_id);
+
+
+--
+-- Name: studentfee studentfee_fee_type_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: system
+--
+
+ALTER TABLE ONLY studentfee
+    ADD CONSTRAINT studentfee_fee_type_id_fkey FOREIGN KEY (fee_type_id) REFERENCES feetype(fee_type_id);
+
+
+--
+-- Name: studentfee studentfee_student_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: system
+--
+
+ALTER TABLE ONLY studentfee
+    ADD CONSTRAINT studentfee_student_id_fkey FOREIGN KEY (student_id) REFERENCES student(student_id);
+
+
+--
+-- Name: subjectallocation subjectallocation_course_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: system
+--
+
+ALTER TABLE ONLY subjectallocation
+    ADD CONSTRAINT subjectallocation_course_id_fkey FOREIGN KEY (course_id) REFERENCES course(course_id);
+
+
+--
+-- Name: subjectallocation subjectallocation_teacher_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: system
+--
+
+ALTER TABLE ONLY subjectallocation
+    ADD CONSTRAINT subjectallocation_teacher_id_fkey FOREIGN KEY (teacher_id) REFERENCES teacher(teacher_id);
+
+
+--
+-- Name: usersession usersession_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: system
+--
+
+ALTER TABLE ONLY usersession
+    ADD CONSTRAINT usersession_user_id_fkey FOREIGN KEY (user_id) REFERENCES "User"(user_id);
+
+
+
